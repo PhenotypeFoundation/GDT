@@ -22,7 +22,8 @@
 class GdtGrailsPlugin {
     def version			= "0.0.1"
     def grailsVersion	= "1.3.4 > *"
-    def dependsOn		= [ajaxflow: "0.1.18 > *"]
+//    def dependsOn		= [ajaxflow: "0.1.18 > *"]
+    def dependsOn		= [:]
     def pluginExcludes	= [
             "grails-app/views/error.gsp"
     ]
