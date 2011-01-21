@@ -1,6 +1,6 @@
 /**
  *  GDT, a plugin for Grails Domain Templates
- *  Copyright (C) 2011 Jeroen Wesbeek
+ *  Copyright (C) 2011 Jeroen Wesbeek, Kees van Bochove
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
  */
 
 class GdtGrailsPlugin {
-    def version			= "0.1"
+    def version			= "0.0.1"
     def grailsVersion	= "1.3.4 > *"
     def dependsOn		= [ajaxflow: "0.1.18 > *"]
     def pluginExcludes	= [
