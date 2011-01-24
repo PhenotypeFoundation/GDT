@@ -20,7 +20,7 @@ package nl.grails.plugins.gdt
  * $Author: j.a.m.wesbeek@umail.leidenuniv.nl $
  * $Date: 2010-10-20 21:13:14 +0200 (Wed, 20 Oct 2010) $
  */
-class RelTime {
+class RelTime implements Comparable {
 	final static long s = 1L;
 	final static long m = 60L * s;
 	final static long h = 60L * m;
@@ -299,5 +299,28 @@ class RelTime {
 		RelTime reltime = new RelTime();
 		reltime.parse(value);
 		return reltime;
+	}
+	
+	public boolean equals( Object o ) {
+		if( o == null )
+			return false;
+		
+		if( !( o instanceof RelTime ) )
+			return false;
+		
+		RelTime rt = (RelTime) o;
+
+		return rt.reltimeValue == this.reltimeValue;
+	}
+
+	public int compareTo( Object o ) throws ClassCastException {
+		if( o == null )
+			throw new ClassCastException( "Can't cast object to RelTime" );
+		
+		if( !( o instanceof RelTime ) )
+			throw new ClassCastException( "Can't cast object to RelTime" );
+
+		RelTime rt = (RelTime) o;
+		return this.reltimeValue <=> rt.reltimeValue;
 	}
 }
