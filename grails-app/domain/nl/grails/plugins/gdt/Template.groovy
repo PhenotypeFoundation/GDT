@@ -19,6 +19,7 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
  * $Date: 2011-01-07 16:08:48 +0100 (Fri, 07 Jan 2011) $
  */
 class Template extends Identity {
+	def gdtService
 
 	/** The name of the template */
 	String name
@@ -34,7 +35,7 @@ class Template extends Identity {
 	Object owner
 	Long owner_id
 
-	static transients = [ "identifier", "iterator", "maximumIdentity", "owner" ]
+	static transients = [ "identifier", "iterator", "maximumIdentity", "owner", "gdtService" ]
 
 	/** The template fields which are the members of this template. This is a List to preserve the field order */
 	List fields
@@ -226,19 +227,12 @@ class Template extends Identity {
 	 * @returns	integer the number of objects that use this template.
 	 */
 	def numUses() {
-		def grailsApplication = ApplicationHolder.application
 		def elements = []
 
-		// iterate through all domain classes
-		grailsApplication.getArtefacts("Domain").each {
-			def myInstance = it.clazz
-
-			// is this domain class an extention of TemplateEntity, and does
-			// the entity match?
-			if (myInstance.properties.superclass.toString() =~ 'TemplateEntity' && myInstance.equals(this.entity)) {
-				// this domain class uses domain templates, check
-				// if this template is used by this domain class
-				elements = myInstance.findAllByTemplate( this )
+		// iterate through domain classes that use the domain templates
+		gdtService.getTemplateEntities().each {
+			if (it.instance.equals(this.entity)) {
+				elements = it.instance.findAllByTemplate( this )
 			}
 		}
 
