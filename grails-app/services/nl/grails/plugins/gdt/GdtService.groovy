@@ -19,22 +19,28 @@
  *  $Date$
  */
 package nl.grails.plugins.gdt
-import org.springframework.beans.factory.InitializingBean
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import cr.co.arquetipos.crypto.Blowfish
 
-class GdtService implements InitializingBean {
-	def grailsApplication
-	def setting
+class GdtService implements Serializable {
+    // Must be false, since the webflow can't use a transactional service. See
+    // http://www.grails.org/WebFlow for more information
+    static transactional = false
 
+//	def grailsApplication
+//	def setting
+
+/*
 	void afterPropertiesSet() {
 		this.setting = grailsApplication.config.setting
 	}
-
+*/
 	/**
 	 * get all domain classes that use the domain templates
 	 * @return map
 	 */
 	def getTemplateEntities() {
+		def grailsApplication = ApplicationHolder.application
 		def entities = []
 
 		// iterate through domain classes
@@ -62,6 +68,8 @@ class GdtService implements InitializingBean {
 	 * @return String
 	 */
 	def String encryptEntity(String entityName) {
+		def grailsApplication = ApplicationHolder.application
+
 		if (grailsApplication.config.crypto) {
 			// generate a Blowfish encrypted and Base64 encoded string
 			return URLEncoder.encode(
@@ -78,7 +86,6 @@ class GdtService implements InitializingBean {
 			// be dangerous. Hence, use encryption (above) instead...
 			return URLEncoder.encode(entityName.replaceAll(/^class /, '').bytes.encodeBase64())
 		}
-		return entityName
 	}
 
 	/**
@@ -87,6 +94,7 @@ class GdtService implements InitializingBean {
 	 * @return String
 	 */
 	def String decryptEntity(String entity) {
+		def grailsApplication = ApplicationHolder.application
 		def entityName
 
 		if (grailsApplication.config.crypto) {
@@ -117,6 +125,7 @@ class GdtService implements InitializingBean {
 	 * @return Object
 	 */
 	def getInstanceByEntityName(String entityName) {
+		def grailsApplication = ApplicationHolder.application
 		def entity
 
 		// dynamically instantiate the entity (if possible)
