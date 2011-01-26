@@ -19,7 +19,9 @@
  *  $Date$
  */
 package nl.grails.plugins.gdt
+
 import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.apache.commons.lang.RandomStringUtils
 import cr.co.arquetipos.crypto.Blowfish
 
 class GdtService implements Serializable {
@@ -27,19 +29,21 @@ class GdtService implements Serializable {
     // http://www.grails.org/WebFlow for more information
     static transactional = false
 
-//	def grailsApplication
-//	def setting
+	// cached crypto secret
+	static cachedSecret
 
-/*
-	void afterPropertiesSet() {
-		this.setting = grailsApplication.config.setting
-	}
-*/
+	// cached template entities
+	static cachedEntities
+
 	/**
 	 * get all domain classes that use the domain templates
 	 * @return map
 	 */
 	def getTemplateEntities() {
+		// return cached entities if present
+		if (cachedEntities) return cachedEntities
+
+		// fetch entities and cache them
 		def grailsApplication = ApplicationHolder.application
 		def entities = []
 
@@ -59,7 +63,44 @@ class GdtService implements Serializable {
 			}
 		}
 
-		return entities
+		// cache entities
+		cachedEntities = entities
+
+		return cachedEntities
+	}
+
+	/**
+	 * return the crypto secret
+	 *
+	 * fetches the pre-configured secret, or generates
+	 * a random secret on the fly
+	 *
+	 * For a static secret (works perhaps better in multi
+	 * server/ loadbalanced environments) add the following
+	 * to your Config.groovy:
+	 *
+	 * crypto {
+	 * 	shared.secret = "yourSecretCanBeInHere"
+	 * }
+	 *
+	 * @return String
+	 */
+	private getSecret() {
+		// do we have a static secret?
+		if (cachedSecret) return cachedSecret
+
+		// is the secret in the configuration?
+		def grailsApplication = ApplicationHolder.application
+		if (!grailsApplication.config.crypto) {
+			// we have not secret, generate a random secret
+			grailsApplication.config.crypto.shared.secret = RandomStringUtils.random(32, true, true)
+		}
+
+		// set static secret
+		cachedSecret = grailsApplication.config.crypto.shared.secret
+
+		// and return the static secret
+		return cachedSecret
 	}
 
 	/**
@@ -68,24 +109,13 @@ class GdtService implements Serializable {
 	 * @return String
 	 */
 	def String encryptEntity(String entityName) {
-		def grailsApplication = ApplicationHolder.application
-
-		if (grailsApplication.config.crypto) {
-			// generate a Blowfish encrypted and Base64 encoded string
-			return URLEncoder.encode(
-				Blowfish.encryptBase64(
-					entityName.replaceAll(/^class /, ''),
-					grailsApplication.config.crypto.shared.secret
-				)
+		// generate a Blowfish encrypted and Base64 encoded string
+		return URLEncoder.encode(
+			Blowfish.encryptBase64(
+				entityName.replaceAll(/^class /, ''),
+				getSecret()
 			)
-		} else {
-			// base64 only; this is INSECURE! Even though it is not
-			// very likely, it is possible to exploit this and have
-			// Grails dynamically instantiate whatever class you like.
-			// If that constructor does something harmfull this could
-			// be dangerous. Hence, use encryption (above) instead...
-			return URLEncoder.encode(entityName.replaceAll(/^class /, '').bytes.encodeBase64())
-		}
+		)
 	}
 
 	/**
@@ -94,20 +124,8 @@ class GdtService implements Serializable {
 	 * @return String
 	 */
 	def String decryptEntity(String entity) {
-		def grailsApplication = ApplicationHolder.application
-		def entityName
-
-		if (grailsApplication.config.crypto) {
-			// generate a Blowfish decrypted and Base64 decoded string.
-			entityName = Blowfish.decryptBase64(
-				entity,
-				grailsApplication.config.crypto.shared.secret
-			)
-		} else {
-			entityName = new String(entity.toString().decodeBase64())
-		}
-
-		return entityName
+		// generate a Blowfish decrypted and Base64 decoded string.
+		return Blowfish.decryptBase64(entity, getSecret())
 	}
 
 	/**
