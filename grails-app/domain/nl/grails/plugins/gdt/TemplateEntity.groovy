@@ -14,6 +14,10 @@ package nl.grails.plugins.gdt
  * $Date: 2010-12-20 15:48:26 +0100 (Mon, 20 Dec 2010) $
  */
 abstract class TemplateEntity extends Identity {
+	// allow the usage of searchable, set to
+	// false by default
+	static searchable = false
+
 	// The actual template of this TemplateEntity instance
 	Template template
 
@@ -88,7 +92,7 @@ abstract class TemplateEntity extends Identity {
 	}
 
 	// overload transients from Identity and append requiredFields vars
-	static transients			= [ "identifier", "iterator", "maximumIdentity", "requiredFields", "requiredFieldsTemplate" ]
+	static transients	= [ "identifier", "iterator", "maximumIdentity", "requiredFields", "requiredFieldsTemplate", "searchable" ]
 
 	// define the mapping
 	static mapping = {
