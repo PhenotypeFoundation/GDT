@@ -178,10 +178,8 @@ class RelTime implements Comparable {
 		parse(value);
 	}
 
-
-
-	 /**
-	  * Return a sentence that may be used in interfaces to give the user an instruction on how to enter RelTimes in string format
+	/**
+	 * Return a sentence that may be used in interfaces to give the user an instruction on how to enter RelTimes in string format
 	 */
 	public static final String getHelpText() {
 		return "Use the first letter of weeks/days/hours/minutes/seconds, e.g. '1w 2d' for 1 week + 2 days or '10m30s' for 10 minutes and 30 seconds.";
@@ -235,7 +233,7 @@ class RelTime implements Comparable {
 
 			// Find all parts that contain numbers with
 			// a character w, d, h, m or s after it
-			def periodMatch = value =~ /([0-9]+)\s*([wdhms])/
+			def periodMatch = value =~ /([0-9\.]+)\s*([wdhms])/
 			if (periodMatch.size() > 0) {
 				def seconds = 0L;
 
@@ -244,8 +242,9 @@ class RelTime implements Comparable {
 				periodMatch.each {
 					def partValue
 
-					if (it[1].isLong()) {
-						partValue = Long.parseLong(it[1]);
+					if (it[1].isFloat()) {
+						// this is a float
+						partValue = Float.parseFloat(it[1])
 					} else {
 						partValue = 0;
 					}
@@ -273,7 +272,7 @@ class RelTime implements Comparable {
 				}
 
 				// Continue with the computed value
-				newvalue = multiplier * seconds;
+				newvalue = (multiplier * seconds).toLong()
 			} else {
 				throw new IllegalArgumentException("String " + value + " cannot be parsed as a relative time. Use format #w #d #h #m #s.");
 				return;
@@ -300,25 +299,25 @@ class RelTime implements Comparable {
 		reltime.parse(value);
 		return reltime;
 	}
-	
-	public boolean equals( Object o ) {
-		if( o == null )
-			return false;
-		
-		if( !( o instanceof RelTime ) )
-			return false;
-		
+
+	public boolean equals(Object o) {
+		if (o == null)
+		return false;
+
+		if (!(o instanceof RelTime))
+		return false;
+
 		RelTime rt = (RelTime) o;
 
 		return rt.reltimeValue == this.reltimeValue;
 	}
 
-	public int compareTo( Object o ) throws ClassCastException {
-		if( o == null )
-			throw new ClassCastException( "Can't cast object to RelTime" );
-		
-		if( !( o instanceof RelTime ) )
-			throw new ClassCastException( "Can't cast object to RelTime" );
+	public int compareTo(Object o) throws ClassCastException {
+		if (o == null)
+		throw new ClassCastException("Can't cast object to RelTime");
+
+		if (!(o instanceof RelTime))
+		throw new ClassCastException("Can't cast object to RelTime");
 
 		RelTime rt = (RelTime) o;
 		return this.reltimeValue <=> rt.reltimeValue;
