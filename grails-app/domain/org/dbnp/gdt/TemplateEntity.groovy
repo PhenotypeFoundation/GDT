@@ -285,8 +285,8 @@ abstract class TemplateEntity extends Identity {
 				}
 			}
 		} catch (Exception e) {
-			log.error "Exception in the genericValidators: ${e.getMessage()}"
-			log.error e.stackTrace
+			println "Exception in the genericValidators: ${e.getMessage()}"
+			println e.stackTrace
 		}
 
 		return (!error)
