@@ -1,5 +1,8 @@
 package org.dbnp.gdt
 
+// temporary import until bgdt refactoring is done
+import org.dbnp.bgdt.*
+
 /**
  * The TemplateEntity domain Class is a superclass for all template-enabled study capture entities, including
  * Study, Subject, Sample and Event. This class provides functionality for storing the different TemplateField
@@ -123,158 +126,145 @@ abstract class TemplateEntity extends Identity {
 	 */
 	static constraints = {
 		template(nullable: true, blank: true)
-		templateStringFields(validator: { fields, obj, errors ->
-			// note that we only use 'fields' and 'errors', 'obj' is
-			// merely here because it's the way the closure is called
-			// by the validator...
+		templateStringFields(validator		: templateStringFieldsValidator)
+		templateTextFields(validator		: templateTextFieldsValidator)
+		templateStringListFields(validator	: templateStringListFieldsValidator)
+		templateDoubleFields(validator		: templateDoubleFieldsValidator)
+		templateDateFields(validator		: templateDateFieldsValidator)
+		templateRelTimeFields(validator		: templateRelTimeFieldsValidator)
+		templateTermFields(validator		: templateTermFieldsValidator)
+		templateFileFields(validator		: templateFileFieldsValidator)
+		templateBooleanFields(validator		: templateBooleanFieldsValidator)
+		templateTemplateFields(validator	: templateTemplateFieldsValidator)
+		templateModuleFields(validator		: templateModuleFieldsValidator)
+		templateLongFields(validator		: templateLongFieldsValidator)
+	}
 
-			// define a boolean
-			def error = false
+	// text fields validator
+	static def templateTextFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.STRING, { value -> (value as String) })
+	}
 
-			// iterate through fields
+	// long fields validator
+	static def templateLongFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.LONG, { value -> value.toLong() }, { value -> Long.parseLong(value.trim()) })
+	}
+
+	// string fields validator
+	static def templateStringFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.STRING, { value -> (value as String) }, { value -> throw new Exception('dummy') }, { value -> println "aapjes"; return (value.class == String && value.size() > 255) ? 'templateEntity.tooLong.string' : true })
+	}
+
+	// stringlist fields validator
+	static def templateStringListFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldListItem, { value -> (value as TemplateFieldListItem) })
+	}
+
+	// double fields validator
+	static def templateDoubleFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.DOUBLE, { value -> (value.toDouble()) }, { value -> println "obsolete?"; return (value as Double) })
+	}
+
+	// date fields validator
+	static def templateDateFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.DATE, { value -> (value as Date) })
+	}
+
+	// reltime fields validator
+	static def templateRelTimeFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.RELTIME, { value -> (value as long) })
+	}
+
+	// term fields validator
+	static def templateTermFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.ONTOLOGYTERM, { value -> (value as Term) })
+	}
+
+	// file fields validator
+	static def templateFileFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.FILE, { value -> (value as String) })
+		// currently the validator only casts to String, perhaps we also
+		// need to look on the filesystem if the file actually exists using
+		// the 'extraValidationClosure' ?
+	}
+
+	// boolean fields validator
+	static def templateBooleanFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.BOOLEAN, { value -> (value) ? true : false })
+	}
+
+	// template fields validator
+	static def templateTemplateFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.TEMPLATE, { value -> (value as Template) })
+	}
+
+	// module fields validator
+	static def templateModuleFieldsValidator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.MODULE, { value -> (value as AssayModule) })
+	}
+
+	/**
+	 * Generic Validator
+	 * @param fields
+	 * @param obj
+	 * @param errors
+	 * @param templateFieldType
+	 * @param castClosure
+	 * @param parseClosure
+	 * @param extraValidationClosure
+	 * @return
+	 */
+	static def genericValidator(fields, obj, errors, templateFieldType, castClosure) {
+		genericValidator(fields, obj, errors, templateFieldType, castClosure, { value -> throw new Exception('dummy')}, { value -> return true })
+	}
+	static def genericValidator(fields, obj, errors, templateFieldType, castClosure, parseClosure) {
+		genericValidator(fields, obj, errors, templateFieldType, castClosure, parseClosure, { value -> return true })
+	}
+	static def genericValidator(fields, obj, errors, templateFieldType, castClosure, parseClosure, extraValidationClosure) {
+		def error = false
+		def fieldTypeName = templateFieldType.toString()
+		def lowerFieldTypeName = fieldTypeName.toLowerCase()
+		def capitalizedFieldTypeName = lowerFieldTypeName[0].toUpperCase() + lowerFieldTypeName.substring(1)
+
+		// catch exceptions
+		try {
+			// iterate through values
 			fields.each { key, value ->
-				// check if the value is of proper type
+				// check if the value exists and is of the proper type
 				if (value) {
-					def strValue = "";
-					if( value.class != String) {
-						// it's of some other type
+					// check if it is of the proper type
+					if (value.class.toString().toLowerCase() != lowerFieldTypeName) {
+						// no, try to cast value
 						try {
-							// try to cast it to the proper type
-							strValue = (value as String)
-							fields[key] = strValue
-						} catch (Exception e) {
-							// could not typecast properly, value is of improper type
-							// add error message
-							error = true
-							errors.rejectValue(
-								'templateStringFields',
-								'templateEntity.typeMismatch.string',
-								[key, value.class] as Object[],
-								'Property {0} must be of type String and is currently of type {1}'
-							)
+							fields[key] = castClosure(value)
+						} catch (Exception castException) {
+							// could not cast value to the proper type, try to parse value
+							try {
+								fields[key] = parseClosure(value)
+							} catch (Exception parseException) {
+								// cannot cast nor parse value, invalid value
+								error = true
+								errors.rejectValue(
+									"template${capitalizedFieldTypeName}Fields",
+									"templateEntity.typeMismatch.${lowerFieldTypeName}",
+									[key, value.class] as Object[],
+									"Property {0} must be of type ${fieldTypeName} and is currently of type {1}"
+								)
+							}
 						}
 					} else {
-						strValue = value;
-					}
-
-					// Check whether the string doesn't exceed 255 characters
-					if( strValue.size() > 255 ) {
-						error = true
-						errors.rejectValue(
-							'templateStringFields',
-							'templateEntity.tooLong.string',
-							[key] as Object[],
-							'Property {0} may contain at most 255 characters.'
-						)
-					}
-				}
-			}
-
-			// validating the required template fields. Note that the
-			// getRequiredFields() are cached in this object, so any
-			// template changes after caching may not be validated
-			// properly.
-			obj.getRequiredFields().findAll { it.type == TemplateFieldType.STRING }.each { field ->
-				if (! fields.find { key, value -> key == field.name } ) {
-					// required field is missing
-					error = true
-					errors.rejectValue(
-						'templateStringFields',
-						'templateEntity.required',
-						[field.name] as Object[],
-						'Property {0} is required but it missing'
-					)
-				}
-			}
-
-			// got an error, or not?
-			return (!error)
-		})
-		templateTextFields(validator: { fields, obj, errors ->
-			def error = false
-			fields.each { key, value ->
-				if (value && value.class != String) {
-					try {
-						fields[key] = (value as String)
-					} catch (Exception e) {
-						error = true
-						errors.rejectValue(
-							'templateTextFields',
-							'templateEntity.typeMismatch.string',
-							[key, value.class] as Object[],
-							'Property {0} must be of type String and is currently of type {1}'
-						)
-					}
-				}
-			}
-
-			// validating required fields
-			obj.getRequiredFields().findAll { it.type == TemplateFieldType.TEXT }.each { field ->
-				if (! fields.find { key, value -> key == field.name } ) {
-					// required field is missing
-					error = true
-					errors.rejectValue(
-						'templateTextFields',
-						'templateEntity.required',
-						[field.name] as Object[],
-						'Property {0} is required but it missing'
-					)
-				}
-			}
-
-			return (!error)
-		})
-		templateStringListFields(validator: { fields, obj, errors ->
-			def error = false
-			fields.each { key, value ->
-				if (value && value.class != TemplateFieldListItem) {
-					try {
-						fields[key] = (value as TemplateFieldListItem)
-					} catch (Exception e) {
-						error = true
-						errors.rejectValue(
-							'templateStringFields',
-							'templateEntity.typeMismatch.templateFieldListItem',
-							[key, value.class] as Object[],
-							'Property {0} must be of type TemplateFieldListItem and is currently of type {1}'
-						)
-					}
-				}
-			}
-
-			// validating required fields
-			obj.getRequiredFields().findAll { it.type == TemplateFieldType.STRINGLIST }.each { field ->
-				if (! fields.find { key, value -> key == field.name } ) {
-					// required field is missing
-					error = true
-					errors.rejectValue(
-						'templateStringFields',
-						'templateEntity.required',
-						[field.name] as Object[],
-						'Property {0} is required but it missing'
-					)
-				}
-			}
-
-			return (!error)
-		})
-		templateDoubleFields(validator: { fields, obj, errors ->
-			def error = false
-			fields.each { key, value ->
-				// Double field should accept Doubles and Floats
-				if (value && value.class != Double) {
-					if(value.class == Float) {
-						fields[key] = value.toDouble();
-					} else {
-						try {
-							fields[key] = (value as Double)
-						} catch (Exception e) {
+						// yes, try extra validation
+						// 	- return boolean: validation success
+						//	- return string: validation failed (contains i18n translation
+						//    location, e.g. templateEntity.tooLong.string)
+						def extraValidation = extraValidationClosure(value)
+						if (extraValidation.class == String) {
 							error = true
 							errors.rejectValue(
-								'templateDoubleFields',
-								'templateEntity.typeMismatch.double',
-								[key, value.class] as Object[],
-								'Property {0} must be of type Double and is currently of type {1}'
+								"template${capitalizedFieldTypeName}Fields",
+								extraValidation,
+								[key] as Object[],
+								"Property {0} does not pass extra validation (${extraValidation})"
 							)
 						}
 					}
@@ -282,302 +272,24 @@ abstract class TemplateEntity extends Identity {
 			}
 
 			// validating required fields
-			obj.getRequiredFields().findAll { it.type == TemplateFieldType.DOUBLE }.each { field ->
-				if (! fields.find { key, value -> key == field.name } ) {
+			obj.getRequiredFields().findAll { it.type == templateFieldType }.each { field ->
+				if (!fields.find { key, value -> key == field.name }) {
 					// required field is missing
 					error = true
 					errors.rejectValue(
-						'templateDoubleFields',
+						"template${capitalizedFieldTypeName}Fields",
 						'templateEntity.required',
 						[field.name] as Object[],
 						'Property {0} is required but it missing'
 					)
 				}
 			}
+		} catch (Exception e) {
+			log.error "Exception in the genericValidators: ${e.getMessage()}"
+			log.error e.stackTrace
+		}
 
-			return (!error)
-		})
-		templateDateFields(validator: { fields, obj, errors ->
-			def error = false
-			fields.each { key, value ->
-				if (value && value.class != Date) {
-					try {
-						fields[key] = (value as Date)
-					} catch (Exception e) {
-						error = true
-						errors.rejectValue(
-							'templateDateFields',
-							'templateEntity.typeMismatch.date',
-							[key, value.class] as Object[],
-							'Property {0} must be of type Date and is currently of type {1}'
-						)
-					}
-				}
-			}
-
-			// validating required fields
-			obj.getRequiredFields().findAll { it.type == TemplateFieldType.DATE }.each { field ->
-				if (! fields.find { key, value -> key == field.name } ) {
-					// required field is missing
-					error = true
-					errors.rejectValue(
-						'templateDateFields',
-						'templateEntity.required',
-						[field.name] as Object[],
-						'Property {0} is required but it missing'
-					)
-				}
-			}
-
-			return (!error)
-		})
-		templateRelTimeFields(validator: { fields, obj, errors ->
-			def error = false
-			fields.each { key, value ->
-				if (value && value == Long.MIN_VALUE) {
-					error = true
-					errors.rejectValue(
-						'templateRelTimeFields',
-						'templateEntity.typeMismatch.reltime',
-						[key, value] as Object[],
-						'Value cannot be parsed for property {0}'
-					)
-				} else if (value && value.class != long) {
-					try {
-						fields[key] = (value as long)
-					} catch (Exception e) {
-						error = true
-						errors.rejectValue(
-							'templateRelTimeFields',
-							'templateEntity.typeMismatch.reltime',
-							[key, value.class] as Object[],
-							'Property {0} must be of type long and is currently of type {1}'
-						)
-					}
-				}
-			}
-
-			// validating required fields
-			obj.getRequiredFields().findAll { it.type == TemplateFieldType.RELTIME }.each { field ->
-				if (! fields.find { key, value -> key == field.name } ) {
-					// required field is missing
-					error = true
-					errors.rejectValue(
-						'templateRelTimeFields',
-						'templateEntity.required',
-						[field.name] as Object[],
-						'Property {0} is required but it missing'
-					)
-				}
-			}
-
-			return (!error)
-		})
-		templateTermFields(validator: { fields, obj, errors ->
-			def error = false
-			fields.each { key, value ->
-				if (value && value.class != Term) {
-					try {
-						fields[key] = (value as Term)
-					} catch (Exception e) {
-						error = true
-						errors.rejectValue(
-							'templateTermFields',
-							'templateEntity.typeMismatch.term',
-							[key, value.class] as Object[],
-							'Property {0} must be of type Term and is currently of type {1}'
-						)
-					}
-				}
-			}
-
-			// validating required fields
-			obj.getRequiredFields().findAll { it.type == TemplateFieldType.ONTOLOGYTERM }.each { field ->
-				if (! fields.find { key, value -> key == field.name } ) {
-					// required field is missing
-					error = true
-					errors.rejectValue(
-						'templateTermFields',
-						'templateEntity.required',
-						[field.name] as Object[],
-						'Property {0} is required but it missing'
-					)
-				}
-			}
-
-			return (!error)
-		})
-		templateFileFields(validator: { fields, obj, errors ->
-			// note that we only use 'fields' and 'errors', 'obj' is
-			// merely here because it's the way the closure is called
-			// by the validator...
-
-			// define a boolean
-			def error = false
-
-			// iterate through fields
-			fields.each { key, value ->
-				// check if the value is of proper type
-				if (value && value.class != String) {
-					// it's of some other type
-					try {
-						// try to cast it to the proper type
-						fields[key] = (value as String)
-
-						// Find the file on the system
-						// if it does not exist, the filename can
-						// not be entered
-
-					} catch (Exception e) {
-						// could not typecast properly, value is of improper type
-						// add error message
-						error = true
-						errors.rejectValue(
-							'templateFileFields',
-							'templateEntity.typeMismatch.file',
-							[key, value.class] as Object[],
-							'Property {0} must be of type String and is currently of type {1}'
-						)
-					}
-				}
-			}
-
-			// validating required fields
-			obj.getRequiredFields().findAll { it.type == TemplateFieldType.FILE }.each { field ->
-				if (! fields.find { key, value -> key == field.name } ) {
-					// required field is missing
-					error = true
-					errors.rejectValue(
-						'templateFileFields',
-						'templateEntity.required',
-						[field.name] as Object[],
-						'Property {0} is required but it missing'
-					)
-				}
-			}
-
-			// got an error, or not?
-			return (!error)
-		})
-		templateBooleanFields(validator: { fields, obj, errors ->
-			def error = false
-			fields.each { key, value ->
-				if (value) {
-					fields[key] = true;
-				} else {
-					fields[key] = false;
-				}
-			}
-
-			return (!error)
-		})
-		templateTemplateFields(validator: { fields, obj, errors ->
-			def error = false
-			fields.each { key, value ->
-				if (value && value.class != Template) {
-					try {
-						fields[key] = (value as Template)
-					} catch (Exception e) {
-						error = true
-						errors.rejectValue(
-							'templateTemplateFields',
-							'templateEntity.typeMismatch.template',
-							[key, value.class] as Object[],
-							'Property {0} must be of type Template and is currently of type {1}'
-						)
-					}
-				}
-			}
-
-			// validating required fields
-			obj.getRequiredFields().findAll { it.type == TemplateFieldType.TEMPLATE }.each { field ->
-				if (! fields.find { key, value -> key == field.name } ) {
-					// required field is missing
-					error = true
-					errors.rejectValue(
-						'templateTemplateFields',
-						'templateEntity.required',
-						[field.name] as Object[],
-						'Property {0} is required but it missing'
-					)
-				}
-			}
-
-			return (!error)
-		})
-		templateModuleFields(validator: { fields, obj, errors ->
-			def error = false
-			fields.each { key, value ->
-				if (value && value.class != AssayModule) {
-					try {
-						fields[key] = (value as AssayModule)
-					} catch (Exception e) {
-						error = true
-						errors.rejectValue(
-							'templateModuleFields',
-							'templateEntity.typeMismatch.module',
-							[key, value.class] as Object[],
-							'Property {0} must be of type AssayModule and is currently of type {1}'
-						)
-					}
-				}
-			}
-
-			// validating required fields
-			obj.getRequiredFields().findAll { it.type == TemplateFieldType.MODULE }.each { field ->
-				if (! fields.find { key, value -> key == field.name } ) {
-					// required field is missing
-					error = true
-					errors.rejectValue(
-						'templateModuleFields',
-						'templateEntity.required',
-						[field.name] as Object[],
-						'Property {0} is required but it missing'
-					)
-				}
-			}
-
-			return (!error)
-		})
-		templateLongFields(validator: { fields, obj, errors ->
-			def error = false
-			fields.each { key, value ->
-				// Long field should accept Longs and Integers
-				if (value && value.class != Long ) {
-					if( value.class == Integer ) {
-						fields[key] = value.toLong();
-					} else {
-						try {
-							fields[key] = Long.parseLong(value.trim())
-						} catch (Exception e) {
-							error = true
-							errors.rejectValue(
-								'templateLongFields',
-								'templateEntity.typeMismatch.long',
-								[key, value.class] as Object[],
-								'Property {0} must be of type Long and is currently of type {1}'
-							)
-						}
-					}
-				}
-			}
-
-			// validating required fields
-			obj.getRequiredFields().findAll { it.type == TemplateFieldType.LONG }.each { field ->
-				if (! fields.find { key, value -> key == field.name } ) {
-					// required field is missing
-					error = true
-					errors.rejectValue(
-						'templateLongFields',
-						'templateEntity.required',
-						[field.name] as Object[],
-						'Property {0} is required but it missing'
-					)
-				}
-			}
-
-			return (!error)
-		})
+		return (!error)
 	}
 
 	/**
@@ -711,6 +423,10 @@ abstract class TemplateEntity extends Identity {
 			value = field.listEntries.find {
 				it.name.toLowerCase().replaceAll("([^a-z0-9])", "_") == escapedLowerCaseValue
 			}
+
+			if (!value) {
+				throw new IllegalArgumentException("Stringlist item not recognized: ${escapedLowerCaseValue} when setting field ${fieldName}")
+			}
 		}
 
 		// Magic setter for dates: handle string values for date fields
@@ -733,7 +449,6 @@ abstract class TemplateEntity extends Identity {
 		}
 
 		// Magic setter for relative times: handle string values for relTime fields
-		//
 		if (field.type == TemplateFieldType.RELTIME && value != null && value.class == String) {
 			// A string was given, attempt to transform it into a timespan
 			// If it cannot be parsed, set the lowest possible value of Long.
@@ -826,7 +541,7 @@ abstract class TemplateEntity extends Identity {
 			if( value.class == String ) {
 				// TODO: search ontology for the term online (it may still exist) and insert it into the Term cache
 				// if not found, throw exception
-				throw new IllegalArgumentException("Ontology term not recognized (not in the GSCF ontology cache): ${value} when setting field ${fieldName}")
+				throw new IllegalArgumentException("Ontology term not recognized (not in the ontology cache): ${value} when setting field ${fieldName}")
 			}
 		}
 

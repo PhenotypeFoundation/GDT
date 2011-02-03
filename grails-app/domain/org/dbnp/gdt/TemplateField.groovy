@@ -1,6 +1,7 @@
 package org.dbnp.gdt
 
-//import dbnp.data.Ontology
+// temporary import until bgdt refactoring is done
+import org.dbnp.bgdt.*
 
 /**
  * A TemplateField is a specification for either a 'domain field' of a subclass of TemplateEntity or a
