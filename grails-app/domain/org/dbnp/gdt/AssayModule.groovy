@@ -23,10 +23,18 @@ class AssayModule extends Identity {
 	 * 
 	 * @see synchronizationService
 	 */
-	Boolean notify = false;
+	Boolean notify = Boolean.FALSE;
+
+	/**
+	 * Determines whether assays with this module will be opened in a frame or in fullscreen 
+	 * (when opened from the study view). When the module is opened in fullscreen, it should provide
+	 * a link to GSCF itself! 
+	 */
+	Boolean openInFrame = Boolean.TRUE;
 
 	static constraints = {
 		notify(nullable:true)
+		openInFrame(nullable:false)
 	}
 
 	def String toString() {
