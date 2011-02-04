@@ -1,3 +1,23 @@
+/**
+ *  GDT, a plugin for Grails Domain Templates
+ *  Copyright (C) 2011 Jeroen Wesbeek
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  $Author$
+ *  $Rev$
+ *  $Date$
+ */
 package org.dbnp.gdt
 
 // temporary import until bgdt refactoring is done
@@ -126,170 +146,18 @@ abstract class TemplateEntity extends Identity {
 	 */
 	static constraints = {
 		template(nullable: true, blank: true)
-		templateStringFields(validator		: templateStringFieldsValidator)
-		templateTextFields(validator		: templateTextFieldsValidator)
-		templateStringListFields(validator	: templateStringListFieldsValidator)
-		templateDoubleFields(validator		: templateDoubleFieldsValidator)
-		templateDateFields(validator		: templateDateFieldsValidator)
-		templateRelTimeFields(validator		: templateRelTimeFieldsValidator)
-		templateTermFields(validator		: templateTermFieldsValidator)
-		templateFileFields(validator		: templateFileFieldsValidator)
-		templateBooleanFields(validator		: templateBooleanFieldsValidator)
-		templateTemplateFields(validator	: templateTemplateFieldsValidator)
-		templateModuleFields(validator		: templateModuleFieldsValidator)
-		templateLongFields(validator		: templateLongFieldsValidator)
-	}
-
-	// text fields validator
-	static def templateTextFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.STRING, { value -> (value as String) })
-	}
-
-	// long fields validator
-	static def templateLongFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.LONG, { value -> value.toLong() }, { value -> Long.parseLong(value.trim()) })
-	}
-
-	// string fields validator
-	static def templateStringFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.STRING, { value -> (value as String) }, { value -> throw new Exception('dummy') }, { value -> println "aapjes"; return (value.class == String && value.size() > 255) ? 'templateEntity.tooLong.string' : true })
-	}
-
-	// stringlist fields validator
-	static def templateStringListFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldListItem, { value -> (value as TemplateFieldListItem) })
-	}
-
-	// double fields validator
-	static def templateDoubleFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.DOUBLE, { value -> (value.toDouble()) }, { value -> println "obsolete?"; return (value as Double) })
-	}
-
-	// date fields validator
-	static def templateDateFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.DATE, { value -> (value as Date) })
-	}
-
-	// reltime fields validator
-	static def templateRelTimeFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.RELTIME, { value -> (value as long) })
-	}
-
-	// term fields validator
-	static def templateTermFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.ONTOLOGYTERM, { value -> (value as Term) })
-	}
-
-	// file fields validator
-	static def templateFileFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.FILE, { value -> (value as String) })
-		// currently the validator only casts to String, perhaps we also
-		// need to look on the filesystem if the file actually exists using
-		// the 'extraValidationClosure' ?
-	}
-
-	// boolean fields validator
-	static def templateBooleanFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.BOOLEAN, { value -> (value) ? true : false })
-	}
-
-	// template fields validator
-	static def templateTemplateFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.TEMPLATE, { value -> (value as Template) })
-	}
-
-	// module fields validator
-	static def templateModuleFieldsValidator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.MODULE, { value -> (value as AssayModule) })
-	}
-
-	/**
-	 * Generic Validator
-	 * @param fields
-	 * @param obj
-	 * @param errors
-	 * @param templateFieldType
-	 * @param castClosure
-	 * @param parseClosure
-	 * @param extraValidationClosure
-	 * @return
-	 */
-	static def genericValidator(fields, obj, errors, templateFieldType, castClosure) {
-		genericValidator(fields, obj, errors, templateFieldType, castClosure, { value -> throw new Exception('dummy')}, { value -> return true })
-	}
-	static def genericValidator(fields, obj, errors, templateFieldType, castClosure, parseClosure) {
-		genericValidator(fields, obj, errors, templateFieldType, castClosure, parseClosure, { value -> return true })
-	}
-	static def genericValidator(fields, obj, errors, templateFieldType, castClosure, parseClosure, extraValidationClosure) {
-		def error = false
-		def fieldTypeName = templateFieldType.toString()
-		def lowerFieldTypeName = fieldTypeName.toLowerCase()
-		def capitalizedFieldTypeName = lowerFieldTypeName[0].toUpperCase() + lowerFieldTypeName.substring(1)
-
-		// catch exceptions
-		try {
-			// iterate through values
-			fields.each { key, value ->
-				// check if the value exists and is of the proper type
-				if (value) {
-					// check if it is of the proper type
-					if (value.class.toString().toLowerCase() != lowerFieldTypeName) {
-						// no, try to cast value
-						try {
-							fields[key] = castClosure(value)
-						} catch (Exception castException) {
-							// could not cast value to the proper type, try to parse value
-							try {
-								fields[key] = parseClosure(value)
-							} catch (Exception parseException) {
-								// cannot cast nor parse value, invalid value
-								error = true
-								errors.rejectValue(
-									"template${capitalizedFieldTypeName}Fields",
-									"templateEntity.typeMismatch.${lowerFieldTypeName}",
-									[key, value.class] as Object[],
-									"Property {0} must be of type ${fieldTypeName} and is currently of type {1}"
-								)
-							}
-						}
-					} else {
-						// yes, try extra validation
-						// 	- return boolean: validation success
-						//	- return string: validation failed (contains i18n translation
-						//    location, e.g. templateEntity.tooLong.string)
-						def extraValidation = extraValidationClosure(value)
-						if (extraValidation.class == String) {
-							error = true
-							errors.rejectValue(
-								"template${capitalizedFieldTypeName}Fields",
-								extraValidation,
-								[key] as Object[],
-								"Property {0} does not pass extra validation (${extraValidation})"
-							)
-						}
-					}
-				}
-			}
-
-			// validating required fields
-			obj.getRequiredFields().findAll { it.type == templateFieldType }.each { field ->
-				if (!fields.find { key, value -> key == field.name }) {
-					// required field is missing
-					error = true
-					errors.rejectValue(
-						"template${capitalizedFieldTypeName}Fields",
-						'templateEntity.required',
-						[field.name] as Object[],
-						'Property {0} is required but it missing'
-					)
-				}
-			}
-		} catch (Exception e) {
-			println "Exception in the genericValidators: ${e.getMessage()}"
-			println e.stackTrace
-		}
-
-		return (!error)
+		templateStringFields(validator		: TemplateStringField.validator)
+		templateTextFields(validator		: TemplateTextField.validator)
+		templateStringListFields(validator	: TemplateStringListField.validator)
+		templateDoubleFields(validator		: TemplateDoubleField.validator)
+		templateDateFields(validator		: TemplateDateField.validator)
+		templateRelTimeFields(validator		: TemplateRelTimeField.validator)
+		templateTermFields(validator		: TemplateOntologyTermField.validator)
+		templateFileFields(validator		: TemplateFileField.validator)
+		templateBooleanFields(validator		: TemplateBooleanField.validator)
+		templateTemplateFields(validator	: TemplateTemplateField.validator)
+		templateModuleFields(validator		: TemplateModuleField.validator)
+		templateLongFields(validator		: TemplateLongField.validator)
 	}
 
 	/**
@@ -300,34 +168,18 @@ abstract class TemplateEntity extends Identity {
 	 * @throws NoSuchFieldException
 	 */
 	public Map getStore(TemplateFieldType fieldType) {
-		switch (fieldType) {
-			case TemplateFieldType.STRING:
-				return templateStringFields
-			case TemplateFieldType.TEXT:
-				return templateTextFields
-			case TemplateFieldType.STRINGLIST:
-				return templateStringListFields
-			case TemplateFieldType.DATE:
-				return templateDateFields
-			case TemplateFieldType.RELTIME:
-				return templateRelTimeFields
-			case TemplateFieldType.FILE:
-				return templateFileFields
-			case TemplateFieldType.DOUBLE:
-				return templateDoubleFields
-			case TemplateFieldType.ONTOLOGYTERM:
-				return templateTermFields
-			case TemplateFieldType.BOOLEAN:
-				return templateBooleanFields
-			case TemplateFieldType.TEMPLATE:
-				return templateTemplateFields
-			case TemplateFieldType.MODULE:
-				return templateModuleFields
-			case TemplateFieldType.LONG:
-				return templateLongFields
-			default:
-				throw new NoSuchFieldException("Field type ${fieldType} not recognized")
+		try {
+			return this."template${fieldType.casedName}Fields"
+		} catch (Exception e) {
+			throw new NoSuchFieldException("Field type ${fieldType} not recognized")
 		}
+		/*
+		if (this.metaClass.hasMetaProperty("template${fieldType.casedName}Fields")) {
+			return this."template${fieldType.casedName}Fields"
+		} else {
+			throw new NoSuchFieldException("Field type ${fieldType} not recognized")
+		}
+		*/
 	}
 
 	/**
@@ -402,6 +254,8 @@ abstract class TemplateEntity extends Identity {
 	def setFieldValue(String fieldName, value) {
 		// get the template field
 		TemplateField field = getField(this.giveFields(), fieldName)
+//println ".setting ${field.type}: ${fieldName}=${value}"
+//println field.class
 
 		// Convenience setter for boolean fields
 		if( field.type == TemplateFieldType.BOOLEAN && value && value.class == String ) {
