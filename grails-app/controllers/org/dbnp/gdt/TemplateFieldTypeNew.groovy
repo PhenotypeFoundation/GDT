@@ -34,19 +34,14 @@ abstract class TemplateFieldTypeNew implements Serializable {
 		}
 
 		// register this templateFieldType with TemplateEntity
-		gdtService.registerTemplateFieldType(this)
+		//gdtService.registerTemplateFieldType(this)
 	}
-
-	/**
-	 * transients
-	 */
-	static transients = ["type", "casedType", "description", "category", "example"]
 
 	/**
 	 * Magic setter
 	 * @param mixed value
 	 */
-	//abstract public castValue(value)
+	//abstract public castValue(org.dbnp.gdt.TemplateField field, java.lang.String value)
 
 	/**
 	 * Static validator closure

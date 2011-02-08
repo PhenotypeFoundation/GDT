@@ -20,12 +20,12 @@
  */
 package org.dbnp.gdt
 
-class TemplateLongField extends TemplateFieldTypeNew {
-	static String type			= "LONG"
-	static String casedType		= "Long"
-	static String description	= "Natural number"
-	static String category		= "Numerical"
-	static String example		= "100"
+class TemplateTemplateField extends TemplateFieldTypeNew {
+	static String type			= "TEMPLATE"
+	static String casedType		= "Template"
+	static String description	= "Template"
+	static String category		= "Other"
+	static String example		= ""
 
 	/**
 	 * Static validator closure
@@ -34,26 +34,19 @@ class TemplateLongField extends TemplateFieldTypeNew {
 	 * @param errors
 	 */
 	static def validator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.LONG, { value -> value.toLong() }, { value -> Long.parseLong(value.trim()) })
+		genericValidator(fields, obj, errors, TemplateFieldType.TEMPLATE, { value -> (value as Template) })
 	}
 
 	/**
 	 * cast value to the proper type (if required and if possible)
 	 * @param TemplateField field
 	 * @param mixed value
-	 * @return Long
+	 * @return Template
 	 * @throws IllegalArgumentException
 	 */
-	public castValue(TemplateField field,value) {
+	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
 		if (value && value.class == String) {
-			// A check for invalidity is done in the validator of these fields. For that
-			// reason, we just try to parse it here. If it fails, the validator will also
-			// fail.
-			try {
-				value = Long.parseLong(value.trim())
-			} catch( Exception e ) {
-				throw new IllegalArgumentException("Argument could not be cast to Long: ${value}")
-			}
+			value = Template.findByName(value)
 		}
 
 		return value

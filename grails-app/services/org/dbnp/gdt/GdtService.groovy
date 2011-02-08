@@ -36,13 +36,44 @@ class GdtService implements Serializable {
 	static cachedEntities
 
 	// keep a static map of templateFieldTypes
-	static Map templateFieldTypes = [:]
+	Map templateFieldTypes = [:]
 
+	/*
 	static registerTemplateFieldType(TemplateFieldTypeNew field) {
 		if (!templateFieldTypes[ field.casedType ]) {
 println ".registering templateField ${field.casedType}"
 			templateFieldTypes[ field.casedType ] = field
 		}
+	}
+	*/
+	def public getTemplateFieldTypeByCasedName(String casedName) {
+		def grailsApplication = ApplicationHolder.application
+		return grailsApplication.getAllClasses().find{it.name =~ "Template${casedName}Field"}
+
+		/*
+		if (!templateFieldTypes[ casedName ]) {
+			// template field type not yet cached,
+			// cache it (if possible)
+			def instance = grailsApplication.getAllClasses().find{it.name =~ "Template${casedName}Field"}
+
+			if (instance) {
+				// instantiate class
+				println ".registering ${casedName} (${instance})"
+				//templateFieldTypes[ casedName ] = (className as Class)
+				//def entity = Class.forName(className, true, grailsApplication.getClassLoader())
+				//println "  : " +entity
+				//println "  : " +entity.class
+
+				//templateFieldTypes[ casedName ] = Class.forName(className)
+				templateFieldTypes[ casedName ] = instance.name
+			}
+		}
+
+		println "templateFieldTypes:"
+		println templateFieldTypes
+
+		return grailsApplication.getClassForName(templateFieldTypes[ casedName ])
+		*/
 	}
 
 	/**

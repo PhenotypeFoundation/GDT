@@ -20,12 +20,12 @@
  */
 package org.dbnp.gdt
 
-class TemplateBooleanField extends TemplateFieldTypeNew {
-	static String type			= "BOOLEAN"
-	static String casedType		= "Boolean"
-	static String description	= "true/false"
-	static String category		= "Other"
-	static String example		= "A term that comes from one or more selected ontologies"
+class TemplateLongField extends TemplateFieldTypeNew {
+	static String type			= "LONG"
+	static String casedType		= "Long"
+	static String description	= "Natural number"
+	static String category		= "Numerical"
+	static String example		= "100"
 
 	/**
 	 * Static validator closure
@@ -34,27 +34,25 @@ class TemplateBooleanField extends TemplateFieldTypeNew {
 	 * @param errors
 	 */
 	static def validator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.BOOLEAN, { value -> (value) ? true : false })
+		genericValidator(fields, obj, errors, TemplateFieldType.LONG, { value -> value.toLong() }, { value -> Long.parseLong(value.trim()) })
 	}
 
 	/**
 	 * cast value to the proper type (if required and if possible)
 	 * @param TemplateField field
 	 * @param mixed value
-	 * @return Boolean
+	 * @return Long
 	 * @throws IllegalArgumentException
 	 */
-	public castValue(TemplateField field,value) {
+	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
 		if (value && value.class == String) {
-			def lower = value.toLowerCase()
-
-			// do some 'smart' recognitions
-			if (lower.equals("true") || lower.equals("on") || lower.equals("x")) {
-				value = true
-			} else if (lower.equals("false") || lower.equals("off") || lower.equals("")) {
-				value = false
-			} else {
-				throw new IllegalArgumentException("Boolean not recognized and could not be cast to Boolean: ${value}")
+			// A check for invalidity is done in the validator of these fields. For that
+			// reason, we just try to parse it here. If it fails, the validator will also
+			// fail.
+			try {
+				value = Long.parseLong(value.trim())
+			} catch( Exception e ) {
+				throw new IllegalArgumentException("Argument could not be cast to Long: ${value}")
 			}
 		}
 

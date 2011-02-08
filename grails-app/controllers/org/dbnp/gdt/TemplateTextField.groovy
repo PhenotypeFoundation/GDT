@@ -20,12 +20,12 @@
  */
 package org.dbnp.gdt
 
-class TemplateTemplateField extends TemplateFieldTypeNew {
-	static String type			= "TEMPLATE"
-	static String casedType		= "Template"
-	static String description	= "Template"
-	static String category		= "Other"
-	static String example		= ""
+class TemplateTextField extends TemplateFieldTypeNew {
+	static String type			= "TEXT"
+	static String casedType		= "Text"
+	static String description	= "Long text"
+	static String category		= "Text"
+	static String example		= "unlimited number of characters"
 
 	/**
 	 * Static validator closure
@@ -34,19 +34,19 @@ class TemplateTemplateField extends TemplateFieldTypeNew {
 	 * @param errors
 	 */
 	static def validator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.TEMPLATE, { value -> (value as Template) })
+		genericValidator(fields, obj, errors, TemplateFieldType.STRING, { value -> (value as String) })
 	}
 
 	/**
 	 * cast value to the proper type (if required and if possible)
 	 * @param TemplateField field
 	 * @param mixed value
-	 * @return Template
+	 * @return String
 	 * @throws IllegalArgumentException
 	 */
-	public castValue(TemplateField field,value) {
-		if (value && value.class == String) {
-			value = Template.findByName(value)
+	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+		if (value.class != String) {
+			throw new IllegalArgumentException("Argument not a String: ${value}")
 		}
 
 		return value

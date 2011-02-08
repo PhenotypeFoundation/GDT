@@ -117,18 +117,8 @@ abstract class TemplateEntity extends Identity {
 		return requiredFields
 	}
 
-	// keep a static map of templateFieldTypes
-	//static Map templateFieldTypes = [:]
-
 	// overload transients from Identity and append requiredFields vars
 	static transients	= [ "identifier", "iterator", "maximumIdentity", "requiredFields", "requiredFieldsTemplate", "searchable" ]
-
-	//static registerTemplateFieldType(TemplateFieldTypeNew field) {
-	//	if (!templateFieldTypes[ field.casedType ]) {
-//println ".registering templateField ${field.casedType}"
-	//		templateFieldTypes[ field.casedType ] = field
-	//	}
-	//}
 
 	// define the mapping
 	static mapping = {
@@ -269,30 +259,40 @@ abstract class TemplateEntity extends Identity {
 
 		// get the template field
 		def TemplateField field = getField(this.giveFields(), fieldName)
-//println ".setting ${field.type}: ${fieldName}=${value}"
-//println field.class
+
+println ".setting ${field.type.casedName}: ${fieldName}=${value}"
 
 		// try to cast the field to the proper type
+		if (value.class == String) {
 		//try {
-			//return this."template${fieldType.casedName}Fields"
-		//	value = "Template${field.type.casedName}Field".castValue(field,value)
-			//value = GdtService.getTemplateFieldInstanceByName(field.type.casedName).castValue(field,value)
-			//value = Class.forName("Template${field.type.casedName}Field", true, this.getClassLoader()).castValue(field,value)
-			//value = Class.forName("org.dbnp.gdt.Template${field.type.casedName}Field").castValue(field,value)
+			//println gdtService.getTemplateFieldTypeByCasedName(field.type.casedName)
+			//println gdtService.getTemplateFieldTypeByCasedName(field.type.casedName).class
+			//value = gdtService.getTemplateFieldTypeByCasedName(field.type.casedName).castValue(field,value)
 
-			//value = ("Template${field.type.casedName}Field" as Class).castValue(field,value)
-			value = gdtService.templateFieldTypes[ field.casedType ].castValue(field,value)
+			def instance = grailsApplication.getAllClasses().find{it.name =~ "Template${field.type.casedName}Field"}
+			//Class instance2 = new instance()
+			//(instance.name as Class).castValue(field,value)
 
-//def target = grailsApplication.getAllClasses().find{it.name == "Template${field.type.casedName}Field"}
-//target.clazz.invokeMethod("vast",args)
-//		value = target.clazz.castValue(field,value)
+			//println grailsApplication.getClassForName("Template${field.type.casedName}Field")
+			// grailsApplication.getAllClasses().find{it.name =~ "Template${field.type.casedName}Field"}
+			//println Class.forName("Template${field.type.casedName}Field", true, grailsApplication.getClassLoader())
+			//println instance.getMethods()
+			//println instance.metaClass.class.simpleName
 
 
+			// somehow this does not work as graisl keeps complaining that the method
+			// does not exist in static scope?! weird shit
+			//
+			// groovy.lang.MissingMethodException: No signature of method: static org.dbnp.gdt.TemplateStringListField.castValue() is applicable for argument types: (org.dbnp.gdt.TemplateField, java.lang.String) values: [Diet, low fat]
+			// Possible solutions: castValue(org.dbnp.gdt.TemplateField, java.lang.String), castValue(org.dbnp.gdt.TemplateField, java.lang.String)
+			instance.castValue(field,value)
+			//TemplateStringListField.getM
 
 
 		//} catch (Exception e) {
 		//	throw new IllegalArgumentException("invalid argument '${value}' of type ${value.class} when setting ${field.type.casedName} field ${fieldName}")
 		//}
+		}
 
 
 		// Convenience setter for boolean fields

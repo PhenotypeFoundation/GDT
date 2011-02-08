@@ -44,7 +44,7 @@ class TemplateDateField extends TemplateFieldTypeNew {
 	 * @return Date
 	 * @throws IllegalArgumentException
 	 */
-	public castValue(TemplateField field,value) {
+	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
 		if (value && value.class == String) {
 			// a string was given, attempt to transform it into a date instance
 			// and -for now- assume the dd/mm/yyyy format

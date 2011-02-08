@@ -28,7 +28,7 @@ class TemplateFileField extends TemplateFieldTypeNew {
 	static String example		= ""
 
 	// Inject the service for storing files (for TemplateFields of TemplateFieldType FILE).
-	def fileService
+	//def fileService
 
 	/**
 	 * Static validator closure
@@ -50,12 +50,9 @@ class TemplateFileField extends TemplateFieldTypeNew {
 	 * @return mixed value
 	 * @throws IllegalArgumentException
 	 */
-	public castValue(TemplateField field,value) {
+	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
 		// Sometimes the fileService is not created yet
-		if (!fileService) {
-			fileService = new FileService();
-		}
-
+		def fileService = new FileService();
 
 		// Magic setter for files: handle values for file fields
 		//

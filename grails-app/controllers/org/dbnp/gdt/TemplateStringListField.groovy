@@ -20,12 +20,12 @@
  */
 package org.dbnp.gdt
 
-class TemplateTextField extends TemplateFieldTypeNew {
-	static String type			= "TEXT"
-	static String casedType		= "Text"
-	static String description	= "Long text"
+class TemplateStringListField extends TemplateFieldTypeNew {
+	static String type			= "STRINGLIST"
+	static String casedType		= "StringList"
+	static String description	= "Dropdown selection of items"
 	static String category		= "Text"
-	static String example		= "unlimited number of characters"
+	static String example		= ""
 
 	/**
 	 * Static validator closure
@@ -34,7 +34,7 @@ class TemplateTextField extends TemplateFieldTypeNew {
 	 * @param errors
 	 */
 	static def validator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.STRING, { value -> (value as String) })
+		genericValidator(fields, obj, errors, TemplateFieldListItem, { value -> (value as TemplateFieldListItem) })
 	}
 
 	/**
@@ -44,9 +44,22 @@ class TemplateTextField extends TemplateFieldTypeNew {
 	 * @return String
 	 * @throws IllegalArgumentException
 	 */
-	public castValue(TemplateField field,value) {
-		if (value.class != String) {
-			throw new IllegalArgumentException("Argument not a String: ${value}")
+	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+		if (value) {
+			def escapedLowerCaseValue = value.toLowerCase().replaceAll("([^a-z0-9])", "_")
+println field
+println value
+println escapedLowerCaseValue
+println field.listEntries
+
+			value = field.listEntries.find { listEntry ->
+println listEntry
+				listEntry.name.toLowerCase().replaceAll("([^a-z0-9])", "_") == escapedLowerCaseValue
+			}
+
+			if (!value) {
+				throw new IllegalArgumentException("Stringlist item not recognized: ${value}")
+			}
 		}
 
 		return value

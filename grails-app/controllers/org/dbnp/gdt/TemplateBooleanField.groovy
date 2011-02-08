@@ -20,12 +20,12 @@
  */
 package org.dbnp.gdt
 
-class TemplateRelTimeField extends TemplateFieldTypeNew {
-	static String type			= "RELTIME"
-	static String casedType		= "RelTime"
-	static String description	= "Relative time"
-	static String category		= "Date"
-	static String example		= "3w 5d 2h"
+class TemplateBooleanField extends TemplateFieldTypeNew {
+	static String type			= "BOOLEAN"
+	static String casedType		= "Boolean"
+	static String description	= "true/false"
+	static String category		= "Other"
+	static String example		= "A term that comes from one or more selected ontologies"
 
 	/**
 	 * Static validator closure
@@ -34,28 +34,27 @@ class TemplateRelTimeField extends TemplateFieldTypeNew {
 	 * @param errors
 	 */
 	static def validator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.RELTIME, { value -> (value as long) })
+		genericValidator(fields, obj, errors, TemplateFieldType.BOOLEAN, { value -> (value) ? true : false })
 	}
 
 	/**
 	 * cast value to the proper type (if required and if possible)
 	 * @param TemplateField field
 	 * @param mixed value
-	 * @return RelTime
+	 * @return Boolean
 	 * @throws IllegalArgumentException
 	 */
-	public castValue(TemplateField field,value) {
-		if (value != null && value.class == String) {
-			// A string was given, attempt to transform it into a timespan
-			// If it cannot be parsed, set the lowest possible value of Long.
-			// The validator method will raise an error
-			//
-			// N.B. If you try to set Long.MIN_VALUE itself, an error will occur
-			// However, this will never occur: this value represents 3 bilion centuries
-			try {
-				value = RelTime.parseRelTime(value).getValue();
-			} catch (IllegalArgumentException e) {
-				value = Long.MIN_VALUE;
+	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+		if (value && value.class == String) {
+			def lower = value.toLowerCase()
+
+			// do some 'smart' recognitions
+			if (lower.equals("true") || lower.equals("on") || lower.equals("x")) {
+				value = true
+			} else if (lower.equals("false") || lower.equals("off") || lower.equals("")) {
+				value = false
+			} else {
+				throw new IllegalArgumentException("Boolean not recognized and could not be cast to Boolean: ${value}")
 			}
 		}
 
