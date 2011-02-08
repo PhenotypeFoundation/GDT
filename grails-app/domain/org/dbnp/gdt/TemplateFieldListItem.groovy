@@ -9,18 +9,17 @@ package org.dbnp.gdt
  * $Date: 2010-10-20 21:13:14 +0200 (Wed, 20 Oct 2010) $
  */
 class TemplateFieldListItem implements Serializable {
-
 	// A TemplateFieldListItem always belongs to one TemplateField of TemplateFieldType STRINGLIST
-	static belongsTo = [parent : TemplateField]
+	static belongsTo = [parent: TemplateField]
 
-	/** The caption of the list item */
+	/** The caption of the list item  */
 	String name
 
 	static constraints = {
 	}
 
-        static mapping = {
-                name column:"templatefieldlistitemname"
+	static mapping = {
+		name column: "templatefieldlistitemname"
 	}
 
 	String toString() {
