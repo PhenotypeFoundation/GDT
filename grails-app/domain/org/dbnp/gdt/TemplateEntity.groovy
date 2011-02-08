@@ -22,6 +22,7 @@ package org.dbnp.gdt
 
 // temporary import until bgdt refactoring is done
 import org.dbnp.bgdt.*
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 /**
  * The TemplateEntity domain Class is a superclass for all template-enabled study capture entities, including
@@ -37,6 +38,8 @@ import org.dbnp.bgdt.*
  * $Date: 2010-12-20 15:48:26 +0100 (Mon, 20 Dec 2010) $
  */
 abstract class TemplateEntity extends Identity {
+	def gdtService
+
 	// allow the usage of searchable, set to
 	// false by default
 	static searchable = false
@@ -114,8 +117,18 @@ abstract class TemplateEntity extends Identity {
 		return requiredFields
 	}
 
+	// keep a static map of templateFieldTypes
+	//static Map templateFieldTypes = [:]
+
 	// overload transients from Identity and append requiredFields vars
 	static transients	= [ "identifier", "iterator", "maximumIdentity", "requiredFields", "requiredFieldsTemplate", "searchable" ]
+
+	//static registerTemplateFieldType(TemplateFieldTypeNew field) {
+	//	if (!templateFieldTypes[ field.casedType ]) {
+//println ".registering templateField ${field.casedType}"
+	//		templateFieldTypes[ field.casedType ] = field
+	//	}
+	//}
 
 	// define the mapping
 	static mapping = {
@@ -132,7 +145,7 @@ abstract class TemplateEntity extends Identity {
 	}
 
 	// Inject the service for storing files (for TemplateFields of TemplateFieldType FILE).
-	def fileService
+	//def fileService
 
 	/**
 	 * Constraints
@@ -252,12 +265,38 @@ abstract class TemplateEntity extends Identity {
 	 * @param value The value to be set, this should align with the (template) field type, but there are some convenience setters
 	 */
 	def setFieldValue(String fieldName, value) {
+		def grailsApplication = ApplicationHolder.application
+
 		// get the template field
-		TemplateField field = getField(this.giveFields(), fieldName)
+		def TemplateField field = getField(this.giveFields(), fieldName)
 //println ".setting ${field.type}: ${fieldName}=${value}"
 //println field.class
 
+		// try to cast the field to the proper type
+		//try {
+			//return this."template${fieldType.casedName}Fields"
+		//	value = "Template${field.type.casedName}Field".castValue(field,value)
+			//value = GdtService.getTemplateFieldInstanceByName(field.type.casedName).castValue(field,value)
+			//value = Class.forName("Template${field.type.casedName}Field", true, this.getClassLoader()).castValue(field,value)
+			//value = Class.forName("org.dbnp.gdt.Template${field.type.casedName}Field").castValue(field,value)
+
+			//value = ("Template${field.type.casedName}Field" as Class).castValue(field,value)
+			value = gdtService.templateFieldTypes[ field.casedType ].castValue(field,value)
+
+//def target = grailsApplication.getAllClasses().find{it.name == "Template${field.type.casedName}Field"}
+//target.clazz.invokeMethod("vast",args)
+//		value = target.clazz.castValue(field,value)
+
+
+
+
+		//} catch (Exception e) {
+		//	throw new IllegalArgumentException("invalid argument '${value}' of type ${value.class} when setting ${field.type.casedName} field ${fieldName}")
+		//}
+
+
 		// Convenience setter for boolean fields
+		/*
 		if( field.type == TemplateFieldType.BOOLEAN && value && value.class == String ) {
 			def lower = value.toLowerCase()
 			if (lower.equals("true") || lower.equals("on") || lower.equals("x")) {
@@ -270,8 +309,10 @@ abstract class TemplateEntity extends Identity {
 				throw new IllegalArgumentException("Boolean string not recognized: ${value} when setting field ${fieldName}")
 			}
 		}
+		*/
 
 		// Convenience setter for template string list fields: find TemplateFieldListItem by name
+		/*
 		if (field.type == TemplateFieldType.STRINGLIST && value && value.class == String) {
 			def escapedLowerCaseValue = value.toLowerCase().replaceAll("([^a-z0-9])", "_")
 			value = field.listEntries.find {
@@ -282,8 +323,10 @@ abstract class TemplateEntity extends Identity {
 				throw new IllegalArgumentException("Stringlist item not recognized: ${escapedLowerCaseValue} when setting field ${fieldName}")
 			}
 		}
+		*/
 
 		// Magic setter for dates: handle string values for date fields
+		/*
 		if (field.type == TemplateFieldType.DATE && value && value.class == String) {
 			// a string was given, attempt to transform it into a date instance
 			// and -for now- assume the dd/mm/yyyy format
@@ -301,8 +344,10 @@ abstract class TemplateEntity extends Identity {
 				value = new Date().parse(parser, value)
 			}
 		}
+		*/
 
 		// Magic setter for relative times: handle string values for relTime fields
+		/*
 		if (field.type == TemplateFieldType.RELTIME && value != null && value.class == String) {
 			// A string was given, attempt to transform it into a timespan
 			// If it cannot be parsed, set the lowest possible value of Long.
@@ -316,14 +361,17 @@ abstract class TemplateEntity extends Identity {
 				value = Long.MIN_VALUE;
 			}
 		}
+		*/
 
 		// Sometimes the fileService is not created yet
+/*
 		if (!fileService) {
 // uncommented due to refactoring into a plugin
 // and fileservice is gscf specific
 // TODO --> fix
 //			fileService = new FileService();
 		}
+
 
 		// Magic setter for files: handle values for file fields
 		//
@@ -373,8 +421,10 @@ abstract class TemplateEntity extends Identity {
 				}
 			}
 		}
+		*/
 
 		// Magic setter for ontology terms: handle string values
+		/*
 		if (field.type == TemplateFieldType.ONTOLOGYTERM && value && value.class == String) {
 			// iterate through ontologies and find term
 			field.ontologies.each() { ontology ->
@@ -398,18 +448,24 @@ abstract class TemplateEntity extends Identity {
 				throw new IllegalArgumentException("Ontology term not recognized (not in the ontology cache): ${value} when setting field ${fieldName}")
 			}
 		}
+		*/
 
 		// Magic setter for TEMPLATE fields
+		/*
 		if (field.type == TemplateFieldType.TEMPLATE && value && value.class == String) {
 			value = Template.findByName(value)
 		}
+		*/
 
 		// Magic setter for MODULE fields
+		/*
 		if (field.type == TemplateFieldType.MODULE && value && value.class == String) {
 			value = AssayModule.findByName(value)
 		}
+		*/
 
 		// Magic setter for LONG fields
+		/*
 		if (field.type == TemplateFieldType.LONG && value && value.class == String) {
 			// A check for invalidity is done in the validator of these fields. For that
 			// reason, we just try to parse it here. If it fails, the validator will also
@@ -418,6 +474,7 @@ abstract class TemplateEntity extends Identity {
 				value = Long.parseLong(value.trim())
 			} catch( Exception e ) {}
 		}
+		*/
 
 		// Set the field value
 		if (isDomainField(field)) {

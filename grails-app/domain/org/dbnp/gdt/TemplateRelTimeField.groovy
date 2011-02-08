@@ -27,12 +27,38 @@ class TemplateRelTimeField extends TemplateFieldTypeNew {
 	static String category		= "Date"
 	static String example		= "3w 5d 2h"
 
-	public TemplateRelTimeField() {
-		println "TemplateRelTimeField constructed!"
-	}
-
-	// validator
+	/**
+	 * Static validator closure
+	 * @param fields
+	 * @param obj
+	 * @param errors
+	 */
 	static def validator = { fields, obj, errors ->
 		genericValidator(fields, obj, errors, TemplateFieldType.RELTIME, { value -> (value as long) })
+	}
+
+	/**
+	 * cast value to the proper type (if required and if possible)
+	 * @param TemplateField field
+	 * @param mixed value
+	 * @return RelTime
+	 * @throws IllegalArgumentException
+	 */
+	public castValue(TemplateField field,value) {
+		if (value != null && value.class == String) {
+			// A string was given, attempt to transform it into a timespan
+			// If it cannot be parsed, set the lowest possible value of Long.
+			// The validator method will raise an error
+			//
+			// N.B. If you try to set Long.MIN_VALUE itself, an error will occur
+			// However, this will never occur: this value represents 3 bilion centuries
+			try {
+				value = RelTime.parseRelTime(value).getValue();
+			} catch (IllegalArgumentException e) {
+				value = Long.MIN_VALUE;
+			}
+		}
+
+		return value
 	}
 }

@@ -20,19 +20,31 @@
  */
 package org.dbnp.gdt
 
-class TemplateLongField extends TemplateFieldTypeNew {
-	static String type			= "LONG"
-	static String casedType		= "Long"
-	static String description	= "Natural number"
+class TemplateDoubleField extends TemplateFieldTypeNew {
+	static String type			= "DOUBLE"
+	static String casedType		= "Double"
+	static String description	= "Decimal number"
 	static String category		= "Numerical"
-	static String example		= "100"
+	static String example		= "1.31"
 
-	public TemplateLongField() {
-		println "TemplateLongField constructed!"
+	/**
+	 * Static validator closure
+	 * @param fields
+	 * @param obj
+	 * @param errors
+	 */
+	static def validator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.DOUBLE, { value -> (value.toDouble()) }, { value -> println "obsolete?"; return (value as Double) })
 	}
 
-	// validator
-	static def validator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.LONG, { value -> value.toLong() }, { value -> Long.parseLong(value.trim()) })
+	/**
+	 * cast value to the proper type (if required and if possible)
+	 * @param TemplateField field
+	 * @param mixed value
+	 * @return String
+	 * @throws IllegalArgumentException
+	 */
+	public castValue(TemplateField field,value) {
+		return value
 	}
 }

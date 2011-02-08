@@ -27,12 +27,28 @@ class TemplateTextField extends TemplateFieldTypeNew {
 	static String category		= "Text"
 	static String example		= "unlimited number of characters"
 
-	public TemplateTextField() {
-		println "TemplateTextField constructed!"
-	}
-
-	// text fields validator
+	/**
+	 * Static validator closure
+	 * @param fields
+	 * @param obj
+	 * @param errors
+	 */
 	static def validator = { fields, obj, errors ->
 		genericValidator(fields, obj, errors, TemplateFieldType.STRING, { value -> (value as String) })
+	}
+
+	/**
+	 * cast value to the proper type (if required and if possible)
+	 * @param TemplateField field
+	 * @param mixed value
+	 * @return String
+	 * @throws IllegalArgumentException
+	 */
+	public castValue(TemplateField field,value) {
+		if (value.class != String) {
+			throw new IllegalArgumentException("Argument not a String: ${value}")
+		}
+
+		return value
 	}
 }

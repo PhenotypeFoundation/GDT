@@ -27,12 +27,41 @@ class TemplateStringListField extends TemplateFieldTypeNew {
 	static String category		= "Text"
 	static String example		= ""
 
-	public TemplateStringListField() {
-		println "TemplateStringListField constructed!"
-	}
-
-	// long fields validator
+	/**
+	 * Static validator closure
+	 * @param fields
+	 * @param obj
+	 * @param errors
+	 */
 	static def validator = { fields, obj, errors ->
 		genericValidator(fields, obj, errors, TemplateFieldListItem, { value -> (value as TemplateFieldListItem) })
+	}
+
+	/**
+	 * cast value to the proper type (if required and if possible)
+	 * @param TemplateField field
+	 * @param mixed value
+	 * @return String
+	 * @throws IllegalArgumentException
+	 */
+	public castValue(TemplateField field,value) {
+		if (value && value.class == String) {
+			def escapedLowerCaseValue = value.toLowerCase().replaceAll("([^a-z0-9])", "_")
+println field
+println value
+println escapedLowerCaseValue
+println field.listEntries
+
+			value = field.listEntries.find { listEntry ->
+println listEntry
+				listEntry.name.toLowerCase().replaceAll("([^a-z0-9])", "_") == escapedLowerCaseValue
+			}
+
+			if (!value) {
+				throw new IllegalArgumentException("Stringlist item not recognized: ${value}")
+			}
+		}
+
+		return value
 	}
 }

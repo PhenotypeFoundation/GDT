@@ -27,12 +27,34 @@ class TemplateStringField extends TemplateFieldTypeNew {
 	static String category		= "Text"
 	static String example		= "max 255 characters"
 
-	public TemplateStringField() {
-		println "TemplateStringField constructed!"
-	}
-
-	// long fields validator
+	/**
+	 * Static validator closure
+	 * @param fields
+	 * @param obj
+	 * @param errors
+	 */
 	static def validator = { fields, obj, errors ->
 		genericValidator(fields, obj, errors, TemplateFieldType.STRING, { value -> (value as String) }, { value -> throw new Exception('dummy') }, { value -> return (value.class == String && value.size() > 255) ? 'templateEntity.tooLong.string' : true })
+	}
+
+	/**
+	 * cast value to the proper type (if required and if possible)
+	 * @param TemplateField field
+	 * @param mixed value
+	 * @return String
+	 * @throws IllegalArgumentException
+	 */
+	public castValue(TemplateField field,value) {
+		// is value of type string
+		if (value.class != String) {
+			throw new IllegalArgumentException("Argument not a String: ${value}")
+		}
+
+		// is the value > 255 characters?
+		if (value.size() > 255) {
+			// cut it off at 255?
+		}
+
+		return value
 	}
 }

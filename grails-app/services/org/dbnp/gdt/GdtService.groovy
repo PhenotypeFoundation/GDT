@@ -35,6 +35,16 @@ class GdtService implements Serializable {
 	// cached template entities
 	static cachedEntities
 
+	// keep a static map of templateFieldTypes
+	static Map templateFieldTypes = [:]
+
+	static registerTemplateFieldType(TemplateFieldTypeNew field) {
+		if (!templateFieldTypes[ field.casedType ]) {
+println ".registering templateField ${field.casedType}"
+			templateFieldTypes[ field.casedType ] = field
+		}
+	}
+
 	/**
 	 * get all domain classes that use the domain templates
 	 * @return map

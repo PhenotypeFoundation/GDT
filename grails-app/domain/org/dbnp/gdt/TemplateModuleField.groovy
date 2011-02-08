@@ -20,19 +20,35 @@
  */
 package org.dbnp.gdt
 
-class TemplateTemplateField extends TemplateFieldTypeNew {
-	static String type			= "TEMPLATE"
-	static String casedType		= "Template"
-	static String description	= "Template"
+class TemplateModuleField extends TemplateFieldTypeNew {
+	static String type			= "MODULE"
+	static String casedType		= "Module"
+	static String description	= "Omics module"
 	static String category		= "Other"
 	static String example		= ""
 
-	public TemplateTemplateField() {
-		println "TemplateTemplateField constructed!"
+	/**
+	 * Static validator closure
+	 * @param fields
+	 * @param obj
+	 * @param errors
+	 */
+	static def validator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.MODULE, { value -> (value as AssayModule) })
 	}
 
-	// validator
-	static def validator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.TEMPLATE, { value -> (value as Template) })
+	/**
+	 * cast value to the proper type (if required and if possible)
+	 * @param TemplateField field
+	 * @param mixed value
+	 * @return Module
+	 * @throws IllegalArgumentException
+	 */
+	public castValue(TemplateField field,value) {
+		if (value && value.class == String) {
+			value = AssayModule.findByName(value)
+		}
+
+		return value
 	}
 }

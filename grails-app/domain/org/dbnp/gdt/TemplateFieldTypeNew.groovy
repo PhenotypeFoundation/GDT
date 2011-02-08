@@ -21,9 +21,40 @@
 package org.dbnp.gdt
 
 abstract class TemplateFieldTypeNew implements Serializable {
-	def TemplateFieldTypeNew() {
-		println "constructing TemplateFieldTypeNew()"
+	// inject the GdtService
+	def gdtService
+
+	/**
+	 * class constructor
+	 */
+	def public TemplateFieldTypeNew() {
+		// make sure the GdtService is available
+		if (!gdtService) {
+			gdtService = new GdtService()
+		}
+
+		// register this templateFieldType with TemplateEntity
+		gdtService.registerTemplateFieldType(this)
 	}
+
+	/**
+	 * transients
+	 */
+	static transients = ["type", "casedType", "description", "category", "example"]
+
+	/**
+	 * Magic setter
+	 * @param mixed value
+	 */
+	//abstract public castValue(value)
+
+	/**
+	 * Static validator closure
+	 * @param fields
+	 * @param obj
+	 * @param errors
+	 */
+	//abstract validator(fields, obj, errors)
 
 	/**
 	 * Generic Validator

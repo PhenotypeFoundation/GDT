@@ -20,22 +20,35 @@
  */
 package org.dbnp.gdt
 
-class TemplateFileField extends TemplateFieldTypeNew {
-	static String type			= "FILE"
-	static String casedType		= "File"
-	static String description	= "File"
+class TemplateTemplateField extends TemplateFieldTypeNew {
+	static String type			= "TEMPLATE"
+	static String casedType		= "Template"
+	static String description	= "Template"
 	static String category		= "Other"
 	static String example		= ""
 
-	public TemplateFileField() {
-		println "TemplateFileField constructed!"
+	/**
+	 * Static validator closure
+	 * @param fields
+	 * @param obj
+	 * @param errors
+	 */
+	static def validator = { fields, obj, errors ->
+		genericValidator(fields, obj, errors, TemplateFieldType.TEMPLATE, { value -> (value as Template) })
 	}
 
-	// validator
-	static def validator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.FILE, { value -> (value as String) })
-		// currently the validator only casts to String, perhaps we also
-		// need to look on the filesystem if the file actually exists using
-		// the 'extraValidationClosure' ?
+	/**
+	 * cast value to the proper type (if required and if possible)
+	 * @param TemplateField field
+	 * @param mixed value
+	 * @return Template
+	 * @throws IllegalArgumentException
+	 */
+	public castValue(TemplateField field,value) {
+		if (value && value.class == String) {
+			value = Template.findByName(value)
+		}
+
+		return value
 	}
 }

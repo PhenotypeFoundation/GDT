@@ -27,12 +27,37 @@ class TemplateBooleanField extends TemplateFieldTypeNew {
 	static String category		= "Other"
 	static String example		= "A term that comes from one or more selected ontologies"
 
-	public TemplateBooleanField() {
-		println "TemplateBooleanField constructed!"
-	}
-
-	// validator
+	/**
+	 * Static validator closure
+	 * @param fields
+	 * @param obj
+	 * @param errors
+	 */
 	static def validator = { fields, obj, errors ->
 		genericValidator(fields, obj, errors, TemplateFieldType.BOOLEAN, { value -> (value) ? true : false })
+	}
+
+	/**
+	 * cast value to the proper type (if required and if possible)
+	 * @param TemplateField field
+	 * @param mixed value
+	 * @return Boolean
+	 * @throws IllegalArgumentException
+	 */
+	public castValue(TemplateField field,value) {
+		if (value && value.class == String) {
+			def lower = value.toLowerCase()
+
+			// do some 'smart' recognitions
+			if (lower.equals("true") || lower.equals("on") || lower.equals("x")) {
+				value = true
+			} else if (lower.equals("false") || lower.equals("off") || lower.equals("")) {
+				value = false
+			} else {
+				throw new IllegalArgumentException("Boolean not recognized and could not be cast to Boolean: ${value}")
+			}
+		}
+
+		return value
 	}
 }
