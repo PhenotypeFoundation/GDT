@@ -261,7 +261,7 @@ abstract class TemplateEntity extends Identity {
 		def TemplateField field = getField(this.giveFields(), fieldName)
 
 		// try to cast the field to the proper type
-		if (value.class == String) {
+		if (value && value.class == String) {
 			try {
 				//def instance = grailsApplication.getAllClasses().find{it.name =~ "Template${field.type.casedName}Field"}
 				def templateFieldClass = gdtService.getTemplateFieldTypeByCasedName(field.type.casedName)
@@ -270,10 +270,9 @@ abstract class TemplateEntity extends Identity {
 				value = templateFieldClass.castValue(field,value)
 
 			} catch (Exception e) {
-				throw new IllegalArgumentException("invalid argument '${value}' of type ${value.class} when setting ${field.type.casedName} field ${fieldName}")
+				//throw new IllegalArgumentException("invalid argument '${value}' of type ${value.class} when setting ${field.type.casedName} field ${fieldName}")
 			}
 		}
-println ".setting ${field.type.casedName}: ${fieldName}='${value}' :: ${value.class}"
 
 		// Set the field value
 		if (isDomainField(field)) {

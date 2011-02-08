@@ -44,7 +44,7 @@ class TemplateRelTimeField extends TemplateFieldTypeNew {
 	 * @return RelTime
 	 * @throws IllegalArgumentException
 	 */
-	static RelTime castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+	static Long castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
 		// A string was given, attempt to transform it into a timespan
 		// If it cannot be parsed, set the lowest possible value of Long.
 		// The validator method will raise an error

@@ -73,13 +73,11 @@ abstract class TemplateFieldTypeNew implements Serializable {
 		def fieldTypeName = templateFieldType.toString()
 		def lowerFieldTypeName = fieldTypeName.toLowerCase()
 		def capitalizedFieldTypeName = lowerFieldTypeName[0].toUpperCase() + lowerFieldTypeName.substring(1)
-println ".validating ${fieldTypeName}"
 
 		// catch exceptions
-		//try {
+		try {
 			// iterate through values
 			fields.each { key, value ->
-println "  ${key} - ${value}"
 				// check if the value exists and is of the proper type
 				if (value) {
 					// check if it is of the proper type
@@ -134,10 +132,10 @@ println "  ${key} - ${value}"
 					)
 				}
 			}
-		//} catch (Exception e) {
-		//	println "Exception in the genericValidators: ${e.getMessage()}"
-		//	println e.stackTrace
-		//
+		} catch (Exception e) {
+			println "Exception in the genericValidators: ${e.getMessage()}"
+			println e.stackTrace
+		}
 
 		return (!error)
 	}
