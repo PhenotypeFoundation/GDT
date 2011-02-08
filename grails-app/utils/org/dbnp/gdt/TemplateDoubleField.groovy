@@ -44,7 +44,7 @@ class TemplateDoubleField extends TemplateFieldTypeNew {
 	 * @return String
 	 * @throws IllegalArgumentException
 	 */
-	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
-		return value
+	static Double castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+		return Double.parseDouble(value)
 	}
 }

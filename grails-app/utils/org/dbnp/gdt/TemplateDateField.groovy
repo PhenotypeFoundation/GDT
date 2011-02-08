@@ -44,8 +44,8 @@ class TemplateDateField extends TemplateFieldTypeNew {
 	 * @return Date
 	 * @throws IllegalArgumentException
 	 */
-	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
-		if (value && value.class == String) {
+	static Date castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+		if (value) {
 			// a string was given, attempt to transform it into a date instance
 			// and -for now- assume the dd/mm/yyyy format
 			def dateMatch = value =~ /^([0-9]{1,})([^0-9]{1,})([0-9]{1,})([^0-9]{1,})([0-9]{1,})((([^0-9]{1,})([0-9]{1,2}):([0-9]{1,2})){0,})/
@@ -59,12 +59,12 @@ class TemplateDateField extends TemplateFieldTypeNew {
 					parser += dateMatch[0][8] + 'HH:mm'
 				}
 
-				value = new Date().parse(parser, value)
+				return new Date().parse(parser, value)
 			} else {
 				throw new IllegalArgumentException("Date string not recognized: ${value}")
 			}
 		}
 
-		return value
+		return new Date()
 	}
 }

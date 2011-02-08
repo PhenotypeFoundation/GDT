@@ -44,11 +44,7 @@ class TemplateTextField extends TemplateFieldTypeNew {
 	 * @return String
 	 * @throws IllegalArgumentException
 	 */
-	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
-		if (value.class != String) {
-			throw new IllegalArgumentException("Argument not a String: ${value}")
-		}
-
+	static String castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
 		return value
 	}
 }

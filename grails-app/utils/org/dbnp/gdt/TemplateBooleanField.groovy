@@ -44,20 +44,16 @@ class TemplateBooleanField extends TemplateFieldTypeNew {
 	 * @return Boolean
 	 * @throws IllegalArgumentException
 	 */
-	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
-		if (value && value.class == String) {
-			def lower = value.toLowerCase()
+	static Boolean castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+		def lower = value.toLowerCase()
 
-			// do some 'smart' recognitions
-			if (lower.equals("true") || lower.equals("on") || lower.equals("x")) {
-				value = true
-			} else if (lower.equals("false") || lower.equals("off") || lower.equals("")) {
-				value = false
-			} else {
-				throw new IllegalArgumentException("Boolean not recognized and could not be cast to Boolean: ${value}")
-			}
+		// do some 'smart' recognitions
+		if (lower.equals("true") || lower.equals("on") || lower.equals("x")) {
+			return true
+		} else if (lower.equals("false") || lower.equals("off") || lower.equals("")) {
+			return false
+		} else {
+			throw new IllegalArgumentException("Boolean not recognized and could not be cast to Boolean: ${value}")
 		}
-
-		return value
 	}
 }

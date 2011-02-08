@@ -260,231 +260,27 @@ abstract class TemplateEntity extends Identity {
 		// get the template field
 		def TemplateField field = getField(this.giveFields(), fieldName)
 
-println ".setting ${field.type.casedName}: ${fieldName}=${value}"
-
 		// try to cast the field to the proper type
 		if (value.class == String) {
-		//try {
-			//println gdtService.getTemplateFieldTypeByCasedName(field.type.casedName)
-			//println gdtService.getTemplateFieldTypeByCasedName(field.type.casedName).class
-			//value = gdtService.getTemplateFieldTypeByCasedName(field.type.casedName).castValue(field,value)
-
-			def instance = grailsApplication.getAllClasses().find{it.name =~ "Template${field.type.casedName}Field"}
-			//Class instance2 = new instance()
-			//(instance.name as Class).castValue(field,value)
-
-			//println grailsApplication.getClassForName("Template${field.type.casedName}Field")
-			// grailsApplication.getAllClasses().find{it.name =~ "Template${field.type.casedName}Field"}
-			//println Class.forName("Template${field.type.casedName}Field", true, grailsApplication.getClassLoader())
-			//println instance.getMethods()
-			//println instance.metaClass.class.simpleName
-
-
-			// somehow this does not work as graisl keeps complaining that the method
-			// does not exist in static scope?! weird shit
-			//
-			// groovy.lang.MissingMethodException: No signature of method: static org.dbnp.gdt.TemplateStringListField.castValue() is applicable for argument types: (org.dbnp.gdt.TemplateField, java.lang.String) values: [Diet, low fat]
-			// Possible solutions: castValue(org.dbnp.gdt.TemplateField, java.lang.String), castValue(org.dbnp.gdt.TemplateField, java.lang.String)
-			instance.castValue(field,value)
-			//TemplateStringListField.getM
-
-
-		//} catch (Exception e) {
-		//	throw new IllegalArgumentException("invalid argument '${value}' of type ${value.class} when setting ${field.type.casedName} field ${fieldName}")
-		//}
-		}
-
-
-		// Convenience setter for boolean fields
-		/*
-		if( field.type == TemplateFieldType.BOOLEAN && value && value.class == String ) {
-			def lower = value.toLowerCase()
-			if (lower.equals("true") || lower.equals("on") || lower.equals("x")) {
-				value = true
-			}
-			else if (lower.equals("false") || lower.equals("off") || lower.equals("")) {
-				value = false
-			}
-			else {
-				throw new IllegalArgumentException("Boolean string not recognized: ${value} when setting field ${fieldName}")
-			}
-		}
-		*/
-
-		// Convenience setter for template string list fields: find TemplateFieldListItem by name
-		/*
-		if (field.type == TemplateFieldType.STRINGLIST && value && value.class == String) {
-			def escapedLowerCaseValue = value.toLowerCase().replaceAll("([^a-z0-9])", "_")
-			value = field.listEntries.find {
-				it.name.toLowerCase().replaceAll("([^a-z0-9])", "_") == escapedLowerCaseValue
-			}
-
-			if (!value) {
-				throw new IllegalArgumentException("Stringlist item not recognized: ${escapedLowerCaseValue} when setting field ${fieldName}")
-			}
-		}
-		*/
-
-		// Magic setter for dates: handle string values for date fields
-		/*
-		if (field.type == TemplateFieldType.DATE && value && value.class == String) {
-			// a string was given, attempt to transform it into a date instance
-			// and -for now- assume the dd/mm/yyyy format
-			def dateMatch = value =~ /^([0-9]{1,})([^0-9]{1,})([0-9]{1,})([^0-9]{1,})([0-9]{1,})((([^0-9]{1,})([0-9]{1,2}):([0-9]{1,2})){0,})/
-			if (dateMatch.matches()) {
-				// create limited 'autosensing' datetime parser
-				// assume dd mm yyyy  or dd mm yy
-				def parser = 'd' + dateMatch[0][2] + 'M' + dateMatch[0][4] + (((dateMatch[0][5] as int) > 999) ? 'yyyy' : 'yy')
-
-				// add time as well?
-				if (dateMatch[0][7] != null) {
-					parser += dateMatch[0][8] + 'HH:mm'
-				}
-
-				value = new Date().parse(parser, value)
-			}
-		}
-		*/
-
-		// Magic setter for relative times: handle string values for relTime fields
-		/*
-		if (field.type == TemplateFieldType.RELTIME && value != null && value.class == String) {
-			// A string was given, attempt to transform it into a timespan
-			// If it cannot be parsed, set the lowest possible value of Long.
-			// The validator method will raise an error
-			//
-			// N.B. If you try to set Long.MIN_VALUE itself, an error will occur
-			// However, this will never occur: this value represents 3 bilion centuries
 			try {
-				value = RelTime.parseRelTime(value).getValue();
-			} catch (IllegalArgumentException e) {
-				value = Long.MIN_VALUE;
+				//def instance = grailsApplication.getAllClasses().find{it.name =~ "Template${field.type.casedName}Field"}
+				def templateFieldClass = gdtService.getTemplateFieldTypeByCasedName(field.type.casedName)
+
+				// and cast the value to the proper type
+				value = templateFieldClass.castValue(field,value)
+
+			} catch (Exception e) {
+				throw new IllegalArgumentException("invalid argument '${value}' of type ${value.class} when setting ${field.type.casedName} field ${fieldName}")
 			}
 		}
-		*/
-
-		// Sometimes the fileService is not created yet
-/*
-		if (!fileService) {
-// uncommented due to refactoring into a plugin
-// and fileservice is gscf specific
-// TODO --> fix
-//			fileService = new FileService();
-		}
-
-
-		// Magic setter for files: handle values for file fields
-		//
-		// If NULL is given or "*deleted*", the field value is emptied and the old file is removed
-		// If an empty string is given, the field value is kept as was
-		// If a file is given, it is moved to the right directory. Old files are deleted. If
-		//   the file does not exist, the field is kept
-		// If a string is given, it is supposed to be a file in the upload directory. If
-		//   it is different from the old one, the old one is deleted. If the file does not
-		//   exist, the old one is kept.
-		if (field.type == TemplateFieldType.FILE) {
-			def currentFile = getFieldValue(field.name);
-
-			if (value == null || ( value.class == String && value == '*deleted*' ) ) {
-				// If NULL is given, the field value is emptied and the old file is removed
-				value = "";
-				if (currentFile) {
-					fileService.delete(currentFile)
-				}
-			} else if (value.class == File) {
-				// a file was given. Attempt to move it to the upload directory, and
-				// afterwards, store the filename. If the file doesn't exist
-				// or can't be moved, "" is returned
-				value = fileService.moveFileToUploadDir(value);
-
-				if (value) {
-					if (currentFile) {
-						fileService.delete(currentFile)
-					}
-				} else {
-					value = currentFile;
-				}
-			} else if (value == "") {
-				value = currentFile;
-			} else {
-				if (value != currentFile) {
-					if (fileService.fileExists(value)) {
-						// When a FILE field is filled, and a new file is set
-						// the existing file should be deleted
-						if (currentFile) {
-							fileService.delete(currentFile)
-						}
-					} else {
-						// If the file does not exist, the field is kept
-						value = currentFile;
-					}
-				}
-			}
-		}
-		*/
-
-		// Magic setter for ontology terms: handle string values
-		/*
-		if (field.type == TemplateFieldType.ONTOLOGYTERM && value && value.class == String) {
-			// iterate through ontologies and find term
-			field.ontologies.each() { ontology ->
-				// If we've found a term already, value.class == Term. In that case,
-				// we shouldn't look further. Unfortunately, groovy doesn't support breaking out of
-				// each(), so we check it on every iteration.
-				if( value.class == String ) {
-					def term = ontology.giveTermByName(value)
-
-					// found a term?
-					if (term) {
-						value = term
-					}
-				}
-			}
-
-			// If the term is not found in any ontology
-			if( value.class == String ) {
-				// TODO: search ontology for the term online (it may still exist) and insert it into the Term cache
-				// if not found, throw exception
-				throw new IllegalArgumentException("Ontology term not recognized (not in the ontology cache): ${value} when setting field ${fieldName}")
-			}
-		}
-		*/
-
-		// Magic setter for TEMPLATE fields
-		/*
-		if (field.type == TemplateFieldType.TEMPLATE && value && value.class == String) {
-			value = Template.findByName(value)
-		}
-		*/
-
-		// Magic setter for MODULE fields
-		/*
-		if (field.type == TemplateFieldType.MODULE && value && value.class == String) {
-			value = AssayModule.findByName(value)
-		}
-		*/
-
-		// Magic setter for LONG fields
-		/*
-		if (field.type == TemplateFieldType.LONG && value && value.class == String) {
-			// A check for invalidity is done in the validator of these fields. For that
-			// reason, we just try to parse it here. If it fails, the validator will also
-			// fail.
-			try {
-				value = Long.parseLong(value.trim())
-			} catch( Exception e ) {}
-		}
-		*/
+println ".setting ${field.type.casedName}: ${fieldName}='${value}' :: ${value.class}"
 
 		// Set the field value
 		if (isDomainField(field)) {
 			// got a value?
 			if (value) {
-				//log.debug ".setting [" + ((super) ? super.class : '??') + "] ("+getIdentifier()+") domain field: [" + fieldName + "] ([" + value.toString() + "] of type [" + value.class + "])"
 				this[field.name] = value
 			} else {
-				//log.debug ".unsetting [" + ((super) ? super.class : '??') + "] ("+getIdentifier()+") domain field: [" + fieldName + "]"
-
 				// remove value. For numbers, this is done by setting
 				// the value to 0, otherwise, setting it to NULL
 				switch (field.type.toString()) {
@@ -507,13 +303,9 @@ println ".setting ${field.type.casedName}: ${fieldName}=${value}"
 			// otherwise, it should not be present in the store, so
 			// it is unset if it is.
 			if (value || value == 0 || ( field.type == TemplateFieldType.BOOLEAN && value == false)) {
-				//log.debug ".setting [" + ((super) ? super.class : '??') + "] ("+getIdentifier()+") template field: [" + fieldName + "] ([" + value.toString() + "] of type [" + value.class + "])"
-
 				// set value
 				store[fieldName] = value
 			} else if (store[fieldName]) {
-				//log.debug ".unsetting [" + ((super) ? super.class : '??') + "] ("+getIdentifier()+") template field: [" + fieldName + "]"
-
 				// remove the item from the Map (if present)
 				store.remove(fieldName)
 			}

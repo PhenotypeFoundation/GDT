@@ -44,22 +44,14 @@ class TemplateStringListField extends TemplateFieldTypeNew {
 	 * @return String
 	 * @throws IllegalArgumentException
 	 */
-	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
-		if (value) {
-			def escapedLowerCaseValue = value.toLowerCase().replaceAll("([^a-z0-9])", "_")
-println field
-println value
-println escapedLowerCaseValue
-println field.listEntries
+	static String castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+		def escapedLowerCaseValue = value.toLowerCase().replaceAll("([^a-z0-9])", "_")
+		value = field.listEntries.find { listEntry ->
+			listEntry.name.toLowerCase().replaceAll("([^a-z0-9])", "_") == escapedLowerCaseValue
+		}
 
-			value = field.listEntries.find { listEntry ->
-println listEntry
-				listEntry.name.toLowerCase().replaceAll("([^a-z0-9])", "_") == escapedLowerCaseValue
-			}
-
-			if (!value) {
-				throw new IllegalArgumentException("Stringlist item not recognized: ${value}")
-			}
+		if (!value) {
+			throw new IllegalArgumentException("Stringlist item not recognized: ${value}")
 		}
 
 		return value
