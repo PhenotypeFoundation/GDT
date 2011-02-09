@@ -262,10 +262,7 @@ abstract class TemplateEntity extends Identity {
 
 		// cast the value to the proper type, if required
 		try {
-			println ".casting ${fieldName} with value '${value}' of type ${value?.class} to type ${field.type.casedName}"
-			println " - ${field}"
-			println " - ${templateFieldClass}"
-			println " - ${currentValue}"
+			//println ".casting ${fieldName} with value '${value}' of type ${value?.class} and current value ${currentValue} to type ${field.type.casedName}"
 			value = templateFieldClass.castValue(field, value, currentValue)
 		} catch (Exception e) {
 			// the value could not be cast, keep the value as-is and do not
@@ -273,8 +270,6 @@ abstract class TemplateEntity extends Identity {
 			// the user the value was wrong
 			log.error "Error casting ${field.name} of type ${field.type.casedName} with value ${value} (${value?.class}) :: " + e.getMessage()
 		}
-
-		println " - value is now '${value}' of type ${value?.class}"
 
 		// set the field value
 		if (isDomainField(field)) {
