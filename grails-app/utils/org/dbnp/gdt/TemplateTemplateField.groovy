@@ -44,7 +44,7 @@ class TemplateTemplateField extends TemplateFieldTypeNew {
 	 * @return Template
 	 * @throws IllegalArgumentException
 	 */
-	static Template castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+	static Template castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
 		return Template.findByName(value)
 	}
 }

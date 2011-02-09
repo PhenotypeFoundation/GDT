@@ -50,7 +50,7 @@ class TemplateFileField extends TemplateFieldTypeNew {
 	 * @return mixed value
 	 * @throws IllegalArgumentException
 	 */
-	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue ) {
 		// Sometimes the fileService is not created yet
 		def fileService = new FileService();
 
@@ -64,7 +64,7 @@ class TemplateFileField extends TemplateFieldTypeNew {
 		//   it is different from the old one, the old one is deleted. If the file does not
 		//   exist, the old one is kept.
 		if (field.type == TemplateFieldType.FILE) {
-			def currentFile = getFieldValue(field.name);
+			def currentFile = currentValue
 
 			if (value == null || ( value.class == String && value == '*deleted*' ) ) {
 				// If NULL is given, the field value is emptied and the old file is removed
@@ -88,7 +88,14 @@ class TemplateFileField extends TemplateFieldTypeNew {
 			} else if (value == "") {
 				value = currentFile;
 			} else {
-				if (value != currentFile) {
+				// Check whether there is 'existing*' in the beginning of the string
+				// In that case, the original file should be kept
+				if( value == "existing*" ) {
+					value = "";
+				} else if( value[0..8] == "existing*" ) {
+					// Keep current file
+					value = currentFile;
+				} else {
 					if (fileService.fileExists(value)) {
 						// When a FILE field is filled, and a new file is set
 						// the existing file should be deleted

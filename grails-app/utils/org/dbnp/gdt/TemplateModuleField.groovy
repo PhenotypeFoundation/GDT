@@ -44,7 +44,7 @@ class TemplateModuleField extends TemplateFieldTypeNew {
 	 * @return Module
 	 * @throws IllegalArgumentException
 	 */
-	static AssayModule castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+	static AssayModule castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
 		return AssayModule.findByName(value)
 	}
 }

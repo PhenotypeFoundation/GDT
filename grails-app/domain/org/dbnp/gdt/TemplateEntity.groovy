@@ -265,11 +265,13 @@ abstract class TemplateEntity extends Identity {
 			try {
 				//def instance = grailsApplication.getAllClasses().find{it.name =~ "Template${field.type.casedName}Field"}
 				def templateFieldClass = gdtService.getTemplateFieldTypeByCasedName(field.type.casedName)
-
+				def currentValue = getFieldValue( fieldName );
+				
 				// and cast the value to the proper type
-				value = templateFieldClass.castValue(field,value)
+				value = templateFieldClass.castValue(field, value, currentValue)
 
 			} catch (Exception e) {
+				println "Error: " + e.getMessage();
 				//throw new IllegalArgumentException("invalid argument '${value}' of type ${value.class} when setting ${field.type.casedName} field ${fieldName}")
 			}
 		}

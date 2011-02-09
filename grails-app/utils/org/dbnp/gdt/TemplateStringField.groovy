@@ -44,7 +44,7 @@ class TemplateStringField extends TemplateFieldTypeNew {
 	 * @return String
 	 * @throws IllegalArgumentException
 	 */
-	static String castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+	static String castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
 		// is the value > 255 characters?
 		if (value.size() > 255) {
 			// cut it off at 255?

@@ -44,7 +44,7 @@ class TemplateBooleanField extends TemplateFieldTypeNew {
 	 * @return Boolean
 	 * @throws IllegalArgumentException
 	 */
-	static Boolean castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+	static Boolean castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
 		def lower = value.toLowerCase()
 
 		// do some 'smart' recognitions

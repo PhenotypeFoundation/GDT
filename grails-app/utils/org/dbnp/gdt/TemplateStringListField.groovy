@@ -44,7 +44,7 @@ class TemplateStringListField extends TemplateFieldTypeNew {
 	 * @return String
 	 * @throws IllegalArgumentException
 	 */
-	static TemplateFieldListItem castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+	static TemplateFieldListItem castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
 		def escapedLowerCaseValue = value.toLowerCase().replaceAll("([^a-z0-9])", "_")
 		def item = field.listEntries.find { listEntry ->
 			listEntry.name.toLowerCase().replaceAll("([^a-z0-9])", "_") == escapedLowerCaseValue

@@ -44,7 +44,7 @@ class TemplateLongField extends TemplateFieldTypeNew {
 	 * @return Long
 	 * @throws IllegalArgumentException
 	 */
-	static Long castValue(org.dbnp.gdt.TemplateField field, java.lang.String value) {
+	static Long castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
 		// A check for invalidity is done in the validator of these fields. For that
 		// reason, we just try to parse it here. If it fails, the validator will also
 		// fail.
