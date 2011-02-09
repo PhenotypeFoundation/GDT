@@ -255,60 +255,39 @@ abstract class TemplateEntity extends Identity {
 	 * @param value The value to be set, this should align with the (template) field type, but there are some convenience setters
 	 */
 	def setFieldValue(String fieldName, value) {
-		def grailsApplication = ApplicationHolder.application
-
 		// get the template field
-		def TemplateField field = getField(this.giveFields(), fieldName)
+		def TemplateField field	= getField(this.giveFields(), fieldName)
+		def templateFieldClass	= gdtService.getTemplateFieldTypeByCasedName(field.type.casedName)
+		def currentValue		= getFieldValue( fieldName )
 
-		// try to cast the field to the proper type
-		if (value && value.class == String) {
-			try {
-				//def instance = grailsApplication.getAllClasses().find{it.name =~ "Template${field.type.casedName}Field"}
-				def templateFieldClass = gdtService.getTemplateFieldTypeByCasedName(field.type.casedName)
-				def currentValue = getFieldValue( fieldName );
-				
-				// and cast the value to the proper type
-				value = templateFieldClass.castValue(field, value, currentValue)
-
-			} catch (Exception e) {
-				println "Error: " + e.getMessage();
-				//throw new IllegalArgumentException("invalid argument '${value}' of type ${value.class} when setting ${field.type.casedName} field ${fieldName}")
-			}
+		// cast the value to the proper type, if required
+		try {
+			println ".casting ${fieldName} with value '${value}' of type ${value?.class} to type ${field.type.casedName}"
+			println " - ${field}"
+			println " - ${templateFieldClass}"
+			println " - ${currentValue}"
+			value = templateFieldClass.castValue(field, value, currentValue)
+		} catch (Exception e) {
+			// the value could not be cast, keep the value as-is and do not
+			// propagate the exception as the dynamic validators will notify
+			// the user the value was wrong
+			log.error "Error casting ${field.name} of type ${field.type.casedName} with value ${value} (${value?.class}) :: " + e.getMessage()
 		}
 
-		// Set the field value
-		if (isDomainField(field)) {
-			// got a value?
-			if (value) {
-				this[field.name] = value
-			} else {
-				// remove value. For numbers, this is done by setting
-				// the value to 0, otherwise, setting it to NULL
-				switch (field.type.toString()) {
-					case [ 'DOUBLE', 'RELTIME', 'LONG']:
-						this[field.name] = 0;
-						break;
-					case [ 'BOOLEAN' ]:
-						this[field.name] = false;
-						break;
-					default:
-						this[field.name] = null
-				}
-			}
-		} else {
-			// Caution: this assumes that all template...Field Maps are already initialized (as is done now above as [:])
-			// If that is ever changed, the results are pretty much unpredictable (random Java object pointers?)!
-			def store = getStore(field.type)
+		println " - value is now '${value}' of type ${value?.class}"
 
-			// If some value is entered (or 0 or BOOLEAN false), then save the value
-			// otherwise, it should not be present in the store, so
-			// it is unset if it is.
-			if (value || value == 0 || ( field.type == TemplateFieldType.BOOLEAN && value == false)) {
-				// set value
-				store[fieldName] = value
-			} else if (store[fieldName]) {
-				// remove the item from the Map (if present)
-				store.remove(fieldName)
+		// set the field value
+		if (isDomainField(field)) {
+			// domain field
+			this[field.name] = value
+		} else {
+			// template field
+			def templateFieldStore = getStore(field.type)
+
+			if (value) {
+				templateFieldStore[fieldName] = value
+			} else {
+				templateFieldStore.remove(fieldName)
 			}
 		}
 
@@ -430,6 +409,5 @@ abstract class TemplateEntity extends Identity {
         } else {
             return null;
         }
-
     }
 }

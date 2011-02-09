@@ -44,17 +44,24 @@ class TemplateRelTimeField extends TemplateFieldTypeNew {
 	 * @return RelTime
 	 * @throws IllegalArgumentException
 	 */
-	static Long castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
-		// A string was given, attempt to transform it into a timespan
-		// If it cannot be parsed, set the lowest possible value of Long.
-		// The validator method will raise an error
-		//
-		// N.B. If you try to set Long.MIN_VALUE itself, an error will occur
-		// However, this will never occur: this value represents 3 bilion centuries
-		try {
-			return RelTime.parseRelTime(value).getValue();
-		} catch (IllegalArgumentException e) {
-			return Long.MIN_VALUE;
+	static Long castValue(org.dbnp.gdt.TemplateField field, value, def currentValue) {
+		if (value) {
+			if (value instanceof Long) {
+				return value
+			} else if (value instanceof String) {
+				try {
+					return RelTime.parseRelTime(value).getValue();
+				} catch (IllegalArgumentException e) {
+					return Long.MIN_VALUE;
+				}
+			} else if (isNumeric(value)) {
+				return value.toLong()
+			} else {
+				// invalid value
+				throw new IllegalArgumentException("RelTime value not recognized: ${value} (${value.class})")
+			}
+		} else {
+			return Long.MIN_VALUE
 		}
 	}
 }

@@ -50,7 +50,7 @@ class TemplateFileField extends TemplateFieldTypeNew {
 	 * @return mixed value
 	 * @throws IllegalArgumentException
 	 */
-	static def castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue ) {
+	static def castValue(org.dbnp.gdt.TemplateField field, value, def currentValue) {
 		// Sometimes the fileService is not created yet
 		def fileService = new FileService();
 
@@ -63,49 +63,47 @@ class TemplateFileField extends TemplateFieldTypeNew {
 		// If a string is given, it is supposed to be a file in the upload directory. If
 		//   it is different from the old one, the old one is deleted. If the file does not
 		//   exist, the old one is kept.
-		if (field.type == TemplateFieldType.FILE) {
-			def currentFile = currentValue
+		def currentFile = currentValue
 
-			if (value == null || ( value.class == String && value == '*deleted*' ) ) {
-				// If NULL is given, the field value is emptied and the old file is removed
-				value = "";
+		if (value == null || (value.class == String && value == '*deleted*')) {
+			// If NULL is given, the field value is emptied and the old file is removed
+			value = "";
+			if (currentFile) {
+				fileService.delete(currentFile)
+			}
+		} else if (value.class == File) {
+			// a file was given. Attempt to move it to the upload directory, and
+			// afterwards, store the filename. If the file doesn't exist
+			// or can't be moved, "" is returned
+			value = fileService.moveFileToUploadDir(value);
+
+			if (value) {
 				if (currentFile) {
 					fileService.delete(currentFile)
 				}
-			} else if (value.class == File) {
-				// a file was given. Attempt to move it to the upload directory, and
-				// afterwards, store the filename. If the file doesn't exist
-				// or can't be moved, "" is returned
-				value = fileService.moveFileToUploadDir(value);
-
-				if (value) {
+			} else {
+				value = currentFile;
+			}
+		} else if (value == "") {
+			value = currentFile;
+		} else {
+			// Check whether there is 'existing*' in the beginning of the string
+			// In that case, the original file should be kept
+			if (value == "existing*") {
+				value = "";
+			} else if (value[0..8] == "existing*") {
+				// Keep current file
+				value = currentFile;
+			} else {
+				if (fileService.fileExists(value)) {
+					// When a FILE field is filled, and a new file is set
+					// the existing file should be deleted
 					if (currentFile) {
 						fileService.delete(currentFile)
 					}
 				} else {
+					// If the file does not exist, the field is kept
 					value = currentFile;
-				}
-			} else if (value == "") {
-				value = currentFile;
-			} else {
-				// Check whether there is 'existing*' in the beginning of the string
-				// In that case, the original file should be kept
-				if( value == "existing*" ) {
-					value = "";
-				} else if( value[0..8] == "existing*" ) {
-					// Keep current file
-					value = currentFile;
-				} else {
-					if (fileService.fileExists(value)) {
-						// When a FILE field is filled, and a new file is set
-						// the existing file should be deleted
-						if (currentFile) {
-							fileService.delete(currentFile)
-						}
-					} else {
-						// If the file does not exist, the field is kept
-						value = currentFile;
-					}
 				}
 			}
 		}

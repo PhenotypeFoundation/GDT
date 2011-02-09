@@ -44,7 +44,25 @@ class TemplateTemplateField extends TemplateFieldTypeNew {
 	 * @return Template
 	 * @throws IllegalArgumentException
 	 */
-	static Template castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
-		return Template.findByName(value)
+	static Template castValue(org.dbnp.gdt.TemplateField field, value, def currentValue) {
+		if (value) {
+			if (value instanceof Template) {
+				return value
+			} else if (value instanceof String) {
+				def template = Template.findByName(value)
+
+				if (template) {
+					return template
+				} else {
+					// invalid value
+					throw new IllegalArgumentException("Template value not recognized: ${value} (${value.class})")
+				}
+			} else {
+					// invalid value
+					throw new IllegalArgumentException("Template value not recognized: ${value} (${value.class})")
+			}
+		} else {
+			return null
+		}
 	}
 }

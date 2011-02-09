@@ -41,19 +41,35 @@ class TemplateStringListField extends TemplateFieldTypeNew {
 	 * cast value to the proper type (if required and if possible)
 	 * @param TemplateField field
 	 * @param mixed value
-	 * @return String
+	 * @return TemplateFieldListItem
 	 * @throws IllegalArgumentException
 	 */
-	static TemplateFieldListItem castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
-		def escapedLowerCaseValue = value.toLowerCase().replaceAll("([^a-z0-9])", "_")
-		def item = field.listEntries.find { listEntry ->
-			listEntry.name.toLowerCase().replaceAll("([^a-z0-9])", "_") == escapedLowerCaseValue
-		}
+	static TemplateFieldListItem castValue(org.dbnp.gdt.TemplateField field, value, def currentValue) {
+		// have we got a value?
+		if (value)  {
+			if (value.class == TemplateFieldListItem) {
+				return value
+			} else if (value.class == String) {
+				// cast it to TemplateFieldListItem
+				def escapedLowerCaseValue = value.toLowerCase().replaceAll("([^a-z0-9])", "_")
+				def item = field.listEntries.find { listEntry ->
+					listEntry.name.toLowerCase().replaceAll("([^a-z0-9])", "_") == escapedLowerCaseValue
+				}
 
-		if (!item) {
-			throw new IllegalArgumentException("Stringlist item not recognized: ${value}")
-		}
+				// found a field list item by this name?
+				if (item) {
+					return item
+				} else {
+					// invalid value
+					throw new IllegalArgumentException("Stringlist item not recognized: ${value}")
+				}
+			} else {
+				// invalid value
+				throw new IllegalArgumentException("Stringlist item not recognized: ${value}")
+			}
 
-		return item
+		} else {
+			return null
+		}
 	}
 }

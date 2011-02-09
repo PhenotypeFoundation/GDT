@@ -44,7 +44,25 @@ class TemplateModuleField extends TemplateFieldTypeNew {
 	 * @return Module
 	 * @throws IllegalArgumentException
 	 */
-	static AssayModule castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
-		return AssayModule.findByName(value)
+	static AssayModule castValue(org.dbnp.gdt.TemplateField field, value, def currentValue) {
+		if (value) {
+			if (value instanceof AssayModule) {
+				return value
+			} else if (value instanceof String) {
+				def assayModule = AssayModule.findByName(value)
+
+				if (assayModule) {
+					return assayModule
+				} else {
+					// invalid value
+					throw new IllegalArgumentException("Module value not recognized: ${value} (${value.class})")
+				}
+			} else {
+				// invalid value
+				throw new IllegalArgumentException("Module value not recognized: ${value} (${value.class})")
+			}
+		} else {
+			return null
+		}
 	}
 }

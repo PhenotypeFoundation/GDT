@@ -139,4 +139,21 @@ abstract class TemplateFieldTypeNew implements Serializable {
 
 		return (!error)
 	}
+
+	/**
+	 * Check of a certain value is of a numeric type (which
+	 * can be cast to eachother)
+	 * @param value
+	 * @return
+	 */
+	static Boolean isNumeric(value) {
+		return (value instanceof Double ||
+				value instanceof Float ||
+				value instanceof Integer ||
+				value instanceof Long ||
+				value instanceof BigDecimal ||
+				value instanceof BigInteger ||
+				value instanceof Short ||
+				value instanceof Byte)
+	}
 }

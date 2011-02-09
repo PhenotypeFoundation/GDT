@@ -44,7 +44,16 @@ class TemplateTextField extends TemplateFieldTypeNew {
 	 * @return String
 	 * @throws IllegalArgumentException
 	 */
-	static String castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
-		return value
+	static String castValue(org.dbnp.gdt.TemplateField field, value, def currentValue) {
+		if (!value) {
+			return null
+		} else if (value instanceof String) {
+			return value
+		} else if (value.class != String) {
+			return value.toString()
+		} else {
+			// invalid value
+			throw new IllegalArgumentException("Text value not recognized: ${value} (${value.class})")
+		}
 	}
 }

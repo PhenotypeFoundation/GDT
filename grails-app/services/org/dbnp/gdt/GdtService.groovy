@@ -42,7 +42,7 @@ class GdtService implements Serializable {
 	 */
 	def public getTemplateFieldTypeByCasedName(String casedName) {
 		def grailsApplication = ApplicationHolder.application
-		return grailsApplication.getAllClasses().find{it.name =~ "Template${casedName}Field"}
+		return grailsApplication.getAllClasses().find{it.name =~ "${casedName}Field" && it.name =~ /Template([A-Za-z]{1,})Field$/}
 	}
 
 	/**

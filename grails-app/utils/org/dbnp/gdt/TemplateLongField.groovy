@@ -44,14 +44,20 @@ class TemplateLongField extends TemplateFieldTypeNew {
 	 * @return Long
 	 * @throws IllegalArgumentException
 	 */
-	static Long castValue(org.dbnp.gdt.TemplateField field, java.lang.String value, def currentValue) {
-		// A check for invalidity is done in the validator of these fields. For that
-		// reason, we just try to parse it here. If it fails, the validator will also
-		// fail.
-		try {
-			value = Long.parseLong(value.trim())
-		} catch (Exception e) {
-			throw new IllegalArgumentException("Argument could not be cast to Long: ${value}")
+	static Long castValue(org.dbnp.gdt.TemplateField field, value, def currentValue) {
+		if (value) {
+			if (value instanceof Long) {
+				return value
+			} else if (value.class == String) {
+				return Long.parseLong(value)
+			} else if (isNumeric(value)) {
+				return value.toLong()
+			} else {
+				// invalid value
+				throw new IllegalArgumentException("Long value not recognized: ${value} (${value.class})")
+			}
+		} else {
+			return new Long(0)
 		}
 	}
 }
