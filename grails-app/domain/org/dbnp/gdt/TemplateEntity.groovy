@@ -134,9 +134,6 @@ abstract class TemplateEntity extends Identity {
 		templateTextFields type: 'text'
 	}
 
-	// Inject the service for storing files (for TemplateFields of TemplateFieldType FILE).
-	//def fileService
-
 	/**
 	 * Constraints
 	 *
@@ -176,13 +173,6 @@ abstract class TemplateEntity extends Identity {
 		} catch (Exception e) {
 			throw new NoSuchFieldException("Field type ${fieldType} not recognized")
 		}
-		/*
-		if (this.metaClass.hasMetaProperty("template${fieldType.casedName}Fields")) {
-			return this."template${fieldType.casedName}Fields"
-		} else {
-			throw new NoSuchFieldException("Field type ${fieldType} not recognized")
-		}
-		*/
 	}
 
 	/**
@@ -264,6 +254,7 @@ abstract class TemplateEntity extends Identity {
 		try {
 			//println ".casting ${fieldName} with value '${value}' of type ${value?.class} and current value ${currentValue} to type ${field.type.casedName}"
 			value = templateFieldClass.castValue(field, value, currentValue)
+			// println " -> ${value} (${value?.class})"
 		} catch (Exception e) {
 			// the value could not be cast, keep the value as-is and do not
 			// propagate the exception as the dynamic validators will notify

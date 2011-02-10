@@ -34,7 +34,7 @@ class TemplateTextField extends TemplateFieldTypeNew {
 	 * @param errors
 	 */
 	static def validator = { fields, obj, errors ->
-		genericValidator(fields, obj, errors, TemplateFieldType.STRING, { value -> (value as String) })
+		genericValidator(fields, obj, errors, TemplateFieldType.TEXT, { value -> (value as String) })
 	}
 
 	/**

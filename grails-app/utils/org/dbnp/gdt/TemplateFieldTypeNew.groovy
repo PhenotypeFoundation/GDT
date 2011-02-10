@@ -24,17 +24,19 @@ abstract class TemplateFieldTypeNew implements Serializable {
 	// inject the GdtService
 	def gdtService
 
+	// enable / disable class debugging
+	def static debug = false
+
 	/**
 	 * class constructor
 	 */
 	def public TemplateFieldTypeNew() {
+		if (debug) println ".instantiating ${this}"
+
 		// make sure the GdtService is available
 		if (!gdtService) {
 			gdtService = new GdtService()
 		}
-
-		// register this templateFieldType with TemplateEntity
-		//gdtService.registerTemplateFieldType(this)
 	}
 
 	/**
@@ -74,6 +76,8 @@ abstract class TemplateFieldTypeNew implements Serializable {
 		def lowerFieldTypeName = fieldTypeName.toLowerCase()
 		def capitalizedFieldTypeName = lowerFieldTypeName[0].toUpperCase() + lowerFieldTypeName.substring(1)
 
+		if (debug) println ".validating ${obj} (${obj.class}) :: ${fieldTypeName} with fields: ${fields}"
+
 		// catch exceptions
 		try {
 			// iterate through values
@@ -86,10 +90,14 @@ abstract class TemplateFieldTypeNew implements Serializable {
 						try {
 							fields[key] = castClosure(value)
 						} catch (Exception castException) {
+							if (debug) println "    - 1 ${castException.getMessage()}"
+
 							// could not cast value to the proper type, try to parse value
 							try {
 								fields[key] = parseClosure(value)
 							} catch (Exception parseException) {
+								if (debug) println "    - 2 ${parseException.getMessage()}"
+
 								// cannot cast nor parse value, invalid value
 								error = true
 								errors.rejectValue(
@@ -107,6 +115,8 @@ abstract class TemplateFieldTypeNew implements Serializable {
 						//    location, e.g. templateEntity.tooLong.string)
 						def extraValidation = extraValidationClosure(value)
 						if (extraValidation.class == String) {
+							if (debug) println "    - 3"
+
 							error = true
 							errors.rejectValue(
 								"template${capitalizedFieldTypeName}Fields",
@@ -122,6 +132,8 @@ abstract class TemplateFieldTypeNew implements Serializable {
 			// validating required fields
 			obj.getRequiredFields().findAll { it.type == templateFieldType }.each { field ->
 				if (!fields.find { key, value -> key == field.name }) {
+					if (debug) println "    - 4 required field (${field.name}) not found!"
+
 					// required field is missing
 					error = true
 					errors.rejectValue(
@@ -133,8 +145,10 @@ abstract class TemplateFieldTypeNew implements Serializable {
 				}
 			}
 		} catch (Exception e) {
-			println "Exception in the genericValidators: ${e.getMessage()}"
-			println e.stackTrace
+			if (debug) {
+				println "Exception in the genericValidators: ${e.getMessage()}"
+				println e.stackTrace
+			}
 		}
 
 		return (!error)
