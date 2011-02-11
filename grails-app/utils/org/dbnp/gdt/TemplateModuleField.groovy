@@ -21,6 +21,7 @@
 package org.dbnp.gdt
 
 class TemplateModuleField extends TemplateFieldTypeNew {
+	static contains				= AssayModule
 	static String type			= "MODULE"
 	static String casedType		= "Module"
 	static String description	= "Omics module"

@@ -21,6 +21,7 @@
 package org.dbnp.gdt
 
 class TemplateStringListField extends TemplateFieldTypeNew {
+	static contains				= TemplateFieldListItem
 	static String type			= "STRINGLIST"
 	static String casedType		= "StringList"
 	static String description	= "Dropdown selection of items"

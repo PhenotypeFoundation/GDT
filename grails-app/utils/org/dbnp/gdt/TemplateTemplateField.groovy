@@ -21,6 +21,7 @@
 package org.dbnp.gdt
 
 class TemplateTemplateField extends TemplateFieldTypeNew {
+	static contains				= Template
 	static String type			= "TEMPLATE"
 	static String casedType		= "Template"
 	static String description	= "Template"

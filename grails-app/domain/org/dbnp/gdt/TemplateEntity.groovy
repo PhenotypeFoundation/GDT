@@ -48,6 +48,7 @@ abstract class TemplateEntity extends Identity {
 	Template template
 
 	// Maps for storing the different template field values
+/*
 	Map templateStringFields		= [:]
 	Map templateTextFields			= [:]
 	Map templateStringListFields	= [:]
@@ -65,6 +66,41 @@ abstract class TemplateEntity extends Identity {
 	Map templateTermFields			= [:]
 
 	// define relationships
+	static hasMany = [
+		templateStringFields		: String,
+		templateTextFields			: String,
+		templateStringListFields	: TemplateFieldListItem,
+		templateDoubleFields		: double,
+		templateDateFields			: Date,
+		templateTermFields			: Term,
+		templateRelTimeFields		: long,
+		templateFileFields			: String,
+		templateBooleanFields		: boolean,
+		templateTemplateFields		: Template,
+		templateModuleFields		: AssayModule,
+		templateLongFields			: long,
+		systemFields				: TemplateField
+	]
+*/
+	Map templateStringFields		= [:]
+	Map templateTextFields			= [:]
+	Map templateStringListFields	= [:]
+	Map templateDoubleFields		= [:]
+	Map templateDateFields			= [:]
+	Map templateBooleanFields		= [:]
+	Map templateTemplateFields		= [:]
+	Map templateModuleFields		= [:]
+	Map templateLongFields			= [:]
+	Map templateRelTimeFields		= [:] // Contains relative times in seconds
+	Map templateFileFields			= [:] // Contains filenames
+	Map templateTermFields			= [:]
+
+
+	/**
+	 * define relationships, note that this is dynamically
+	 * extended at compile time
+	 * @see org.dbnp.gdt.ast.TemplateEntityASTTransformation
+	 */
 	static hasMany = [
 		templateStringFields		: String,
 		templateTextFields			: String,

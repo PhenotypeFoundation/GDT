@@ -21,6 +21,7 @@
 package org.dbnp.gdt
 
 class TemplateBooleanField extends TemplateFieldTypeNew {
+	static contains				= Boolean
 	static String type			= "BOOLEAN"
 	static String casedType		= "Boolean"
 	static String description	= "true/false"

@@ -21,6 +21,7 @@
 package org.dbnp.gdt
 
 class TemplateRelTimeField extends TemplateFieldTypeNew {
+	static contains				= Long
 	static String type			= "RELTIME"
 	static String casedType		= "RelTime"
 	static String description	= "Relative time"

@@ -48,6 +48,23 @@ flexibility in the application.
 
     def doWithDynamicMethods = { ctx ->
         // TODO Implement registering dynamic methods to classes (optional)
+/*
+		println "doWithDynamicMethods"
+		def grailsApplication = ctx.getBean("grailsApplication")
+		def templateFields = grailsApplication.getAllClasses().findAll{it.name =~ /Template([A-Za-z]{1,})Field$/}
+
+		templateFields.each {
+			def fullClassName	= it.name
+			def splitClassName	= fullClassName.split("\\.")
+			def className		= splitClassName[ (splitClassName.size()-1) ]
+			def mapName			= className[0].toLowerCase() + className.substring(1) + "s"
+
+			println "registering ${className} (${fullClassName})"
+
+			//TemplateEntity."${mapName}" = [:]
+			TemplateEntity.metaClass."${mapName}" = [:]
+		}
+*/
     }
 
     def doWithApplicationContext = { applicationContext ->

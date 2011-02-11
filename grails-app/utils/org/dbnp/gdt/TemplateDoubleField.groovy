@@ -21,6 +21,7 @@
 package org.dbnp.gdt
 
 class TemplateDoubleField extends TemplateFieldTypeNew {
+	static contains				= Double
 	static String type			= "DOUBLE"
 	static String casedType		= "Double"
 	static String description	= "Decimal number"

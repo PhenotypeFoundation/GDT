@@ -21,6 +21,7 @@
 package org.dbnp.gdt
 
 class TemplateFileField extends TemplateFieldTypeNew {
+	static contains				= String
 	static String type			= "FILE"
 	static String casedType		= "File"
 	static String description	= "File"

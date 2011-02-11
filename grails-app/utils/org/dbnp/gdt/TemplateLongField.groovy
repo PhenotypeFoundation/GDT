@@ -21,6 +21,7 @@
 package org.dbnp.gdt
 
 class TemplateLongField extends TemplateFieldTypeNew {
+	static contains				= Long
 	static String type			= "LONG"
 	static String casedType		= "Long"
 	static String description	= "Natural number"
