@@ -1,0 +1,47 @@
+<plugin name='gdt' version='0.0.11' grailsVersion='1.3.4 &gt; *'>
+  <author>Jeroen Wesbeek</author>
+  <authorEmail>work@osx.eu</authorEmail>
+  <title>Grails Domain Templates</title>
+  <description>\
+Grails Domain Templates allows you to dynamically extend domain classes with unlimited user definable fields based on a Template for a specific Domain Class.
+If you, for example, have a Company Domain Class, but companies would like to register different fields for such an entity, several Templates could be created
+for every type of company (e.g. a financial institution template, university template, etc). Using these Templateted Domain Classed creates more dynamic
+flexibility in the application.
+</description>
+  <documentation>http://grails.org/plugin/gdt</documentation>
+  <resources>
+    <resource>BuildConfig</resource>
+    <resource>Config</resource>
+    <resource>DataSource</resource>
+    <resource>UrlMappings</resource>
+    <resource>org.dbnp.gdt.TemplateEditorController</resource>
+    <resource>org.dbnp.gdt.AssayModule</resource>
+    <resource>org.dbnp.gdt.Identity</resource>
+    <resource>org.dbnp.gdt.RelTime</resource>
+    <resource>org.dbnp.gdt.Template</resource>
+    <resource>org.dbnp.gdt.TemplateEntity</resource>
+    <resource>org.dbnp.gdt.TemplateField</resource>
+    <resource>org.dbnp.gdt.TemplateFieldListItem</resource>
+    <resource>org.dbnp.gdt.TemplateFieldType</resource>
+    <resource>org.dbnp.gdt.FileService</resource>
+    <resource>org.dbnp.gdt.GdtService</resource>
+    <resource>org.dbnp.gdt.GdtTagLib</resource>
+    <resource>org.dbnp.gdt.TemplateBooleanField</resource>
+    <resource>org.dbnp.gdt.TemplateDateField</resource>
+    <resource>org.dbnp.gdt.TemplateDoubleField</resource>
+    <resource>org.dbnp.gdt.TemplateFieldTypeNew</resource>
+    <resource>org.dbnp.gdt.TemplateFileField</resource>
+    <resource>org.dbnp.gdt.TemplateLongField</resource>
+    <resource>org.dbnp.gdt.TemplateModuleField</resource>
+    <resource>org.dbnp.gdt.TemplateRelTimeField</resource>
+    <resource>org.dbnp.gdt.TemplateStringField</resource>
+    <resource>org.dbnp.gdt.TemplateStringListField</resource>
+    <resource>org.dbnp.gdt.TemplateTemplateField</resource>
+    <resource>org.dbnp.gdt.TemplateTextField</resource>
+  </resources>
+  <dependencies>
+    <plugin name='ajaxflow' version='0.1.19 =&gt; *' />
+    <plugin name='crypto' version='2.0 =&gt; *' />
+  </dependencies>
+  <behavior />
+</plugin>

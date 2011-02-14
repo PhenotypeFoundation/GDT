@@ -81,20 +81,23 @@ abstract class TemplateEntity extends Identity {
 		templateLongFields			: long,
 		systemFields				: TemplateField
 	]
-*/
-	Map templateStringFields		= [:]
-	Map templateTextFields			= [:]
-	Map templateStringListFields	= [:]
-	Map templateDoubleFields		= [:]
-	Map templateDateFields			= [:]
-	Map templateBooleanFields		= [:]
-	Map templateTemplateFields		= [:]
-	Map templateModuleFields		= [:]
-	Map templateLongFields			= [:]
-	Map templateRelTimeFields		= [:] // Contains relative times in seconds
-	Map templateFileFields			= [:] // Contains filenames
-	Map templateTermFields			= [:]
 
+	static constraints = {
+		template(nullable: true, blank: true)
+		templateStringFields(validator		: TemplateStringField.validator)
+		templateTextFields(validator		: TemplateTextField.validator)
+		templateStringListFields(validator	: TemplateStringListField.validator)
+		templateDoubleFields(validator		: TemplateDoubleField.validator)
+		templateDateFields(validator		: TemplateDateField.validator)
+		templateRelTimeFields(validator		: TemplateRelTimeField.validator)
+		templateTermFields(validator		: TemplateOntologyTermField.validator)
+		templateFileFields(validator		: TemplateFileField.validator)
+		templateBooleanFields(validator		: TemplateBooleanField.validator)
+		templateTemplateFields(validator	: TemplateTemplateField.validator)
+		templateModuleFields(validator		: TemplateModuleField.validator)
+		templateLongFields(validator		: TemplateLongField.validator)
+	}
+*/
 
 	/**
 	 * define relationships, note that this is dynamically
@@ -102,18 +105,10 @@ abstract class TemplateEntity extends Identity {
 	 * @see org.dbnp.gdt.ast.TemplateEntityASTTransformation
 	 */
 	static hasMany = [
-		templateStringFields		: String,
-		templateTextFields			: String,
 		templateStringListFields	: TemplateFieldListItem,
-		templateDoubleFields		: double,
-		templateDateFields			: Date,
 		templateTermFields			: Term,
-		templateRelTimeFields		: long,
-		templateFileFields			: String,
-		templateBooleanFields		: boolean,
 		templateTemplateFields		: Template,
 		templateModuleFields		: AssayModule,
-		templateLongFields			: long,
 		systemFields				: TemplateField
 	]
 
@@ -182,18 +177,6 @@ abstract class TemplateEntity extends Identity {
 	 */
 	static constraints = {
 		template(nullable: true, blank: true)
-		templateStringFields(validator		: TemplateStringField.validator)
-		templateTextFields(validator		: TemplateTextField.validator)
-		templateStringListFields(validator	: TemplateStringListField.validator)
-		templateDoubleFields(validator		: TemplateDoubleField.validator)
-		templateDateFields(validator		: TemplateDateField.validator)
-		templateRelTimeFields(validator		: TemplateRelTimeField.validator)
-		templateTermFields(validator		: TemplateOntologyTermField.validator)
-		templateFileFields(validator		: TemplateFileField.validator)
-		templateBooleanFields(validator		: TemplateBooleanField.validator)
-		templateTemplateFields(validator	: TemplateTemplateField.validator)
-		templateModuleFields(validator		: TemplateModuleField.validator)
-		templateLongFields(validator		: TemplateLongField.validator)
 	}
 
 	/**
@@ -295,7 +278,12 @@ abstract class TemplateEntity extends Identity {
 			// the value could not be cast, keep the value as-is and do not
 			// propagate the exception as the dynamic validators will notify
 			// the user the value was wrong
-			log.error "Error casting ${field.name} of type ${field.type.casedName} with value ${value} (${value?.class}) :: " + e.getMessage()
+			def errorMessage = "Error casting ${field.name} of type ${field.type.casedName} with value ${value} (${value?.class}) :: " + e.getMessage()
+			if (log) {
+				log.error errorMessage
+			} else {
+				println errorMessage
+			}
 		}
 
 		// set the field value
