@@ -272,9 +272,9 @@ class RelTimeTests extends GrailsUnitTestCase {
         assert r.toPrettyRoundedString() == '1 week';
 
         r.setValue( "" );
-        assert r.toString() == '';
-        assert r.toPrettyString() == '';
-        assert r.toPrettyRoundedString() == '';
+        assert r.toString() == '0s';
+        assert r.toPrettyString() == '0 seconds';
+        assert r.toPrettyRoundedString() == '0 seconds';
 
         r.setValue( -1000 );
         assert r.toPrettyString() == "-16 minutes, 40 seconds";

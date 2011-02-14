@@ -35,7 +35,7 @@ class FileServiceTests extends GrailsUnitTestCase {
         // Override uploadDir method because the applicationContext is not
         // available in testcases
         fileService.metaClass.getUploadDir = {
-            return new File( System.properties['base.dir'] + File.separator + 'web-app' + File.separator + 'fileuploads' );
+            return new File( '/tmp' );
         }
 
         // Create two files
