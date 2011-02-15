@@ -9,7 +9,7 @@ import java.lang.reflect.Modifier
 
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
+import org.apache.commons.logging.Log
 
 // Hook in Groovy compilation and transform the
 // Abstract Syntax Tree (ATS)
@@ -79,9 +79,100 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 				println " - extending constraints closure"
 
 				ClosureExpression initialExpression = (ClosureExpression) constraints.getInitialExpression();
-				BlockStatement blockStatement = (BlockStatement) initialExpression.getCode();
+				BlockStatement blockStatement		= (BlockStatement) initialExpression.getCode();
 
-				//templateTermFields(validator		: TemplateOntologyTermField.validator)
+				/*
+//templateTermFields(validator		: TemplateOntologyTermField.validator)
+
+org.codehaus.groovy.ast.stmt.ExpressionStatement@1148ab5c[
+	expression:org.codehaus.groovy.ast.expr.MethodCallExpression@39ea2de1[
+		object: org.codehaus.groovy.ast.expr.VariableExpression@72433b8a[variable: this]
+		method: ConstantExpression[templateTermFields]
+		arguments: org.codehaus.groovy.ast.expr.TupleExpression@3d6a2c7b[
+			org.codehaus.groovy.ast.expr.NamedArgumentListExpression@58e5ebd[
+				org.codehaus.groovy.ast.expr.MapEntryExpression@45edcd24(
+					key: ConstantExpression[validator],
+					value: org.codehaus.groovy.ast.expr.PropertyExpression@7f371a59[
+						object: org.codehaus.groovy.ast.expr.VariableExpression@7aa30a4e[
+							variable: TemplateOntologyTermField
+						]
+						property: ConstantExpression[validator]
+					]
+				)
+			]
+		]
+	]
+]
+
+                BlockStatement closureBody = new BlockStatement(new Statement[]{new ReturnStatement(closureMethodCall)},
+                                                                new VariableScope());
+
+                Parameter[] closureParameters = {new Parameter(new ClassNode(MultipartFile.class), "image"),
+                                                 new Parameter(new ClassNode(ImageContainer.class), "imageContainer")};
+
+				Variable image = new VariableExpression("image");
+
+				// create expression arguments
+				NamedArgumentListExpression arguments = new NamedArgumentListExpression();
+                arguments.addMapEntryExpression(
+					new ConstantExpression("validator"),			// validator key (name)
+					new ClosureExpression(                          // validator value (closure)
+						Parameter[] {								// closure parameters
+							new Parameter(new ClassNode(MultipartFile.class), "image")
+						},
+						new BlockStatement(							// closure body
+						)
+					)
+				);
+				 */
+
+				//Variable image = new VariableExpression("image");
+
+				// create expression arguments
+				NamedArgumentListExpression arguments = new NamedArgumentListExpression();
+                arguments.addMapEntryExpression(
+					new ConstantExpression("validator"),			// validator key (name)
+					new PropertyExpression(templateFieldMapName)
+				);
+
+				// create expression using the expression arguments
+				MethodCallExpression constantExpression = new MethodCallExpression(
+					VariableExpression.THIS_EXPRESSION,				// object
+					new ConstantExpression(templateFieldMapName),	// method
+					new NamedArgumentListExpression(arguments)		// arguments
+				);
+
+				println "newly created statement:"
+				println constantExpression
+
+
+				// add the newly created expression to the contraints' initialExpression
+				blockStatement.addStatement(new ExpressionStatement(constantExpression))
+
+
+/*
+			List<Statement> statements			= blockStatement.getStatements()
+
+			// iterate through block statements
+			for(Statement expressionStatement : statements){
+				// does the expression statement contain a method?
+				if(expressionStatement instanceof ExpressionStatement && ((ExpressionStatement)expressionStatement).getExpression() instanceof MethodCallExpression){
+println "\n----"
+println expressionStatement
+					// yes, get the expression
+					MethodCallExpression methodCallExpression	= (MethodCallExpression)((ExpressionStatement)expressionStatement).getExpression()
+
+					// get the method
+					ConstantExpression constantExpression		= (ConstantExpression)methodCallExpression.getMethod()
+
+					// is it the same as the field name?
+					if(constantExpression.getValue().equals(fieldName)){
+						return true
+					}
+				}
+			}
+		}
+*/
 /*
 				StaticMethodCallExpression closureMethodCall = new StaticMethodCallExpression(
 					templateFieldClassNode,
@@ -123,30 +214,6 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 				// add new validator to the blockstatement
 				blockStatement.addStatement(new ExpressionStatement(constantExpression));
 
-
-
-				/*
-org.codehaus.groovy.ast.stmt.ExpressionStatement@1148ab5c[
-	expression:org.codehaus.groovy.ast.expr.MethodCallExpression@39ea2de1[
-		object: org.codehaus.groovy.ast.expr.VariableExpression@72433b8a[variable: this]
-		method: ConstantExpression[templateTermFields]
-		arguments: org.codehaus.groovy.ast.expr.TupleExpression@3d6a2c7b[
-			org.codehaus.groovy.ast.expr.NamedArgumentListExpression@58e5ebd[
-				org.codehaus.groovy.ast.expr.MapEntryExpression@45edcd24(
-					key: ConstantExpression[validator],
-					value: org.codehaus.groovy.ast.expr.PropertyExpression@7f371a59[
-						object: org.codehaus.groovy.ast.expr.VariableExpression@7aa30a4e[
-							variable: TemplateOntologyTermField
-						]
-						property: ConstantExpression[validator]
-					]
-				)
-			]
-		]
-	]
-]
-
-				 */
 
 				/*
 
@@ -261,8 +328,8 @@ org.codehaus.groovy.ast.stmt.ExpressionStatement@1148ab5c[
 			for(Statement expressionStatement : statements){
 				// does the expression statement contain a method?
 				if(expressionStatement instanceof ExpressionStatement && ((ExpressionStatement)expressionStatement).getExpression() instanceof MethodCallExpression){
-println "\n----"
-println expressionStatement
+//println "\n----"
+//println expressionStatement
 					// yes, get the expression
 					MethodCallExpression methodCallExpression	= (MethodCallExpression)((ExpressionStatement)expressionStatement).getExpression()
 
