@@ -51,7 +51,6 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	 */
 	private void injectTemplateField(ClassNode templateEntityClassNode, ClassNode templateFieldClassNode, classLoader) {
 		println "injecting ${templateFieldClassNode} into ${templateEntityClassNode}"
-		final boolean hasHasMany = GrailsASTUtils.hasProperty(templateEntityClassNode, "hasMany");
 		def contains 				= templateFieldClassNode.fields.find { it.properties.name == "contains" }
 		def owner					= contains.properties.owner
 		def typeName				= contains.getInitialExpression().variable
@@ -66,20 +65,132 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 		extendHasMany(templateEntityClassNode, templateFieldName, templateFieldMapName, typeName)
 
 		// extend constraints
-		extendConstraints(templateEntityClassNode, templateFieldMapName)
+		extendConstraints(templateEntityClassNode, templateFieldClassNode, templateFieldMapName, templateFieldName)
 	}
 
-	public extendConstraints(ClassNode templateEntityClassNode, String templateFieldMapName) {
+	public extendConstraints(ClassNode templateEntityClassNode, ClassNode templateFieldClassNode, String templateFieldMapName, String templateFieldName) {
 		// see http://svn.codehaus.org/grails-plugins/grails-burning-image/trunk/src/java/pl/burningice/plugins/image/ast/AbstractImageContainerTransformation.java
-
-
 		if (GrailsASTUtils.hasProperty(templateEntityClassNode, "constraints")) {
-			FieldNode constraints = templateEntityClassNode.getDeclaredField("constraints");
+			FieldNode constraints = templateEntityClassNode.getDeclaredField("constraints")
 
 			if (hasFieldInClosure(constraints, templateFieldMapName)) {
 				println " - constraint closure already exists"
 			} else {
 				println " - extending constraints closure"
+
+				ClosureExpression initialExpression = (ClosureExpression) constraints.getInitialExpression();
+				BlockStatement blockStatement = (BlockStatement) initialExpression.getCode();
+
+				//templateTermFields(validator		: TemplateOntologyTermField.validator)
+/*
+				StaticMethodCallExpression closureMethodCall = new StaticMethodCallExpression(
+					templateFieldClassNode,
+					"validator",
+					new ArgumentListExpression(
+						//(VariableExpression)image,
+						//(VariableExpression)imageContainer
+					)
+				);
+				BlockStatement closureBody = new BlockStatement(
+					{
+						new ReturnStatement(closureMethodCall)
+					},
+					new VariableScope()
+				);
+
+
+				Parameter[] closureParameters = {
+					//new Parameter(new ClassNode(MultipartFile.class), "image"),
+					//new Parameter(new ClassNode(ImageContainer.class), "imageContainer")
+				};
+
+				//VariableScope scope = new VariableScope();
+				//scope.putDeclaredVariable(image);
+				//scope.putDeclaredVariable(imageContainer);
+
+				ClosureExpression validator = new ClosureExpression(closureParameters, closureBody);
+				//validator.setVariableScope(scope);
+
+				NamedArgumentListExpression namedArgumentListExpression = new NamedArgumentListExpression();
+				namedArgumentListExpression.addMapEntryExpression(new ConstantExpression("validator"), validator);
+
+				MethodCallExpression constantExpression = new MethodCallExpression(
+					VariableExpression.THIS_EXPRESSION,
+					new ConstantExpression(templateFieldMapName),
+					namedArgumentListExpression
+				);
+
+				// add new validator to the blockstatement
+				blockStatement.addStatement(new ExpressionStatement(constantExpression));
+
+
+
+				/*
+org.codehaus.groovy.ast.stmt.ExpressionStatement@1148ab5c[
+	expression:org.codehaus.groovy.ast.expr.MethodCallExpression@39ea2de1[
+		object: org.codehaus.groovy.ast.expr.VariableExpression@72433b8a[variable: this]
+		method: ConstantExpression[templateTermFields]
+		arguments: org.codehaus.groovy.ast.expr.TupleExpression@3d6a2c7b[
+			org.codehaus.groovy.ast.expr.NamedArgumentListExpression@58e5ebd[
+				org.codehaus.groovy.ast.expr.MapEntryExpression@45edcd24(
+					key: ConstantExpression[validator],
+					value: org.codehaus.groovy.ast.expr.PropertyExpression@7f371a59[
+						object: org.codehaus.groovy.ast.expr.VariableExpression@7aa30a4e[
+							variable: TemplateOntologyTermField
+						]
+						property: ConstantExpression[validator]
+					]
+				)
+			]
+		]
+	]
+]
+
+				 */
+
+				/*
+
+				ClosureExpression initialExpression	= (ClosureExpression) constraints.getInitialExpression();
+            	BlockStatement blockStatement		= (BlockStatement) initialExpression.getCode();
+
+				//templateTermFields(validator		: TemplateOntologyTermField.validator)
+				StaticMethodCallExpression closureMethodCall = new StaticMethodCallExpression(
+					new ClassNode(Eval.me("${templateFieldName}.class")),
+						"validator",
+						new ArgumentListExpression(
+							//(VariableExpression)image,
+							//(VariableExpression)imageContainer
+						)
+				);
+				BlockStatement closureBody = new BlockStatement(
+					new Statement[]{
+						new ReturnStatement(closureMethodCall)
+					},
+					new VariableScope()
+				);
+
+
+ Parameter[] closureParameters = {new Parameter(new ClassNode(MultipartFile.class), "image"),
+                                                 new Parameter(new ClassNode(ImageContainer.class), "imageContainer")};
+
+                VariableScope scope = new VariableScope();
+                scope.putDeclaredVariable(image);
+                scope.putDeclaredVariable(imageContainer);
+
+                ClosureExpression validator = new ClosureExpression(closureParameters, closureBody);
+                validator.setVariableScope(scope);
+
+                NamedArgumentListExpression namedarg = new NamedArgumentListExpression();
+                namedarg.addMapEntryExpression(new ConstantExpression("validator"), validator);
+
+                MethodCallExpression constExpr = new MethodCallExpression(VariableExpression.THIS_EXPRESSION,
+                                                                          new ConstantExpression(fieldName),
+                                                                          namedarg);
+                block.addStatement(new ExpressionStatement(constExpr));
+                */
+
+
+
 			}
 		} else {
 			println " - adding constraints closure"
@@ -142,14 +253,24 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	 */
 	public boolean hasFieldInClosure(FieldNode closure, String fieldName){
 		if(closure != null){
-			ClosureExpression exp = (ClosureExpression) closure.getInitialExpression()
-			BlockStatement block = (BlockStatement) exp.getCode()
-			List<Statement> ments = block.getStatements()
-			for(Statement expstat : ments){
-				if(expstat instanceof ExpressionStatement && ((ExpressionStatement)expstat).getExpression() instanceof MethodCallExpression){
-					MethodCallExpression methexp = (MethodCallExpression)((ExpressionStatement)expstat).getExpression()
-					ConstantExpression conexp = (ConstantExpression)methexp.getMethod()
-					if(conexp.getValue().equals(fieldName)){
+			ClosureExpression initialExpression	= (ClosureExpression) closure.getInitialExpression()
+			BlockStatement blockStatement		= (BlockStatement) initialExpression.getCode()
+			List<Statement> statements			= blockStatement.getStatements()
+
+			// iterate through block statements
+			for(Statement expressionStatement : statements){
+				// does the expression statement contain a method?
+				if(expressionStatement instanceof ExpressionStatement && ((ExpressionStatement)expressionStatement).getExpression() instanceof MethodCallExpression){
+println "\n----"
+println expressionStatement
+					// yes, get the expression
+					MethodCallExpression methodCallExpression	= (MethodCallExpression)((ExpressionStatement)expressionStatement).getExpression()
+
+					// get the method
+					ConstantExpression constantExpression		= (ConstantExpression)methodCallExpression.getMethod()
+
+					// is it the same as the field name?
+					if(constantExpression.getValue().equals(fieldName)){
 						return true
 					}
 				}
