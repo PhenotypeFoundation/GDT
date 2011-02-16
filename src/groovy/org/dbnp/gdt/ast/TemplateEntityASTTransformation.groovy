@@ -10,6 +10,7 @@ import java.lang.reflect.Modifier
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log
+import org.springframework.web.multipart.MultipartFile
 
 // Hook in Groovy compilation and transform the
 // Abstract Syntax Tree (ATS)
@@ -78,7 +79,9 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 			} else {
 				println " - extending constraints closure"
 
+println "1"
 				ClosureExpression initialExpression = (ClosureExpression) constraints.getInitialExpression();
+println "2"
 				BlockStatement blockStatement		= (BlockStatement) initialExpression.getCode();
 
 				/*
@@ -128,18 +131,72 @@ org.codehaus.groovy.ast.stmt.ExpressionStatement@1148ab5c[
 
 				//Variable image = new VariableExpression("image");
 
+				// create the validator's closure body
+				/*
+				BlockStatement closureBody = new BlockStatement(
+					new Statement[]{new ReturnStatement(closureMethodCall)},
+					new VariableScope()
+				);
+
+				// create the validator's closure parameters
+                Parameter[] closureParameters = {
+					//new Parameter(new ClassNode(MultipartFile.class), "image"),
+					//new Parameter(new ClassNode(ImageContainer.class), "imageContainer")
+				};
+
+
+				// create the validator
+				ClosureExpression validator = new ClosureExpression(
+					closureParameters,								// closure parameters
+					closureBody										// closure body
+				)
+				*/
+println "3a"
+				ExpressionStatement expression = new ExpressionStatement(
+						new PropertyExpression(
+							new VariableExpression("it"),
+							"class"
+						)
+					)
+println "3b"
+//Parameter param = new Parameter(new ClassNode(), "$it")
+//Parameter param = new Parameter(new ClassNode(MultipartFile.class), "image")
+
+/*
+                def param = [
+					new Parameter(
+                        ClassHelper.make(Object, false), "parm"
+                	)
+				] as Parameter[]
+*/
+println "3c"
+				ClosureExpression validator = new ClosureExpression(
+					[] as Parameter[],
+					expression
+				)
+
+				/*
+ClosureExpression closureExpression = new ClosureExpression (
+new Parameter[] {}
+new ExpressionStatement(new PropertyExpression(new VariableExpression("it"), "class"))
+);
+				 */
+
 				// create expression arguments
+println "3d"
 				NamedArgumentListExpression arguments = new NamedArgumentListExpression();
+println "4"
                 arguments.addMapEntryExpression(
 					new ConstantExpression("validator"),			// validator key (name)
-					new PropertyExpression(templateFieldMapName)
+					validator										// validator expression
 				);
+println "5"
 
 				// create expression using the expression arguments
 				MethodCallExpression constantExpression = new MethodCallExpression(
 					VariableExpression.THIS_EXPRESSION,				// object
 					new ConstantExpression(templateFieldMapName),	// method
-					new NamedArgumentListExpression(arguments)		// arguments
+					arguments										// arguments
 				);
 
 				println "newly created statement:"
