@@ -50,10 +50,18 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 		super
 	}
 
+	/**
+	 * callback method which is called by the compiler when
+	 * a Abstact Syntax Tree Node is visited
+	 * @param nodes
+	 * @param sourceUnit
+	 */
 	public void visit(ASTNode[] nodes, SourceUnit sourceUnit) {
 		def classLoader = sourceUnit.getClassLoader()
 
+		// iterate through the nodes
 		nodes.each { node ->
+			// find all TemplateFields or TemplateEntity nodes
 			node.getClasses().findAll{it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/}.each { ClassNode owner ->
 				// is this TemplateEntity or a TemplateField?
 				if (owner.name =~ /\.TemplateEntity$/) {
