@@ -107,49 +107,27 @@ org.codehaus.groovy.ast.stmt.ExpressionStatement@1148ab5c[
 	]
 ]
 
-                BlockStatement closureBody = new BlockStatement(new Statement[]{new ReturnStatement(closureMethodCall)},
-                                                                new VariableScope());
+newly created statement:
+org.codehaus.groovy.ast.expr.MethodCallExpression@1a06f956[
+	object: org.codehaus.groovy.ast.expr.VariableExpression@3fdb8a73[variable: this]
+	method: ConstantExpression[templateLongFields]
+	arguments: org.codehaus.groovy.ast.expr.TupleExpression@665ea4c5[
+		org.codehaus.groovy.ast.expr.NamedArgumentListExpression@4f93b604[
+			org.codehaus.groovy.ast.expr.MapEntryExpression@6a92e96c(
+				key: ConstantExpression[validator],
+				value: org.codehaus.groovy.ast.expr.ClosureExpression@531ae81d[]{
+					org.codehaus.groovy.ast.stmt.ExpressionStatement@b7cf28b[
+						expression:org.codehaus.groovy.ast.expr.PropertyExpression@38178991[
+							object: org.codehaus.groovy.ast.expr.VariableExpression@1148ab5c[variable: it]
+							property: ConstantExpression[class]
+						]
+					]
+				}
+			)
+		]
+	]
+]
 
-                Parameter[] closureParameters = {new Parameter(new ClassNode(MultipartFile.class), "image"),
-                                                 new Parameter(new ClassNode(ImageContainer.class), "imageContainer")};
-
-				Variable image = new VariableExpression("image");
-
-				// create expression arguments
-				NamedArgumentListExpression arguments = new NamedArgumentListExpression();
-                arguments.addMapEntryExpression(
-					new ConstantExpression("validator"),			// validator key (name)
-					new ClosureExpression(                          // validator value (closure)
-						Parameter[] {								// closure parameters
-							new Parameter(new ClassNode(MultipartFile.class), "image")
-						},
-						new BlockStatement(							// closure body
-						)
-					)
-				);
-				 */
-
-				//Variable image = new VariableExpression("image");
-
-				// create the validator's closure body
-				/*
-				BlockStatement closureBody = new BlockStatement(
-					new Statement[]{new ReturnStatement(closureMethodCall)},
-					new VariableScope()
-				);
-
-				// create the validator's closure parameters
-                Parameter[] closureParameters = {
-					//new Parameter(new ClassNode(MultipartFile.class), "image"),
-					//new Parameter(new ClassNode(ImageContainer.class), "imageContainer")
-				};
-
-
-				// create the validator
-				ClosureExpression validator = new ClosureExpression(
-					closureParameters,								// closure parameters
-					closureBody										// closure body
-				)
 				*/
 println "3a"
 				ExpressionStatement expression = new ExpressionStatement(
@@ -205,115 +183,6 @@ println "5"
 
 				// add the newly created expression to the contraints' initialExpression
 				blockStatement.addStatement(new ExpressionStatement(constantExpression))
-
-
-/*
-			List<Statement> statements			= blockStatement.getStatements()
-
-			// iterate through block statements
-			for(Statement expressionStatement : statements){
-				// does the expression statement contain a method?
-				if(expressionStatement instanceof ExpressionStatement && ((ExpressionStatement)expressionStatement).getExpression() instanceof MethodCallExpression){
-println "\n----"
-println expressionStatement
-					// yes, get the expression
-					MethodCallExpression methodCallExpression	= (MethodCallExpression)((ExpressionStatement)expressionStatement).getExpression()
-
-					// get the method
-					ConstantExpression constantExpression		= (ConstantExpression)methodCallExpression.getMethod()
-
-					// is it the same as the field name?
-					if(constantExpression.getValue().equals(fieldName)){
-						return true
-					}
-				}
-			}
-		}
-*/
-/*
-				StaticMethodCallExpression closureMethodCall = new StaticMethodCallExpression(
-					templateFieldClassNode,
-					"validator",
-					new ArgumentListExpression(
-						//(VariableExpression)image,
-						//(VariableExpression)imageContainer
-					)
-				);
-				BlockStatement closureBody = new BlockStatement(
-					{
-						new ReturnStatement(closureMethodCall)
-					},
-					new VariableScope()
-				);
-
-
-				Parameter[] closureParameters = {
-					//new Parameter(new ClassNode(MultipartFile.class), "image"),
-					//new Parameter(new ClassNode(ImageContainer.class), "imageContainer")
-				};
-
-				//VariableScope scope = new VariableScope();
-				//scope.putDeclaredVariable(image);
-				//scope.putDeclaredVariable(imageContainer);
-
-				ClosureExpression validator = new ClosureExpression(closureParameters, closureBody);
-				//validator.setVariableScope(scope);
-
-				NamedArgumentListExpression namedArgumentListExpression = new NamedArgumentListExpression();
-				namedArgumentListExpression.addMapEntryExpression(new ConstantExpression("validator"), validator);
-
-				MethodCallExpression constantExpression = new MethodCallExpression(
-					VariableExpression.THIS_EXPRESSION,
-					new ConstantExpression(templateFieldMapName),
-					namedArgumentListExpression
-				);
-
-				// add new validator to the blockstatement
-				blockStatement.addStatement(new ExpressionStatement(constantExpression));
-
-
-				/*
-
-				ClosureExpression initialExpression	= (ClosureExpression) constraints.getInitialExpression();
-            	BlockStatement blockStatement		= (BlockStatement) initialExpression.getCode();
-
-				//templateTermFields(validator		: TemplateOntologyTermField.validator)
-				StaticMethodCallExpression closureMethodCall = new StaticMethodCallExpression(
-					new ClassNode(Eval.me("${templateFieldName}.class")),
-						"validator",
-						new ArgumentListExpression(
-							//(VariableExpression)image,
-							//(VariableExpression)imageContainer
-						)
-				);
-				BlockStatement closureBody = new BlockStatement(
-					new Statement[]{
-						new ReturnStatement(closureMethodCall)
-					},
-					new VariableScope()
-				);
-
-
- Parameter[] closureParameters = {new Parameter(new ClassNode(MultipartFile.class), "image"),
-                                                 new Parameter(new ClassNode(ImageContainer.class), "imageContainer")};
-
-                VariableScope scope = new VariableScope();
-                scope.putDeclaredVariable(image);
-                scope.putDeclaredVariable(imageContainer);
-
-                ClosureExpression validator = new ClosureExpression(closureParameters, closureBody);
-                validator.setVariableScope(scope);
-
-                NamedArgumentListExpression namedarg = new NamedArgumentListExpression();
-                namedarg.addMapEntryExpression(new ConstantExpression("validator"), validator);
-
-                MethodCallExpression constExpr = new MethodCallExpression(VariableExpression.THIS_EXPRESSION,
-                                                                          new ConstantExpression(fieldName),
-                                                                          namedarg);
-                block.addStatement(new ExpressionStatement(constExpr));
-                */
-
-
 
 			}
 		} else {
