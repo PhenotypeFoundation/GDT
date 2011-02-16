@@ -108,18 +108,20 @@ org.codehaus.groovy.ast.stmt.ExpressionStatement@1148ab5c[
 ]
 
 newly created statement:
-org.codehaus.groovy.ast.expr.MethodCallExpression@1a06f956[
-	object: org.codehaus.groovy.ast.expr.VariableExpression@3fdb8a73[variable: this]
+org.codehaus.groovy.ast.expr.MethodCallExpression@45edcd24[
+	object: org.codehaus.groovy.ast.expr.VariableExpression@7f371a59[variable: this]
 	method: ConstantExpression[templateLongFields]
-	arguments: org.codehaus.groovy.ast.expr.TupleExpression@665ea4c5[
-		org.codehaus.groovy.ast.expr.NamedArgumentListExpression@4f93b604[
-			org.codehaus.groovy.ast.expr.MapEntryExpression@6a92e96c(
+	arguments: org.codehaus.groovy.ast.expr.TupleExpression@7aa30a4e[
+		org.codehaus.groovy.ast.expr.NamedArgumentListExpression@65f9c5c8[
+			org.codehaus.groovy.ast.expr.MapEntryExpression@712801c5(
 				key: ConstantExpression[validator],
-				value: org.codehaus.groovy.ast.expr.ClosureExpression@531ae81d[]{
-					org.codehaus.groovy.ast.stmt.ExpressionStatement@b7cf28b[
-						expression:org.codehaus.groovy.ast.expr.PropertyExpression@38178991[
-							object: org.codehaus.groovy.ast.expr.VariableExpression@1148ab5c[variable: it]
-							property: ConstantExpression[class]
+				value: org.codehaus.groovy.ast.expr.ClosureExpression@798c668c[]{
+					org.codehaus.groovy.ast.stmt.ExpressionStatement@70a0afab[
+						expression:org.codehaus.groovy.ast.expr.PropertyExpression@456d3d51[
+							object: org.codehaus.groovy.ast.expr.VariableExpression@6d4b473[
+								variable: TemplateLongField
+							]
+							property: ConstantExpression[validator]
 						]
 					]
 				}
@@ -132,8 +134,8 @@ org.codehaus.groovy.ast.expr.MethodCallExpression@1a06f956[
 println "3a"
 				ExpressionStatement expression = new ExpressionStatement(
 						new PropertyExpression(
-							new VariableExpression("it"),
-							"class"
+							new VariableExpression(templateFieldName),
+							"validator"
 						)
 					)
 println "3b"
