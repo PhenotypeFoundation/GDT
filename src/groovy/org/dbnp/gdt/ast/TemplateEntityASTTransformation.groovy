@@ -105,13 +105,28 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 		def templateFieldName		= splitTemplateFieldName[(splitTemplateFieldName.size() - 1)]
 		def templateFieldMapName	= (templateFieldName[0].toLowerCase() + templateFieldName.substring(1) + "s").replaceAll(/Ontology/, '')
 
-		// add map to templateEntity
+		// a GORM Map for this templateField to TemplateEntity, e.g.:
+		//
+		// Map templateLongFields = [:]
 		addTemplateFieldMap(templateEntityClassNode, templateFieldMapName)
 
-		// extend hasMany
+		// extend the hasMany relationship in TemplateEntity, e.g:
+		//
+		// static hasMany = [
+		// 		...
+		//		templateLongFields: long,
+		//		...
+		// ]
 		extendHasMany(templateEntityClassNode, templateFieldName, templateFieldMapName, typeName)
 
-		// extend constraints
+		// extend the TemplateEntity constraints and inject a dynamic
+		// validator, e.g.:
+		//
+		// static constraints = {
+		//		...
+		//		templateLongFields(validator: TemplateLongField.validator)
+		//		...
+		// }
 		extendConstraints(templateEntityClassNode, templateFieldClassNode, templateFieldMapName, templateFieldName)
 	}
 
