@@ -87,27 +87,43 @@ println "2"
 				/*
 //templateTermFields(validator		: TemplateOntologyTermField.validator)
 
-org.codehaus.groovy.ast.stmt.ExpressionStatement@1148ab5c[
-	expression:org.codehaus.groovy.ast.expr.MethodCallExpression@39ea2de1[
-		object: org.codehaus.groovy.ast.expr.VariableExpression@72433b8a[variable: this]
-		method: ConstantExpression[templateTermFields]
-		arguments: org.codehaus.groovy.ast.expr.TupleExpression@3d6a2c7b[
-			org.codehaus.groovy.ast.expr.NamedArgumentListExpression@58e5ebd[
-				org.codehaus.groovy.ast.expr.MapEntryExpression@45edcd24(
-					key: ConstantExpression[validator],
-					value: org.codehaus.groovy.ast.expr.PropertyExpression@7f371a59[
-						object: org.codehaus.groovy.ast.expr.VariableExpression@7aa30a4e[
-							variable: TemplateOntologyTermField
-						]
-						property: ConstantExpression[validator]
+org.codehaus.groovy.ast.expr.MethodCallExpression@39ea2de1[
+	object: org.codehaus.groovy.ast.expr.VariableExpression@72433b8a[variable: this]
+	method: ConstantExpression[templateTermFields]
+	arguments: org.codehaus.groovy.ast.expr.TupleExpression@3d6a2c7b[
+		org.codehaus.groovy.ast.expr.NamedArgumentListExpression@58e5ebd[
+			org.codehaus.groovy.ast.expr.MapEntryExpression@45edcd24(
+				key: ConstantExpression[validator],
+				value: org.codehaus.groovy.ast.expr.PropertyExpression@7f371a59[
+					object: org.codehaus.groovy.ast.expr.VariableExpression@7aa30a4e[
+						variable: TemplateOntologyTermField
 					]
-				)
-			]
+					property: ConstantExpression[validator]
+				]
+			)
 		]
 	]
 ]
 
 newly created statement:
+org.codehaus.groovy.ast.expr.MethodCallExpression@70a0afab[
+	object: org.codehaus.groovy.ast.expr.VariableExpression@456d3d51[variable: this]
+	method: ConstantExpression[templateLongFields]
+	arguments: org.codehaus.groovy.ast.expr.TupleExpression@6d4b473[
+		org.codehaus.groovy.ast.expr.NamedArgumentListExpression@7692ed85[
+			org.codehaus.groovy.ast.expr.MapEntryExpression@2827f394(
+				key: ConstantExpression[validator],
+				value: org.codehaus.groovy.ast.expr.PropertyExpression@56e88e24[
+					object: org.codehaus.groovy.ast.expr.VariableExpression@3dcc0a0f[
+						variable: TemplateLongField
+					]
+					property: ConstantExpression[validator]
+				]
+			)
+		]
+	]
+]
+
 org.codehaus.groovy.ast.expr.MethodCallExpression@45edcd24[
 	object: org.codehaus.groovy.ast.expr.VariableExpression@7f371a59[variable: this]
 	method: ConstantExpression[templateLongFields]
@@ -129,6 +145,8 @@ org.codehaus.groovy.ast.expr.MethodCallExpression@45edcd24[
 		]
 	]
 ]
+
+
 
 				*/
 println "3a"
@@ -155,6 +173,13 @@ println "3c"
 					expression
 				)
 
+println "3d"
+				PropertyExpression validatorTwo = new PropertyExpression(
+					new VariableExpression(templateFieldName),
+					"validator"
+				)
+
+
 				/*
 ClosureExpression closureExpression = new ClosureExpression (
 new Parameter[] {}
@@ -163,12 +188,13 @@ new ExpressionStatement(new PropertyExpression(new VariableExpression("it"), "cl
 				 */
 
 				// create expression arguments
-println "3d"
+println "3e"
 				NamedArgumentListExpression arguments = new NamedArgumentListExpression();
 println "4"
                 arguments.addMapEntryExpression(
 					new ConstantExpression("validator"),			// validator key (name)
-					validator										// validator expression
+					//validator										// validator expression
+					validatorTwo
 				);
 println "5"
 
