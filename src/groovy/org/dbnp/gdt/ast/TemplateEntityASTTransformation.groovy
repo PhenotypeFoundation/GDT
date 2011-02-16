@@ -1,24 +1,46 @@
-package org.dbnp.gdt.ast
+/**
+ *  GDT, a plugin for Grails Domain Templates
+ *  Copyright (C) 2011 Jeroen Wesbeek, Kees van Bochove
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  $Author$
+ *  $Rev$
+ *  $Date$
+ */
 
+package org.dbnp.gdt.ast
 import org.codehaus.groovy.transform.*
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.control.*
 import org.codehaus.groovy.ast.stmt.*
 import java.lang.reflect.Modifier
-
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log
-import org.springframework.web.multipart.MultipartFile
 
-// Hook in Groovy compilation and transform the
-// Abstract Syntax Tree (ATS)
-
+/**
+ * Hook in the Groovy compiler and dynamically extend
+ * TemplateEntity with all TemplateEntity fields in the
+ * application (either in the GDT plugin, other plugins
+ * or the application itself)
+ */
 @GroovyASTTransformation(phase = CompilePhase.CONVERSION)
 class TemplateEntityASTTransformation implements ASTTransformation {
 	static templateEntity = null
-	private static final Log LOG = LogFactory.getLog(TemplateEntityASTTransformation.class)
+	static templateFields = []
+	private static final Log log = LogFactory.getLog(TemplateEntityASTTransformation.class)
 
 	/**
 	 * class constructor
@@ -33,12 +55,28 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 
 		nodes.each { node ->
 			node.getClasses().findAll{it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/}.each { ClassNode owner ->
-				// remember templateEntity
+				// is this TemplateEntity or a TemplateField?
 				if (owner.name =~ /\.TemplateEntity$/) {
+					// remember templateEntity so we can inject
+					// templatefields into it
 					templateEntity = owner
 					return
 				} else if (templateEntity) {
+					// inject this template field into TemplateEntity
 					injectTemplateField(templateEntity, owner, classLoader)
+
+					// got some cached template fields to handle?
+					if (templateFields.size()) {
+						templateFields.each {
+							injectTemplateField(it, owner, classLoader)
+						}
+						templateFields = []
+					}
+				} else {
+					// cache this templateField until the
+					// compilere visits TemplateEntity
+					templateFields[ templateFields.size() ] = owner
+					return
 				}
 			}
 		}
@@ -69,6 +107,22 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 		extendConstraints(templateEntityClassNode, templateFieldClassNode, templateFieldMapName, templateFieldName)
 	}
 
+	/**
+	 * Extend the TemplateEntity constraints and dynamically inject a validator
+	 * for the given TemplateField. In groovy code this would be:
+	 *
+	 * static constraints = {
+	 *     ...
+	 *     templateLongFields(validator: TemplateLongField.validator)
+	 *     ...
+	 * }
+	 *
+	 * @param templateEntityClassNode
+	 * @param templateFieldClassNode
+	 * @param templateFieldMapName
+	 * @param templateFieldName
+	 * @return
+	 */
 	public extendConstraints(ClassNode templateEntityClassNode, ClassNode templateFieldClassNode, String templateFieldMapName, String templateFieldName) {
 		// see http://svn.codehaus.org/grails-plugins/grails-burning-image/trunk/src/java/pl/burningice/plugins/image/ast/AbstractImageContainerTransformation.java
 		if (GrailsASTUtils.hasProperty(templateEntityClassNode, "constraints")) {
@@ -79,139 +133,34 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 			} else {
 				println " - extending constraints closure"
 
-println "1"
+				// get the constraints closure
 				ClosureExpression initialExpression = (ClosureExpression) constraints.getInitialExpression();
-println "2"
 				BlockStatement blockStatement		= (BlockStatement) initialExpression.getCode();
 
-				/*
-//templateTermFields(validator		: TemplateOntologyTermField.validator)
-
-org.codehaus.groovy.ast.expr.MethodCallExpression@39ea2de1[
-	object: org.codehaus.groovy.ast.expr.VariableExpression@72433b8a[variable: this]
-	method: ConstantExpression[templateTermFields]
-	arguments: org.codehaus.groovy.ast.expr.TupleExpression@3d6a2c7b[
-		org.codehaus.groovy.ast.expr.NamedArgumentListExpression@58e5ebd[
-			org.codehaus.groovy.ast.expr.MapEntryExpression@45edcd24(
-				key: ConstantExpression[validator],
-				value: org.codehaus.groovy.ast.expr.PropertyExpression@7f371a59[
-					object: org.codehaus.groovy.ast.expr.VariableExpression@7aa30a4e[
-						variable: TemplateOntologyTermField
-					]
-					property: ConstantExpression[validator]
-				]
-			)
-		]
-	]
-]
-
-newly created statement:
-org.codehaus.groovy.ast.expr.MethodCallExpression@70a0afab[
-	object: org.codehaus.groovy.ast.expr.VariableExpression@456d3d51[variable: this]
-	method: ConstantExpression[templateLongFields]
-	arguments: org.codehaus.groovy.ast.expr.TupleExpression@6d4b473[
-		org.codehaus.groovy.ast.expr.NamedArgumentListExpression@7692ed85[
-			org.codehaus.groovy.ast.expr.MapEntryExpression@2827f394(
-				key: ConstantExpression[validator],
-				value: org.codehaus.groovy.ast.expr.PropertyExpression@56e88e24[
-					object: org.codehaus.groovy.ast.expr.VariableExpression@3dcc0a0f[
-						variable: TemplateLongField
-					]
-					property: ConstantExpression[validator]
-				]
-			)
-		]
-	]
-]
-
-org.codehaus.groovy.ast.expr.MethodCallExpression@45edcd24[
-	object: org.codehaus.groovy.ast.expr.VariableExpression@7f371a59[variable: this]
-	method: ConstantExpression[templateLongFields]
-	arguments: org.codehaus.groovy.ast.expr.TupleExpression@7aa30a4e[
-		org.codehaus.groovy.ast.expr.NamedArgumentListExpression@65f9c5c8[
-			org.codehaus.groovy.ast.expr.MapEntryExpression@712801c5(
-				key: ConstantExpression[validator],
-				value: org.codehaus.groovy.ast.expr.ClosureExpression@798c668c[]{
-					org.codehaus.groovy.ast.stmt.ExpressionStatement@70a0afab[
-						expression:org.codehaus.groovy.ast.expr.PropertyExpression@456d3d51[
-							object: org.codehaus.groovy.ast.expr.VariableExpression@6d4b473[
-								variable: TemplateLongField
-							]
-							property: ConstantExpression[validator]
-						]
-					]
-				}
-			)
-		]
-	]
-]
-
-
-
-				*/
-println "3a"
-				ExpressionStatement expression = new ExpressionStatement(
-						new PropertyExpression(
-							new VariableExpression(templateFieldName),
-							"validator"
-						)
-					)
-println "3b"
-//Parameter param = new Parameter(new ClassNode(), "$it")
-//Parameter param = new Parameter(new ClassNode(MultipartFile.class), "image")
-
-/*
-                def param = [
-					new Parameter(
-                        ClassHelper.make(Object, false), "parm"
-                	)
-				] as Parameter[]
-*/
-println "3c"
-				ClosureExpression validator = new ClosureExpression(
-					[] as Parameter[],
-					expression
-				)
-
-println "3d"
-				PropertyExpression validatorTwo = new PropertyExpression(
+				// create the validator property
+				PropertyExpression validator = new PropertyExpression(
 					new VariableExpression(templateFieldName),
 					"validator"
 				)
 
-
-				/*
-ClosureExpression closureExpression = new ClosureExpression (
-new Parameter[] {}
-new ExpressionStatement(new PropertyExpression(new VariableExpression("it"), "class"))
-);
-				 */
-
 				// create expression arguments
-println "3e"
 				NamedArgumentListExpression arguments = new NamedArgumentListExpression();
-println "4"
                 arguments.addMapEntryExpression(
 					new ConstantExpression("validator"),			// validator key (name)
-					//validator										// validator expression
-					validatorTwo
-				);
-println "5"
+					validator										// validator expression
+				)
 
 				// create expression using the expression arguments
 				MethodCallExpression constantExpression = new MethodCallExpression(
 					VariableExpression.THIS_EXPRESSION,				// object
 					new ConstantExpression(templateFieldMapName),	// method
 					arguments										// arguments
-				);
-
-				println "newly created statement:"
-				println constantExpression
-
+				)
 
 				// add the newly created expression to the contraints' initialExpression
 				blockStatement.addStatement(new ExpressionStatement(constantExpression))
 
+				log.error "bla bla"
 			}
 		} else {
 			println " - adding constraints closure"
@@ -282,8 +231,6 @@ println "5"
 			for(Statement expressionStatement : statements){
 				// does the expression statement contain a method?
 				if(expressionStatement instanceof ExpressionStatement && ((ExpressionStatement)expressionStatement).getExpression() instanceof MethodCallExpression){
-//println "\n----"
-//println expressionStatement
 					// yes, get the expression
 					MethodCallExpression methodCallExpression	= (MethodCallExpression)((ExpressionStatement)expressionStatement).getExpression()
 
