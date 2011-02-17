@@ -20,10 +20,6 @@
  */
 package org.dbnp.gdt
 
-// temporary import until bgdt refactoring is done
-import org.dbnp.bgdt.*
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-
 /**
  * The TemplateEntity domain Class is a superclass for all template-enabled study capture entities, including
  * Study, Subject, Sample and Event. This class provides functionality for storing the different TemplateField
@@ -48,67 +44,18 @@ abstract class TemplateEntity extends Identity {
 	Template template
 
 	// Maps for storing the different template field values
-/*
-	Map templateStringFields		= [:]
-	Map templateTextFields			= [:]
-	Map templateStringListFields	= [:]
-	Map templateDoubleFields		= [:]
-	Map templateDateFields			= [:]
-	Map templateBooleanFields		= [:]
-	Map templateTemplateFields		= [:]
-	Map templateModuleFields		= [:]
-	Map templateLongFields			= [:]
-
-	// N.B. If you try to set Long.MIN_VALUE for a reltime field, an error will occur
-	// However, this will never occur in practice: this value represents 3 bilion centuries
-	Map templateRelTimeFields		= [:] // Contains relative times in seconds
-	Map templateFileFields			= [:] // Contains filenames
-	Map templateTermFields			= [:]
-
-	// define relationships
-	static hasMany = [
-		templateStringFields		: String,
-		templateTextFields			: String,
-		templateStringListFields	: TemplateFieldListItem,
-		templateDoubleFields		: double,
-		templateDateFields			: Date,
-		templateTermFields			: Term,
-		templateRelTimeFields		: long,
-		templateFileFields			: String,
-		templateBooleanFields		: boolean,
-		templateTemplateFields		: Template,
-		templateModuleFields		: AssayModule,
-		templateLongFields			: long,
-		systemFields				: TemplateField
-	]
-
-	static constraints = {
-		template(nullable: true, blank: true)
-		templateStringFields(validator		: TemplateStringField.validator)
-		templateTextFields(validator		: TemplateTextField.validator)
-		templateStringListFields(validator	: TemplateStringListField.validator)
-		templateDoubleFields(validator		: TemplateDoubleField.validator)
-		templateDateFields(validator		: TemplateDateField.validator)
-		templateRelTimeFields(validator		: TemplateRelTimeField.validator)
-		templateTermFields(validator		: TemplateOntologyTermField.validator)
-		templateFileFields(validator		: TemplateFileField.validator)
-		templateBooleanFields(validator		: TemplateBooleanField.validator)
-		templateTemplateFields(validator	: TemplateTemplateField.validator)
-		templateModuleFields(validator		: TemplateModuleField.validator)
-		templateLongFields(validator		: TemplateLongField.validator)
-	}
-*/
+	// are dynamically injected at compile time, e.g.:
+	//			Map templateLongFields = [:]
+	// @see org.dbnp.gdt.ast.TemplateEntityASTTransformation
 
 	/**
 	 * define relationships, note that this is dynamically
-	 * extended at compile time
+	 * extended at compile time, e.g.:
+	 * 		templateLongFields: Long
 	 * @see org.dbnp.gdt.ast.TemplateEntityASTTransformation
 	 */
 	static hasMany = [
-		templateStringListFields	: TemplateFieldListItem,
-		templateTermFields			: Term,
-		templateTemplateFields		: Template,
-		templateModuleFields		: AssayModule,
+		//templateStringListFields	: TemplateFieldListItem,
 		systemFields				: TemplateField
 	]
 
@@ -167,13 +114,9 @@ abstract class TemplateEntity extends Identity {
 
 	/**
 	 * Constraints
-	 *
-	 * All template fields have their own custom validator. Note that there
-	 * currently is a lot of code repetition. Ideally we don't want this, but
-	 * unfortunately due to scope issues we cannot re-use the code. So make
-	 * sure to replicate any changes to all pieces of logic! Only commented
-	 * the first occurrence of the logic, please refer to the templateStringFields
-	 * validator if you require information about the validation logic...
+	 * note that this is dynamically extended at compile time for every
+	 * templateField. E.g.: templateLongFields(validator: TemplateLongField.validator)
+	 * @see org.dbnp.gdt.ast.TemplateEntityASTTransformation
 	 */
 	static constraints = {
 		template(nullable: true, blank: true)

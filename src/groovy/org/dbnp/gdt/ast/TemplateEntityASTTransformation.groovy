@@ -14,6 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
+ *  Author	: Jeroen Wesbeek <work@osx.eu>
+ *  Since	: 20110211
+ *
+ *  Revision Information:
  *  $Author$
  *  $Rev$
  *  $Date$
@@ -31,15 +35,19 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log
 
 /**
- * Hook in the Groovy compiler and dynamically extend
- * TemplateEntity with all TemplateEntity fields in the
- * application (either in the GDT plugin, other plugins
- * or the application itself)
+ * Hook in the Groovy compiler and dynamically extend TemplateEntity with
+ * all TemplateEntity fields (= classes) in the application (either in the
+ * GDT plugin, other plugins or the application itself)
+ *
+ * As this is done before compilitation to byteCode, test this with:
+ * clear;grails clean;grails compile
  */
 @GroovyASTTransformation(phase = CompilePhase.CONVERSION)
 class TemplateEntityASTTransformation implements ASTTransformation {
-	static templateEntity = null
-	static templateFields = []
+	static debug			= false
+	static templateEntity	= null
+	static templateFields	= []
+	static otherClasses		= []
 	private static final Log log = LogFactory.getLog(TemplateEntityASTTransformation.class)
 
 	/**
@@ -87,6 +95,14 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 					return
 				}
 			}
+
+			// cache the other classes we visit as we may need
+			// them later when dynamically extending hasMany
+			// relationships
+			// @see TemplateEntityASTTransformation.extendHasMany
+			node.getClasses().findAll{!(it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/)}.each { ClassNode owner ->
+				otherClasses[ otherClasses.size() ] = owner
+			}
 		}
 	}
 
@@ -97,12 +113,17 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	 * @param classLoader
 	 */
 	private void injectTemplateField(ClassNode templateEntityClassNode, ClassNode templateFieldClassNode, classLoader) {
-		println "injecting ${templateFieldClassNode} into ${templateEntityClassNode}"
 		def contains 				= templateFieldClassNode.fields.find { it.properties.name == "contains" }
 		def owner					= contains.properties.owner
 		def typeName				= contains.getInitialExpression().variable
 		def splitTemplateFieldName	= owner.name.split("\\.")
 		def templateFieldName		= splitTemplateFieldName[(splitTemplateFieldName.size() - 1)]
+
+		// debug
+		if (debug) println "injecting ${templateFieldClassNode} into ${templateEntityClassNode}"
+
+		// todo: refactor TemplateOntologyTermField into TemplateTermField so it is consistent with the rest
+		//		 for now sticking to the replaceAll to keep this stupid exception to the rule working...
 		def templateFieldMapName	= (templateFieldName[0].toLowerCase() + templateFieldName.substring(1) + "s").replaceAll(/Ontology/, '')
 
 		// a GORM Map for this templateField to TemplateEntity, e.g.:
@@ -152,9 +173,10 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 			FieldNode constraints = templateEntityClassNode.getDeclaredField("constraints")
 
 			if (hasFieldInClosure(constraints, templateFieldMapName)) {
-				println " - constraint closure already exists"
+				//println " - constraint closure already exists, skip this"
 			} else {
-				println " - extending constraints closure"
+				// debug
+				if (debug) println " - extending constraints closure"
 
 				// get the constraints closure
 				ClosureExpression initialExpression = (ClosureExpression) constraints.getInitialExpression();
@@ -182,11 +204,9 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 
 				// add the newly created expression to the contraints' initialExpression
 				blockStatement.addStatement(new ExpressionStatement(constantExpression))
-
-				log.error "bla bla"
 			}
 		} else {
-			println " - adding constraints closure"
+			throw new Exception('This should not happen! This means that TemplateEntity does not have a \'constraints\' closure, which it is expected to have!')
 		}
 	}
 
@@ -198,10 +218,13 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	 */
 	public addTemplateFieldMap(ClassNode templateEntityClassNode, String templateFieldMapName) {
 		if (!GrailsASTUtils.hasProperty(templateEntityClassNode, templateFieldMapName)) {
-		    println " - adding ${templateFieldMapName}..."
+		    // debug
+			if (debug) println " - adding ${templateFieldMapName} map..."
+
 			templateEntityClassNode.addProperty(templateFieldMapName, Modifier.PUBLIC, new ClassNode(java.util.Map.class), new MapExpression(), null, null)
 		} else {
-			println " - ${templateFieldMapName} Map is already present"
+			// debug
+			if (debug) println " - ${templateFieldMapName} Map is already present, skip this"
 		}
 	}
 
@@ -214,28 +237,47 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	 * @return
 	 */
 	public extendHasMany(ClassNode templateEntityClassNode, String templateFieldName, String templateFieldMapName, String typeName) {
+		// is it a build in class?
+		def myClass
+		def words
 		try {
-			def myClass = Eval.me("${typeName}.class")
+			// try to use a build in class
+			myClass = new ClassNode(Eval.me("${typeName}.class"))
 		} catch (Exception e) {
-			println " - !!! COULD NOT LOAD ${typeName}"
+			// no, use class cache which contains
+			// all currently visited classes, and
+			// contains ClassNodes for each class
+			myClass = otherClasses.find {
+				words = it.name.split("\\.")
+				return (words[ (words.size()-1) ] == typeName)
+			}
 		}
 
+		// does templateEntity contain a hasMany map?
 		if (GrailsASTUtils.hasProperty(templateEntityClassNode, "hasMany")) {
 			PropertyNode hasMany = templateEntityClassNode.getProperty("hasMany")
 			MapExpression initialExpression = hasMany.getInitialExpression()
 			if (!initialExpression.getMapEntryExpressions().find{it.getKeyExpression().toString() =~ templateFieldMapName}) {
-				println " - extending hasMany map"
-				initialExpression.addMapEntryExpression(new ConstantExpression(templateFieldMapName), new ClassExpression(new ClassNode(Eval.me("${typeName}.class"))))
+				// debug
+				if (debug) println " - extending hasMany map"
+
+				initialExpression.addMapEntryExpression(new ConstantExpression(templateFieldMapName), new ClassExpression(myClass))
+				//initialExpression.addMapEntryExpression(new ConstantExpression(templateFieldMapName), new VariableExpression(myClass))
 			} else {
-				println " - hasMany map entry for ${templateFieldName} already present"
+				// debug
+				if (debug) println " - hasMany map entry for ${templateFieldName} already present"
 			}
+
+			// show all hasMany entries
+			if (debug) hasMany.getInitialExpression().properties.mapEntryExpressions.each { println it }
 		} else {
-			println " - adding hasMany map"
+			// debug
+			if (debug) println " - adding hasMany map"
+
 			MapExpression initialExpression = new MapExpression()
-			initialExpression.addMapEntryExpression(new ConstantExpression(templateFieldMapName), new ClassExpression(new ClassNode(Eval.me("${typeName}.class"))))
+			initialExpression.addMapEntryExpression(new ConstantExpression(templateFieldMapName), new ClassExpression(myClass))
 			templateEntityClassNode.addProperty("hasMany", Modifier.PUBLIC | Modifier.STATIC, new ClassNode(java.util.Map.class), initialExpression, null, null)
 		}
-
 	}
 
 	/**
@@ -255,10 +297,10 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 				// does the expression statement contain a method?
 				if(expressionStatement instanceof ExpressionStatement && ((ExpressionStatement)expressionStatement).getExpression() instanceof MethodCallExpression){
 					// yes, get the expression
-					MethodCallExpression methodCallExpression	= (MethodCallExpression)((ExpressionStatement)expressionStatement).getExpression()
+					MethodCallExpression methodCallExpression = (MethodCallExpression)((ExpressionStatement)expressionStatement).getExpression()
 
 					// get the method
-					ConstantExpression constantExpression		= (ConstantExpression)methodCallExpression.getMethod()
+					ConstantExpression constantExpression = (ConstantExpression)methodCallExpression.getMethod()
 
 					// is it the same as the field name?
 					if(constantExpression.getValue().equals(fieldName)){
