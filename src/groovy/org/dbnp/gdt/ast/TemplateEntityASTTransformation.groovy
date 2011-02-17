@@ -42,7 +42,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
  */
 @GroovyASTTransformation(phase = CompilePhase.CONVERSION)
 class TemplateEntityASTTransformation implements ASTTransformation {
-	static debug				= false		// debugging on/off
+	static debug				= true		// debugging on/off
 	static templateEntity		= null		// templateEntity ClassNode
 	static templateFieldType	= null		// templateFieldType ClassNode
 	static templateFields		= []		// temporary cache
@@ -85,7 +85,8 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 					// got some cached template fields to handle?
 					if (templateFields.size()) {
 						templateFields.each {
-							injectTemplateField(it, owner, templateFieldType)
+							// inject the cached TemplateField into TemplateEntity
+							injectTemplateField(templateEntity, it, templateFieldType)
 						}
 						templateFields = []
 					}
@@ -270,7 +271,9 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 				blockStatement.addStatement(new ExpressionStatement(constantExpression))
 			}
 		} else {
-			throw new Exception('This should not happen! This means that TemplateEntity does not have a \'constraints\' closure, which it is expected to have!')
+			//throw new Exception('This should not happen! This means that TemplateEntity does not have a \'constraints\' closure, which it is expected to have!')
+			// debug
+			if (debug) println " - ERROR! constraints closure not present so we cannot extend it!!!"
 		}
 	}
 
