@@ -42,7 +42,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
  */
 @GroovyASTTransformation(phase = CompilePhase.CONVERSION)
 class TemplateEntityASTTransformation implements ASTTransformation {
-	static debug				= true		// debuggin on/off
+	static debug				= false		// debugging on/off
 	static templateEntity		= null		// templateEntity ClassNode
 	static templateFieldType	= null		// templateFieldType ClassNode
 	static templateFields		= []		// temporary cache
