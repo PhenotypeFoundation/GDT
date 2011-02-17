@@ -28,7 +28,6 @@ public enum TemplateFieldType implements Serializable {
 	String example
 
 	TemplateFieldType(String casedName, String name, String category, String example) {
-//println "TemplateFieldType(${casedName}, ${name}, ${category}, ${example})"
 		this.name		= name
 		this.casedName	= casedName
 		this.category	= category

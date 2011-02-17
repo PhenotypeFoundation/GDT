@@ -31,8 +31,6 @@ import org.codehaus.groovy.control.*
 import org.codehaus.groovy.ast.stmt.*
 import java.lang.reflect.Modifier
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log
 
 /**
  * Hook in the Groovy compiler and dynamically extend TemplateEntity with
@@ -44,11 +42,11 @@ import org.apache.commons.logging.Log
  */
 @GroovyASTTransformation(phase = CompilePhase.CONVERSION)
 class TemplateEntityASTTransformation implements ASTTransformation {
-	static debug			= false
-	static templateEntity	= null
-	static templateFields	= []
-	static otherClasses		= []
-	private static final Log log = LogFactory.getLog(TemplateEntityASTTransformation.class)
+	static debug				= true		// debuggin on/off
+	static templateEntity		= null		// templateEntity ClassNode
+	static templateFieldType	= null		// templateFieldType ClassNode
+	static templateFields		= []		// temporary cache
+	static otherClasses			= []        // cache of all other classes
 
 	/**
 	 * class constructor
@@ -65,26 +63,29 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	 * @param sourceUnit
 	 */
 	public void visit(ASTNode[] nodes, SourceUnit sourceUnit) {
-		def classLoader = sourceUnit.getClassLoader()
-
 		// iterate through the nodes
 		nodes.each { node ->
 			// find all TemplateFields or TemplateEntity nodes
-			node.getClasses().findAll{it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/}.each { ClassNode owner ->
+			node.getClasses().findAll{it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/ || it.name =~ /\.TemplateFieldType$/}.each { ClassNode owner ->
 				// is this TemplateEntity or a TemplateField?
 				if (owner.name =~ /\.TemplateEntity$/) {
 					// remember templateEntity so we can inject
 					// templatefields into it
 					templateEntity = owner
 					return
+				} else if (owner.name =~ /\.TemplateFieldType$/) {
+					// remember templateFieldType so we can inject
+					// templateFields into it
+					templateFieldType = owner
+					return
 				} else if (templateEntity) {
 					// inject this template field into TemplateEntity
-					injectTemplateField(templateEntity, owner, classLoader)
+					injectTemplateField(templateEntity, owner, templateFieldType)
 
 					// got some cached template fields to handle?
 					if (templateFields.size()) {
 						templateFields.each {
-							injectTemplateField(it, owner, classLoader)
+							injectTemplateField(it, owner, templateFieldType)
 						}
 						templateFields = []
 					}
@@ -112,7 +113,7 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	 * @param templateFieldClassNode
 	 * @param classLoader
 	 */
-	private void injectTemplateField(ClassNode templateEntityClassNode, ClassNode templateFieldClassNode, classLoader) {
+	private void injectTemplateField(ClassNode templateEntityClassNode, ClassNode templateFieldClassNode, ClassNode templateFieldTypeClassNode) {
 		def contains 				= templateFieldClassNode.fields.find { it.properties.name == "contains" }
 		def owner					= contains.properties.owner
 		def typeName				= contains.getInitialExpression().variable
@@ -149,6 +150,69 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 		//		...
 		// }
 		extendConstraints(templateEntityClassNode, templateFieldClassNode, templateFieldMapName, templateFieldName)
+
+		// extend the TemplateFieldType enum with this templateField
+		//extendTemplateFieldType(templateFieldTypeClassNode, templateFieldClassNode)
+	}
+
+	/**
+	 * Extend the TemplateFieldType enum dynamically with the given templateField
+	 * @param templateFieldTypeClassNode
+	 * @param templateFieldClassNode
+	 * @return
+	 */
+	public extendTemplateFieldType(ClassNode templateFieldTypeClassNode, ClassNode templateFieldClassNode) {
+		def type		= templateFieldClassNode.getProperty("type").getInitialExpression().value
+		def casedType	= templateFieldClassNode.getProperty("casedType").getInitialExpression().value
+		def descriptoin	= templateFieldClassNode.getProperty("description").getInitialExpression().value
+		def category	= templateFieldClassNode.getProperty("category").getInitialExpression().value
+		def example		= templateFieldClassNode.getProperty("example").getInitialExpression().value
+
+		if (templateFieldTypeClassNode.getFields().find{it.name == type}) {
+			if (debug) println " - enum entry ${type} for ${templateFieldClassNode} already exists, skipping"
+		} else {
+			if (debug) println " - extending ${templateFieldTypeClassNode} with ${type}"
+			//templateFieldTypeClassNode.addFieldFirst("BAR", ACC_ENUM + ACC_FINAL + ACC_PUBLIC + ACC_STATIC, declaringClass, null)
+			templateFieldTypeClassNode.addFieldFirst(type, 16409, templateFieldTypeClassNode, null)
+
+		}
+
+		if (type == "ONTOLOGYTERM") {
+
+			// STRING		('String'		,'Short text'			, 'Text'		, 'max 255 chars'),			// string
+			// <org.codehaus.groovy.ast.FieldNode@55d2162c name=STRING modifiers=16409 type=org.dbnp.gdt.TemplateFieldType owner=org.dbnp.gdt.TemplateFieldType initialValueExpression=null dynamicTyped=false holder=false closureShare=false annotations=[] synthetic=false declaringClass=org.dbnp.gdt.TemplateFieldType hasNoRealSourcePositionFlag=false lineNumber=-1 columnNumber=-1 lastLineNumber=-1 lastColumnNumber=-1>
+			println templateFieldTypeClassNode.dump()
+			templateFieldTypeClassNode.getFields().each {
+				println it.dump()
+			}
+			def myTest = templateFieldTypeClassNode.getFields().find { it.name == type }
+			myTest.each {
+				println it.dump()
+				println it.getInitialExpression()
+			}
+
+			/*
+			MethodNode method = getOrAddStaticConstructorNode();
+			Statement statement = method.getCode();
+			if (statement instanceof BlockStatement) {
+				BlockStatement block = (BlockStatement) statement;
+				// add given statements for explicitly declared static fields just after enum-special fields
+				// are found - the $VALUES binary expression marks the end of such fields.
+				List<Statement> blockStatements = block.getStatements();
+			}
+			FieldNode constraints = templateEntityClassNode.getDeclaredField("constraints")
+			if (hasFieldInClosure(constraints, templateFieldMapName)) {
+				//println " - constraint closure already exists, skip this"
+			} else {
+				// debug
+				if (debug) println " - extending constraints closure"
+
+				// get the constraints closure
+				ClosureExpression initialExpression = (ClosureExpression) constraints.getInitialExpression();
+				BlockStatement blockStatement		= (BlockStatement) initialExpression.getCode();
+			*/
+			//def
+		}
 	}
 
 	/**
@@ -269,7 +333,7 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 			}
 
 			// show all hasMany entries
-			if (debug) hasMany.getInitialExpression().properties.mapEntryExpressions.each { println it }
+			//if (debug) hasMany.getInitialExpression().properties.mapEntryExpressions.each { println it }
 		} else {
 			// debug
 			if (debug) println " - adding hasMany map"
