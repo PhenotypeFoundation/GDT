@@ -113,7 +113,6 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 			// relationships
 			// @see TemplateEntityASTTransformation.extendHasMany
 			node.getClasses().findAll {!(it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/)}.each { ClassNode owner ->
-			//node.getClasses().each {
 					cacheClasses[cacheClasses.size()] = owner
 			}
 
