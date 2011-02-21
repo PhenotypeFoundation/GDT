@@ -45,6 +45,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
 class TemplateEntityASTTransformation implements ASTTransformation {
 	static debug = true		// debugging on/off
 	static templateEntity = null		// templateEntity ClassNode
+	static templateField = null			// templateField ClassNode
 	static templateFieldType = null		// templateFieldType ClassNode
 	static templateFields = []			// temporary cache of fields we need to reprocess
 	static cacheTemplateFields = []		// cache of all template fields
@@ -75,6 +76,12 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 					// remember templateEntity so we can inject
 					// templatefields into it
 					templateEntity = owner
+					return
+				} else if (owner.name =~ /\.TemplateField$/) {
+					// remember templateField so we can inject
+					// a hasMany relationship into TemplateField's
+					// (if required)
+					templateField = owner
 					return
 				} else if (owner.name =~ /\.TemplateFieldType$/) {
 					// remember templateFieldType so we can inject
@@ -199,6 +206,9 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 
 		// extend the TemplateFieldType enum with this templateField
 		//extendTemplateFieldType(templateFieldTypeClassNode, templateFieldClassNode)
+
+		// extend TemplateField's hasMany relationship, if required
+		// TODO
 	}
 
 	/**
