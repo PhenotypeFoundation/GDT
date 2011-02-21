@@ -20,11 +20,6 @@
  */
 package org.dbnp.gdt
 
-// TODO: we still need to import bgdt, see if we can
-//       dynamically make TemplatEntity import the plugin
-//		 using ASTTransformations
-import org.dbnp.bgdt.*
-
 /**
  * The TemplateEntity domain Class is a superclass for all template-enabled study capture entities, including
  * Study, Subject, Sample and Event. This class provides functionality for storing the different TemplateField
