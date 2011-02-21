@@ -24,6 +24,7 @@
  */
 
 package org.dbnp.gdt.ast
+
 import org.codehaus.groovy.transform.*
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
@@ -42,12 +43,13 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
  */
 @GroovyASTTransformation(phase = CompilePhase.CONVERSION)
 class TemplateEntityASTTransformation implements ASTTransformation {
-	static debug				= true		// debugging on/off
-	static templateEntity		= null		// templateEntity ClassNode
-	static templateFieldType	= null		// templateFieldType ClassNode
-	static templateFields		= []		// temporary cache
-	static otherClasses			= []        // cache of all other classes
-	static myPackage			= "gdt"
+	static debug = true		// debugging on/off
+	static templateEntity = null		// templateEntity ClassNode
+	static templateFieldType = null		// templateFieldType ClassNode
+	static templateFields = []			// temporary cache of fields we need to reprocess
+	static cacheTemplateFields = []		// cache of all template fields
+	static cacheClasses = []			// cache of all other classes
+	static myPackage = "gdt"
 
 	/**
 	 * class constructor
@@ -67,7 +69,7 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 		// iterate through the nodes
 		nodes.each { node ->
 			// find all TemplateFields or TemplateEntity nodes
-			node.getClasses().findAll{it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/ || it.name =~ /\.TemplateFieldType$/}.each { ClassNode owner ->
+			node.getClasses().findAll {it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/ || it.name =~ /\.TemplateFieldType$/}.each { ClassNode owner ->
 				// is this TemplateEntity or a TemplateField?
 				if (owner.name =~ /\.TemplateEntity$/) {
 					// remember templateEntity so we can inject
@@ -80,6 +82,9 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 					templateFieldType = owner
 					return
 				} else if (templateEntity) {
+					// add this templateField to the cache
+					cacheTemplateFields[ cacheTemplateFields.size() ] = owner
+
 					// inject this template field into TemplateEntity
 					injectTemplateField(templateEntity, owner, templateFieldType)
 
@@ -92,8 +97,11 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 						templateFields = []
 					}
 				} else {
-					// cache this templateField until the
-					// compilere visits TemplateEntity
+					// add this templateField to the cache
+					cacheTemplateFields[ cacheTemplateFields.size() ] = owner
+
+					// remember to revisit this template field when the compiler
+					// has visited TemplateEntity
 					templateFields[ templateFields.size() ] = owner
 					return
 				}
@@ -103,8 +111,9 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 			// them later when dynamically extending hasMany
 			// relationships
 			// @see TemplateEntityASTTransformation.extendHasMany
-			node.getClasses().findAll{!(it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/)}.each { ClassNode owner ->
-				otherClasses[ otherClasses.size() ] = owner
+			node.getClasses().findAll {!(it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/)}.each { ClassNode owner ->
+			//node.getClasses().each {
+					cacheClasses[cacheClasses.size()] = owner
 			}
 		}
 	}
@@ -116,24 +125,19 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	 * @param classLoader
 	 */
 	private void injectTemplateField(ClassNode templateEntityClassNode, ClassNode templateFieldClassNode, ClassNode templateFieldTypeClassNode) {
-		def contains 				= templateFieldClassNode.fields.find { it.properties.name == "contains" }
-		def owner					= contains.properties.owner
-		def typeName				= contains.getInitialExpression().variable
-		def splitTemplateFieldName	= owner.name.split("\\.")
-		def templateFieldName		= splitTemplateFieldName[(splitTemplateFieldName.size() - 1)]
+		def contains = templateFieldClassNode.fields.find { it.properties.name == "contains" }
+		def owner = contains.properties.owner
+		def typeName = contains.getInitialExpression().variable
+		def splitTemplateFieldName = owner.name.split("\\.")
+		def templateFieldName = splitTemplateFieldName[(splitTemplateFieldName.size() - 1)]
 
 		// debug
 		if (debug) println "injecting ${templateFieldClassNode} into ${templateEntityClassNode}"
 
 		// todo: refactor TemplateOntologyTermField into TemplateTermField so it is consistent with the rest
 		//		 for now sticking to the replaceAll to keep this stupid exception to the rule working...
-		def templateFieldMapName	= (templateFieldName[0].toLowerCase() + templateFieldName.substring(1) + "s").replaceAll(/Ontology/, '')
+		def templateFieldMapName = (templateFieldName[0].toLowerCase() + templateFieldName.substring(1) + "s").replaceAll(/Ontology/, '')
 
-println templateEntityClassNode
-println templateFieldClassNode
-println templateFieldName
-println templateFieldMapName
-println typeName
 		// a GORM Map for this templateField to TemplateEntity, e.g.:
 		//
 		// Map templateLongFields = [:]
@@ -169,13 +173,13 @@ println typeName
 	 * @return
 	 */
 	public extendTemplateFieldType(ClassNode templateFieldTypeClassNode, ClassNode templateFieldClassNode) {
-		def type		= templateFieldClassNode.getProperty("type").getInitialExpression().value
-		def casedType	= templateFieldClassNode.getProperty("casedType").getInitialExpression().value
-		def descriptoin	= templateFieldClassNode.getProperty("description").getInitialExpression().value
-		def category	= templateFieldClassNode.getProperty("category").getInitialExpression().value
-		def example		= templateFieldClassNode.getProperty("example").getInitialExpression().value
+		def type = templateFieldClassNode.getProperty("type").getInitialExpression().value
+		def casedType = templateFieldClassNode.getProperty("casedType").getInitialExpression().value
+		def descriptoin = templateFieldClassNode.getProperty("description").getInitialExpression().value
+		def category = templateFieldClassNode.getProperty("category").getInitialExpression().value
+		def example = templateFieldClassNode.getProperty("example").getInitialExpression().value
 
-		if (templateFieldTypeClassNode.getFields().find{it.name == type}) {
+		if (templateFieldTypeClassNode.getFields().find {it.name == type}) {
 			if (debug) println " - enum entry ${type} for ${templateFieldClassNode} already exists, skipping"
 		} else {
 			if (debug) println " - extending ${templateFieldTypeClassNode} with ${type}"
@@ -226,12 +230,10 @@ println typeName
 	 * Extend the TemplateEntity constraints and dynamically inject a validator
 	 * for the given TemplateField. In groovy code this would be:
 	 *
-	 * static constraints = {
-	 *     ...
+	 * static constraints = {*     ...
 	 *     templateLongFields(validator: TemplateLongField.validator)
 	 *     ...
-	 * }
-	 *
+	 *}*
 	 * @param templateEntityClassNode
 	 * @param templateFieldClassNode
 	 * @param templateFieldMapName
@@ -239,29 +241,72 @@ println typeName
 	 * @return
 	 */
 	public extendConstraints(ClassNode templateEntityClassNode, ClassNode templateFieldClassNode, String templateFieldMapName, String templateFieldName) {
-		// see http://svn.codehaus.org/grails-plugins/grails-burning-image/trunk/src/java/pl/burningice/plugins/image/ast/AbstractImageContainerTransformation.java
+		// check if it is a built in class or not
+		def packageWords, validator
+		try {
+			// See if this is a built in class
+			new ClassNode(Eval.me("${templateFieldName}.class"))
+		} catch (Exception e) {
+			// no, use class cache which contains
+			// all currently visited classes, and
+			// contains ClassNodes for each class
+			if (!cacheTemplateFields.find {
+				packageWords = it.name.toString().split("\\.")
+				return (packageWords[(packageWords.size() - 1)] == templateFieldName)
+			}) {
+				println "ERROR: gdt error 2, the template field ${templateFieldName} was not cached propely; this should not happen!"
+			}
+		}
+
+		// check if the templateEntity classNode has constraints
 		if (GrailsASTUtils.hasProperty(templateEntityClassNode, "constraints")) {
 			FieldNode constraints = templateEntityClassNode.getDeclaredField("constraints")
 
 			if (hasFieldInClosure(constraints, templateFieldMapName)) {
-				//println " - constraint closure already exists, skip this"
+				if (debug) println " - constraint closure already exists, skip this"
 			} else {
 				// debug
 				if (debug) println " - extending constraints closure"
 
 				// get the constraints closure
 				ClosureExpression initialExpression = (ClosureExpression) constraints.getInitialExpression();
-				BlockStatement blockStatement		= (BlockStatement) initialExpression.getCode();
+				BlockStatement blockStatement = (BlockStatement) initialExpression.getCode();
 
-				// create the validator property
-				PropertyExpression validator = new PropertyExpression(
-					new VariableExpression(templateFieldName),
-					"validator"
-				)
+				// check if this is
+				//  - a built in class, or
+				//  - a class which is in the same package
+				if (packageWords == null || packageWords[(packageWords.size() - 2)] == myPackage) {
+					// create the validator property
+					//PropertyExpression
+					validator = new PropertyExpression(
+						new VariableExpression(templateFieldName),
+						"validator"
+					)
+				} else {
+					// some external class which resides in the application
+					// or a child plugin
+					validator = null
+
+					// create a map based on the packageWords and the validator mathod
+					def fullMethodPath = []
+					packageWords.each { fullMethodPath[ fullMethodPath.size() ] = it }
+					fullMethodPath[ fullMethodPath.size() ] = 'validator'
+
+					// build nested property
+					fullMethodPath.each {
+						println it
+						println it.class
+						if (!validator) {
+							validator = new VariableExpression(it)
+						} else {
+							validator = new PropertyExpression(validator, it)
+						}
+					}
+				}
 
 				// create expression arguments
 				NamedArgumentListExpression arguments = new NamedArgumentListExpression();
-                arguments.addMapEntryExpression(
+				arguments.addMapEntryExpression(
 					new ConstantExpression("validator"),			// validator key (name)
 					validator										// validator expression
 				)
@@ -276,9 +321,12 @@ println typeName
 				// add the newly created expression to the contraints' initialExpression
 				blockStatement.addStatement(new ExpressionStatement(constantExpression))
 			}
+			templateEntityClassNode.getDeclaredField("constraints").each() {
+				println it.dump()
+			}
 		} else {
 			// debug
-			if (debug) println " - ERROR! constraints closure not present so we cannot extend it!!!"
+			if (debug) println "ERROR: gdt error 1, constraints closure not present so we cannot exnted it. This should not happen!"
 		}
 	}
 
@@ -290,7 +338,7 @@ println typeName
 	 */
 	public addTemplateFieldMap(ClassNode templateEntityClassNode, String templateFieldMapName) {
 		if (!GrailsASTUtils.hasProperty(templateEntityClassNode, templateFieldMapName)) {
-		    // debug
+			// debug
 			if (debug) println " - adding ${templateFieldMapName} map..."
 
 			templateEntityClassNode.addProperty(templateFieldMapName, Modifier.PUBLIC, new ClassNode(java.util.Map.class), new MapExpression(), null, null)
@@ -309,9 +357,8 @@ println typeName
 	 * @return
 	 */
 	public extendHasMany(ClassNode templateEntityClassNode, String templateFieldName, String templateFieldMapName, String typeName) {
-		// is it a build in class?
-		def myClass
-		def packageWords
+		// check if it is a built in class or not
+		def myClass, packageWords
 		try {
 			// try to use a build in class
 			myClass = new ClassNode(Eval.me("${typeName}.class"))
@@ -319,9 +366,9 @@ println typeName
 			// no, use class cache which contains
 			// all currently visited classes, and
 			// contains ClassNodes for each class
-			myClass = otherClasses.find {
+			myClass = cacheClasses.find {
 				packageWords = it.name.split("\\.")
-				return (packageWords[ (packageWords.size()-1) ] == typeName)
+				return (packageWords[(packageWords.size() - 1)] == typeName)
 			}
 		}
 
@@ -330,14 +377,14 @@ println typeName
 			PropertyNode hasMany = templateEntityClassNode.getProperty("hasMany")
 			MapExpression initialExpression = hasMany.getInitialExpression()
 
-			if (!initialExpression.getMapEntryExpressions().find{it.getKeyExpression().toString() =~ templateFieldMapName}) {
+			if (!initialExpression.getMapEntryExpressions().find {it.getKeyExpression().toString() =~ templateFieldMapName}) {
 				// debug
 				if (debug) println " - extending hasMany map"
 
 				// check if this is
 				//  - a built in class, or
 				//  - a class which is in the same package
-				if (packageWords == null || packageWords[ (packageWords.size()-2) ] == myPackage) {
+				if (packageWords == null || packageWords[(packageWords.size() - 2)] == myPackage) {
 					// builtin or package class
 					initialExpression.addMapEntryExpression(
 						new ConstantExpression(templateFieldMapName),
@@ -383,24 +430,24 @@ println typeName
 	 * @param fieldName
 	 * @return
 	 */
-	public boolean hasFieldInClosure(FieldNode closure, String fieldName){
-		if(closure != null){
-			ClosureExpression initialExpression	= (ClosureExpression) closure.getInitialExpression()
-			BlockStatement blockStatement		= (BlockStatement) initialExpression.getCode()
-			List<Statement> statements			= blockStatement.getStatements()
+	public boolean hasFieldInClosure(FieldNode closure, String fieldName) {
+		if (closure != null) {
+			ClosureExpression initialExpression = (ClosureExpression) closure.getInitialExpression()
+			BlockStatement blockStatement = (BlockStatement) initialExpression.getCode()
+			List<Statement> statements = blockStatement.getStatements()
 
 			// iterate through block statements
-			for(Statement expressionStatement : statements){
+			for (Statement expressionStatement: statements) {
 				// does the expression statement contain a method?
-				if(expressionStatement instanceof ExpressionStatement && ((ExpressionStatement)expressionStatement).getExpression() instanceof MethodCallExpression){
+				if (expressionStatement instanceof ExpressionStatement && ((ExpressionStatement) expressionStatement).getExpression() instanceof MethodCallExpression) {
 					// yes, get the expression
-					MethodCallExpression methodCallExpression = (MethodCallExpression)((ExpressionStatement)expressionStatement).getExpression()
+					MethodCallExpression methodCallExpression = (MethodCallExpression) ((ExpressionStatement) expressionStatement).getExpression()
 
 					// get the method
-					ConstantExpression constantExpression = (ConstantExpression)methodCallExpression.getMethod()
+					ConstantExpression constantExpression = (ConstantExpression) methodCallExpression.getMethod()
 
 					// is it the same as the field name?
-					if(constantExpression.getValue().equals(fieldName)){
+					if (constantExpression.getValue().equals(fieldName)) {
 						return true
 					}
 				}
