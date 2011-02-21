@@ -103,6 +103,7 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 					// remember to revisit this template field when the compiler
 					// has visited TemplateEntity
 					templateFields[ templateFields.size() ] = owner
+
 					return
 				}
 			}
@@ -114,6 +115,41 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 			node.getClasses().findAll {!(it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/)}.each { ClassNode owner ->
 			//node.getClasses().each {
 					cacheClasses[cacheClasses.size()] = owner
+			}
+
+			// check if we are visiting the application bootstrap to determine
+			// if the compile phase has ended for all GDT related files
+			if (node.getClasses().findAll {it.name == "BootStrap"}) {
+				// we are in the ASTTransformation of the application itself,
+				// we should not have any TemplateFields hanging around which
+				// were not compiled. If so, they are probably in the application
+				// while they should be in a plugin
+				if (templateFields.size()) {
+					def count = 1
+					println ""
+					println ""
+					println "----------------------===={ Grails Domain Templates (GDT) WARNING }====-------------------------"
+					println ""
+					println "Compilation of GDT related files has been finished, and the template model has been dynamically"
+					println "extended, but the following template field"+((templateFields.size()>1)?'s were':' was')+" visited by the compiler AFTER the GDT compilation"
+					println "was completed. This means the following field"+((templateFields.size()>1)?'s are':' is')+" NOT available in the application."
+					println ""
+					println "This problem is most likely caused by "+((templateFields.size()>1)?'these files':'this file')+" being in the Application source tree itself,"
+					println "rather in a seperate plugin. To solve this issue, move the class"+((templateFields.size()>1)?'es below into their own':' below into it\'s own')
+					println "dedicated plugin."
+					println ""
+					templateFields.each {
+						if (count == 1) {
+							println "GDT templateField"+((templateFields.size()>1)?'s:':':')+"\t${count++}.\t${it.name}"
+						} else {
+							println "\t\t\t${count++}.\t${it.name}"
+						}
+					}
+					println ""
+					println "------------------------------------------------------------------------------------------------"
+					println ""
+					println ""
+				}
 			}
 		}
 	}
