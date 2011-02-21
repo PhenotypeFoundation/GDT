@@ -1,6 +1,7 @@
 package org.dbnp.gdt
 
 // temporary import until bgdt refactoring is done
+
 import org.dbnp.bgdt.*
 
 /**
@@ -22,29 +23,29 @@ import org.dbnp.bgdt.*
  */
 class TemplateField implements Serializable {
 
-	/** The name of the TemplateField, by which it is represented to the user.  */
+	/** The name of the TemplateField, by which it is represented to the user.   */
 	String name
 
-	/** The type of this TemplateField, such as STRING, ONTOLOGYTERM etc. */
+	/** The type of this TemplateField, such as STRING, ONTOLOGYTERM etc.  */
 	TemplateFieldType type
 
-	/** The entity for which this TemplateField is meant. Only Templates for this entity can contain this TemplateField */
+	/** The entity for which this TemplateField is meant. Only Templates for this entity can contain this TemplateField  */
 	Class entity
 
-	/** The unit of the values of this TemplateField (optional) */
+	/** The unit of the values of this TemplateField (optional)  */
 	String unit
 
-	/** The help string which is shown in the user interface to describe this template field (optional, TEXT) */
+	/** The help string which is shown in the user interface to describe this template field (optional, TEXT)  */
 	String comment
 
-	/** The different list entries for a STRINGLIST TemplateField. This property is only used if type == TemplateFieldType.STRINGLIST */
+	/** The different list entries for a STRINGLIST TemplateField. This property is only used if type == TemplateFieldType.STRINGLIST  */
 	List listEntries
 
-	/** Indicates whether this field is required to be filled out or not */
+	/** Indicates whether this field is required to be filled out or not  */
 	boolean required
 
 	/** Indicates whether this field is the preferred identifier for the resulting templated entity.
-		This is for example used when importing to match entries in the database against the ones that are being imported. */
+	 This is for example used when importing to match entries in the database against the ones that are being imported.  */
 	boolean preferredIdentifier
 
 	static hasMany = [
@@ -72,11 +73,11 @@ class TemplateField implements Serializable {
 	static mapping = {
 		// Make sure the comments can be Strings of arbitrary length
 		comment type: 'text'
-                name column:"templatefieldname"
-                type column:"templatefieldtype"
-                entity column:"templatefieldentity"
-                unit column:"templatefieldunit"
-                comment column:"templatefieldcomment"
+		name column: "templatefieldname"
+		type column: "templatefieldtype"
+		entity column: "templatefieldentity"
+		unit column: "templatefieldunit"
+		comment column: "templatefieldcomment"
 	}
 
 	String toString() {
@@ -110,58 +111,58 @@ class TemplateField implements Serializable {
 
 	/**
 	 * Retrieves all list items of a stringlist template field that have been used in an object
-	 * 
-	 * @return	ArrayList containing all list items of this template field that have been used in an object.
+	 *
+	 * @return ArrayList containing all list items of this template field that have been used in an object.
 	 */
 	def getUsedListEntries() {
-		if( this.type != TemplateFieldType.STRINGLIST )
-			return []
+		if (this.type != TemplateFieldType.STRINGLIST)
+		return []
 
-		return this.listEntries.findAll { this.entryUsed( it ) }
+		return this.listEntries.findAll { this.entryUsed(it) }
 	}
 
 	/**
 	 * Retrieves all list items of a stringlist template field that have never been used in an object
 	 *
-	 * @return	ArrayList containing all list items of this template field that have nevert been used in an object.
+	 * @return ArrayList containing all list items of this template field that have nevert been used in an object.
 	 */
 	def getNonUsedListEntries() {
-		if( this.type != TemplateFieldType.STRINGLIST )
-			return []
-		
-		return this.listEntries.findAll { !this.entryUsed( it ) }
+		if (this.type != TemplateFieldType.STRINGLIST)
+		return []
+
+		return this.listEntries.findAll { !this.entryUsed(it) }
 	}
 
 	/**
 	 * Retrieves all ontologies of an ontologyterm template field that have been used in an object
 	 *
-	 * @return	ArrayList containing all ontologies of this template field that have been used in an object
-	 *			(i.e. all ontologies from which a term has been selected in this template field).
+	 * @return ArrayList containing all ontologies of this template field that have been used in an object
+	 * 			(i.e. all ontologies from which a term has been selected in this template field).
 	 */
 	def getUsedOntologies() {
-		if( this.type != TemplateFieldType.ONTOLOGYTERM )
-			return []
+		if (this.type != TemplateFieldType.ONTOLOGYTERM)
+		return []
 
-		return this.ontologies.findAll { this.entryUsed( it ) }
+		return this.ontologies.findAll { this.entryUsed(it) }
 	}
 
 	/**
 	 * Retrieves all list items of an ontologyterm template field that have never been used in an object
 	 *
-	 * @return	ArrayList containing all ontologies of this template field that have never been used in an object.
-	 *			(i.e. all ontologies from which no term has been selected in this template field).
+	 * @return ArrayList containing all ontologies of this template field that have never been used in an object.
+	 * 			(i.e. all ontologies from which no term has been selected in this template field).
 	 */
 	def getNonUsedOntologies() {
-		if( this.type != TemplateFieldType.ONTOLOGYTERM )
-			return []
+		if (this.type != TemplateFieldType.ONTOLOGYTERM)
+		return []
 
-		return this.ontologies.findAll { !this.entryUsed( it ) }
+		return this.ontologies.findAll { !this.entryUsed(it) }
 	}
 
 	/**
 	 * Checks whether this template field is used in a template
 	 *
-	 * @returns		true iff this template field is used in a template (even if the template is never used), false otherwise
+	 * @returns true iff this template field is used in a template (even if the template is never used), false otherwise
 	 */
 	def inUse() {
 		return numUses() > 0;
@@ -170,7 +171,7 @@ class TemplateField implements Serializable {
 	/**
 	 * The number of templates that use this template field
 	 *
-	 * @returns		the number of templates that use this template field.
+	 * @returns the number of templates that use this template field.
 	 */
 	def numUses() {
 		return getUses().size();
@@ -179,14 +180,14 @@ class TemplateField implements Serializable {
 	/**
 	 * Retrieves the templates that use this template field
 	 *
-	 * @returns		a list of templates that use this template field.
+	 * @returns a list of templates that use this template field.
 	 */
 	def getUses() {
 		def templates = Template.findAll();
 		def elements;
 
-		if( templates && templates.size() > 0 ) {
-			elements = templates.findAll { template -> template.fields.contains( this ) };
+		if (templates && templates.size() > 0) {
+			elements = templates.findAll { template -> template.fields.contains(this) };
 		} else {
 			return [];
 		}
@@ -197,23 +198,23 @@ class TemplateField implements Serializable {
 	/**
 	 * Checks whether this template field is used in a template and also filled in any instance of that template
 	 *
-	 * @returns		true iff this template field is used in a template, the template is instantiated
-	 *				and an instance has a value for this field. false otherwise
+	 * @returns true iff this template field is used in a template, the template is instantiated
+	 * 				and an instance has a value for this field. false otherwise
 	 */
 	def isFilled() {
 		// Find all templates that use this template field
 		def templates = getUses();
 
-		if( templates.size() == 0 )
-			return false;
+		if (templates.size() == 0)
+		return false;
 
 		// Find all entities that use these templates
 		def c = this.entity.createCriteria()
 		def entities = c {
-			'in'("template",templates)
+			'in'("template", templates)
 		}
 
-		def filledEntities = entities.findAll { entity -> entity.getFieldValue( this.name ) }
+		def filledEntities = entities.findAll { entity -> entity.getFieldValue(this.name) }
 
 		return filledEntities.size() > 0;
 	}
@@ -221,20 +222,20 @@ class TemplateField implements Serializable {
 	/**
 	 * Checks whether this template field is used in the given template and also filled in an instance of that template
 	 *
-	 * @returns		true iff this template field is used in the given template, the template is instantiated
-	 *				and an instance has a value for this field. false otherwise
+	 * @returns true iff this template field is used in the given template, the template is instantiated
+	 * 				and an instance has a value for this field. false otherwise
 	 */
 	def isFilledInTemplate(Template t) {
-		if( t == null ) 
-			return false;
-			
+		if (t == null)
+		return false;
+
 		// If the template is not used, if can never be filled
-		if( !t.fields.contains( this ) )
-			return false;
+		if (!t.fields.contains(this))
+		return false;
 
 		// Find all entities that use this template
-		def entities = entity.findAllByTemplate( t );
-		def filledEntities = entities.findAll { entity -> entity.getFieldValue( this.name ) }
+		def entities = entity.findAllByTemplate(t);
+		def filledEntities = entities.findAll { entity -> entity.getFieldValue(this.name) }
 
 		return filledEntities.size() > 0;
 	}
@@ -244,27 +245,27 @@ class TemplateField implements Serializable {
 	 * If the template field is never used, the method returns true. If the template field is used in a template,
 	 * but no objects with this template exist, the method also returns true
 	 *
-	 * @returns		false iff objects exist using this template field, but without a value for this field. true otherwise
+	 * @returns false iff objects exist using this template field, but without a value for this field. true otherwise
 	 */
 	def isFilledInAllObjects() {
 		// Find all templates that use this entity
 		def templates = getUses();
 
-		if( templates.size() == 0 )
-			return true;
+		if (templates.size() == 0)
+		return true;
 
 		// Find all entities that use these templates
 		def c = this.entity.createCriteria()
 		def entities = c {
-			'in'("template",templates)
+			'in'("template", templates)
 		}
 
-		if( entities.size() == 0 )
-			return true;
+		if (entities.size() == 0)
+		return true;
 
-		def emptyEntities = entities.findAll { entity -> !entity.getFieldValue( this.name ) }
+		def emptyEntities = entities.findAll { entity -> !entity.getFieldValue(this.name) }
 
-		return ( emptyEntities.size() == 0 );
+		return (emptyEntities.size() == 0);
 	}
 
 	/**
@@ -284,31 +285,31 @@ class TemplateField implements Serializable {
 	/**
 	 * Checks whether the given list item is selected in an entity where this template field is used
 	 *
-	 * @param	item	ListItem to check.
-	 * @returns			true iff the list item is part of this template field and the given list
-	 *					item is selected in an entity where this template field is used. false otherwise
-	 *					Returns false if the type of this template field is other than STRINGLIST
+	 * @param item ListItem to check.
+	 * @returns true iff the list item is part of this template field and the given list
+	 * 					item is selected in an entity where this template field is used. false otherwise
+	 * 					Returns false if the type of this template field is other than STRINGLIST
 	 */
 	def entryUsed(TemplateFieldListItem item) {
-		if( this.type != TemplateFieldType.STRINGLIST )
-			return false;
+		if (this.type != TemplateFieldType.STRINGLIST)
+		return false;
 
 		// Find all templates that use this template field
 		def templates = getUses();
 
-		if( templates.size() == 0 )
-			return false;
+		if (templates.size() == 0)
+		return false;
 
 		// Find all entities that use these templates
 		def c = this.entity.createCriteria()
 		def entities = c {
-			'in'("template",templates)
+			'in'("template", templates)
 		}
 
-		if( entities.size() == 0 ) 
-			return false
-			
-		def entitiesWithListItem = entities.findAll { entity -> entity.getFieldValue( this.name ).equals( item ) }
+		if (entities.size() == 0)
+		return false
+
+		def entitiesWithListItem = entities.findAll { entity -> entity.getFieldValue(this.name).equals(item) }
 
 		return entitiesWithListItem.size() > 0;
 	}
@@ -316,36 +317,36 @@ class TemplateField implements Serializable {
 	/**
 	 * Checks whether a term from the given ontology is selected in an entity where this template field is used
 	 *
-	 * @param	item	ListItem to check.
-	 * @returns			true iff the ontology is part of this template field and a term from the given
-	 *					ontology is selected in an entity where this template field is used. false otherwise
-	 *					Returns false if the type of this template field is other than ONTOLOGYTERM
+	 * @param item ListItem to check.
+	 * @returns true iff the ontology is part of this template field and a term from the given
+	 * 					ontology is selected in an entity where this template field is used. false otherwise
+	 * 					Returns false if the type of this template field is other than ONTOLOGYTERM
 	 */
 	def entryUsed(Ontology item) {
-		if( this.type != TemplateFieldType.ONTOLOGYTERM )
-			return false;
+		if (this.type != TemplateFieldType.ONTOLOGYTERM)
+		return false;
 
 		// Find all templates that use this template field
 		def templates = getUses();
 
 		// If the template field is never used in a template, it will also never
 		// be filled, and this Ontology will never be used
-		if( templates.size() == 0 )
-			return false;
+		if (templates.size() == 0)
+		return false;
 
 		// Find all entities that use these templates
 		def c = this.entity.createCriteria()
 		def entities = c {
-			'in'("template",templates)
+			'in'("template", templates)
 		}
 
-		if( entities.size() == 0 )
-			return false
+		if (entities.size() == 0)
+		return false
 
-		def entitiesWithOntology = entities.findAll { entity -> 
-			def value = entity.getFieldValue( this.name );
-			if( value ) 
-				return value.ontology.equals( item )
+		def entitiesWithOntology = entities.findAll { entity ->
+			def value = entity.getFieldValue(this.name);
+			if (value)
+			return value.ontology.equals(item)
 			else
 				return false;
 		}
@@ -356,95 +357,94 @@ class TemplateField implements Serializable {
 	/**
 	 * Checks whether this field is filled in any of the entities in the given list
 	 *
-	 * @param	List	List of TemplateEntities to search in
-	 * @return	boolean	True iff any of the given entities has this field as template field, and has a value for it. False otherwise
+	 * @param List List of TemplateEntities to search in
+	 * @return boolean	True iff any of the given entities has this field as template field, and has a value for it. False otherwise
 	 */
-	def isFilledInList( entityList ) {
-		if( !entityList )
-			return false;
-			
-		return true in entityList.collect { it.fieldExists( this.name ) && it.getFieldValue( this.name ) != null }?.flatten()
-	}
+	def isFilledInList(entityList) {
+		if (!entityList)
+		return false;
 
+		return true in entityList.collect { it.fieldExists(this.name) && it.getFieldValue(this.name) != null }?.flatten()
+	}
 
 	/**
 	 * Check whether the contents of the other templatefield and the current templatefield are equal.
 	 * For this check the comments field doesn't matter. 
 	 *
-	 * @return	true iff this template field equals the other template field
-	 *			(the comments field may be different)
+	 * @return true iff this template field equals the other template field
+	 * 			(the comments field may be different)
 	 */
-	public boolean contentEquals( Object otherObject ) {
-		if( !( otherObject instanceof TemplateField ) )
-			return false
+	public boolean contentEquals(Object otherObject) {
+		if (!(otherObject instanceof TemplateField))
+		return false
 
-		if( otherObject == null )
-			return false
+		if (otherObject == null)
+		return false
 
 		TemplateField otherField = (TemplateField) otherObject;
 
-		if( otherField == this )
-			return true
+		if (otherField == this)
+		return true
 
-		if( otherField.entity != this.entity ) {
+		if (otherField.entity != this.entity) {
 			return false
 		}
-		if( otherField.name != this.name ) {
+		if (otherField.name != this.name) {
 			return false
 		}
-		if( otherField.type != this.type ) {
+		if (otherField.type != this.type) {
 			return false
 		}
-		if( otherField.unit != this.unit ) {
+		if (otherField.unit != this.unit) {
 			return false
 		}
-		if( otherField.required != this.required ) {
+		if (otherField.required != this.required) {
 			return false
 		}
 
-		if( otherField.preferredIdentifier != this.preferredIdentifier ) {
+		if (otherField.preferredIdentifier != this.preferredIdentifier) {
 			return false
 		}
 
 		// Check whether the list entries are equal (except for the order)
 		def size1 = otherField.listEntries?.size() ?: 0
 		def size2 = this.listEntries?.size() ?: 0
-		if( size1 != size2 ) {
+		if (size1 != size2) {
 			return false
 		}
-		
-		if( otherField.listEntries != null && this.listEntries != null ) {
-			for( def entry in this.listEntries ) {
+
+		if (otherField.listEntries != null && this.listEntries != null) {
+			for (def entry in this.listEntries) {
 				def entryFound = false;
-				for( def otherEntry in otherField.listEntries ) {
+				for (def otherEntry in otherField.listEntries) {
 					def name1 = entry != null ? entry.name : ""
 					def name2 = otherEntry != null ? otherEntry.name : ""
-					if( name1 == name2 ) {
+					if (name1 == name2) {
 						entryFound = true;
 						break
 					}
 				}
 
-				if( !entryFound ) {
+				if (!entryFound) {
 					return false
 				}
 			}
 		}
-		
+
 		// Check whether the ontologies are equal (except for the order)
 		size1 = otherField.ontologies?.size() ?: 0
 		size2 = this.ontologies?.size() ?: 0
-		if( size1 != size2 ) {
+		if (size1 != size2) {
 			return false
 		}
-		if( this.ontologies != null && otherField.ontologies != null ) {
-			for( def ontology in this.ontologies ) {
-				if( !otherField.ontologies.contains( ontology ) ) {
+		if (this.ontologies != null && otherField.ontologies != null) {
+			for (def ontology in this.ontologies) {
+				if (!otherField.ontologies.contains(ontology)) {
 					return false
 				}
 			}
 		}
-		
+
 		// If all tests pass, the objects are content-equal
 		return true
 	}
@@ -453,7 +453,7 @@ class TemplateField implements Serializable {
 	 * Create a new template field based on the parsed XML object. 
 	 *
 	 * @see grails.converters.XML#parse(java.lang.String)
-	 * @throws IllegalArgumentException 
+	 * @throws IllegalArgumentException
 	 */
 	public static parse(Object xmlObject, Class entity) {
 		def t = new TemplateField();
@@ -466,21 +466,21 @@ class TemplateField implements Serializable {
 
 		t.entity = entity
 
-		t.type = TemplateFieldType.valueOf( xmlObject?.type?.text() )
+		t.type = TemplateFieldType.valueOf(xmlObject?.type?.text())
 
 		// Search for ontologies
 		xmlObject.ontologies?.ontology.each {
 			def ncboId = it.ncboId?.text();
-			t.addToOntologies( Ontology.getOrCreateOntologyByNcboId( ncboId ) );
+			t.addToOntologies(Ontology.getOrCreateOntologyByNcboId(ncboId));
 		}
 
 		// Search for list entries
 		xmlObject.listItems?.listItem.each {
 			def name = ""
-			if( it != null && it.name )
-				name = it.name.text()
+			if (it != null && it.name)
+			name = it.name.text()
 
-			t.addToListEntries( new TemplateFieldListItem( name: name ) );
+			t.addToListEntries(new TemplateFieldListItem(name: name));
 		}
 		return t;
 	}
