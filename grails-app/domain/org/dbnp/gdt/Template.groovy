@@ -236,4 +236,50 @@ class Template extends Identity {
 
 		return elements.size();
 	}
+
+	/**
+	 * Create a new template based on the parsed XML object.
+	 *
+	 * @see grails.converters.XML#parse(java.lang.String)
+	 * @throws IllegalArgumentException
+	 * @throws ClassNotFoundException
+	 *
+	 */
+	public static parse(Object xmlObject, loggedInUser) {
+		def t = new Template();
+		t.name = xmlObject?.name?.text()
+		t.description = xmlObject?.description?.text()
+
+		// Check whether a correct entity is given. The parseEntity method might
+		// throw a ClassNotFoundException, but that is OK, it should be thrown if the class
+		// doesn't exist.
+		def entity = TemplateEntity.parseEntity(xmlObject.entity?.text());
+		if (!entity) {
+			throw new Exception("Incorrect entity given");
+		}
+
+		t.entity = entity
+
+		// Set the owner to the currently logged in user
+		t.owner = loggedInUser
+
+		// Set all template fields
+		xmlObject.templateFields.templateField.each {
+			def field = TemplateField.parse(it, entity);
+
+			// Check whether a similar field already exists. For that, we search in all
+			// template fields with the same name, in order to have as little comparisons
+			// as possible
+			for (def otherField in TemplateField.findAllByName(field?.name)) {
+				if (field.contentEquals(otherField)) {
+					field = otherField;
+					break;
+				}
+			}
+
+			t.addToFields(field);
+		}
+
+		return t
+	}
 }
