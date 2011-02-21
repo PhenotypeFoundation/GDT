@@ -47,6 +47,7 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	static templateFieldType	= null		// templateFieldType ClassNode
 	static templateFields		= []		// temporary cache
 	static otherClasses			= []        // cache of all other classes
+	static myPackage			= "gdt"
 
 	/**
 	 * class constructor
@@ -128,6 +129,11 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 		//		 for now sticking to the replaceAll to keep this stupid exception to the rule working...
 		def templateFieldMapName	= (templateFieldName[0].toLowerCase() + templateFieldName.substring(1) + "s").replaceAll(/Ontology/, '')
 
+println templateEntityClassNode
+println templateFieldClassNode
+println templateFieldName
+println templateFieldMapName
+println typeName
 		// a GORM Map for this templateField to TemplateEntity, e.g.:
 		//
 		// Map templateLongFields = [:]
@@ -271,7 +277,6 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 				blockStatement.addStatement(new ExpressionStatement(constantExpression))
 			}
 		} else {
-			//throw new Exception('This should not happen! This means that TemplateEntity does not have a \'constraints\' closure, which it is expected to have!')
 			// debug
 			if (debug) println " - ERROR! constraints closure not present so we cannot extend it!!!"
 		}
@@ -306,7 +311,7 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	public extendHasMany(ClassNode templateEntityClassNode, String templateFieldName, String templateFieldMapName, String typeName) {
 		// is it a build in class?
 		def myClass
-		def words
+		def packageWords
 		try {
 			// try to use a build in class
 			myClass = new ClassNode(Eval.me("${typeName}.class"))
@@ -315,8 +320,8 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 			// all currently visited classes, and
 			// contains ClassNodes for each class
 			myClass = otherClasses.find {
-				words = it.name.split("\\.")
-				return (words[ (words.size()-1) ] == typeName)
+				packageWords = it.name.split("\\.")
+				return (packageWords[ (packageWords.size()-1) ] == typeName)
 			}
 		}
 
@@ -324,12 +329,37 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 		if (GrailsASTUtils.hasProperty(templateEntityClassNode, "hasMany")) {
 			PropertyNode hasMany = templateEntityClassNode.getProperty("hasMany")
 			MapExpression initialExpression = hasMany.getInitialExpression()
+
 			if (!initialExpression.getMapEntryExpressions().find{it.getKeyExpression().toString() =~ templateFieldMapName}) {
 				// debug
 				if (debug) println " - extending hasMany map"
 
-				initialExpression.addMapEntryExpression(new ConstantExpression(templateFieldMapName), new ClassExpression(myClass))
-				//initialExpression.addMapEntryExpression(new ConstantExpression(templateFieldMapName), new VariableExpression(myClass))
+				// check if this is
+				//  - a built in class, or
+				//  - a class which is in the same package
+				if (packageWords == null || packageWords[ (packageWords.size()-2) ] == myPackage) {
+					// builtin or package class
+					initialExpression.addMapEntryExpression(
+						new ConstantExpression(templateFieldMapName),
+						new VariableExpression(typeName)
+					)
+				} else {
+					// some external class which resides in the application
+					// or a child plugin
+					def myProperty = null
+					packageWords.each {
+						if (myProperty == null) {
+							myProperty = new VariableExpression(it)
+						} else {
+							myProperty = new PropertyExpression(myProperty, it)
+						}
+					}
+
+					initialExpression.addMapEntryExpression(
+						new ConstantExpression(templateFieldMapName),
+						myProperty
+					)
+				}
 			} else {
 				// debug
 				if (debug) println " - hasMany map entry for ${templateFieldName} already present"
