@@ -72,12 +72,12 @@ class TemplateField implements Serializable {
 
 	static mapping = {
 		// Make sure the comments can be Strings of arbitrary length
-		comment type: 'text'
-		name column: "templatefieldname"
-		type column: "templatefieldtype"
-		entity column: "templatefieldentity"
-		unit column: "templatefieldunit"
-		comment column: "templatefieldcomment"
+		comment type	: 'text'
+		name column		: "templatefieldname"
+		type column		: "templatefieldtype"
+		entity column	: "templatefieldentity"
+		unit column		: "templatefieldunit"
+		comment column	: "templatefieldcomment"
 	}
 
 	String toString() {
