@@ -294,8 +294,6 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 
 					// build nested property
 					fullMethodPath.each {
-						println it
-						println it.class
 						if (!validator) {
 							validator = new VariableExpression(it)
 						} else {
@@ -321,9 +319,9 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 				// add the newly created expression to the contraints' initialExpression
 				blockStatement.addStatement(new ExpressionStatement(constantExpression))
 			}
-			templateEntityClassNode.getDeclaredField("constraints").each() {
-				println it.dump()
-			}
+
+			// show all constraints
+			//if (debug) templateEntityClassNode.getDeclaredField("constraints").each() { println it.dump() }
 		} else {
 			// debug
 			if (debug) println "ERROR: gdt error 1, constraints closure not present so we cannot exnted it. This should not happen!"
