@@ -70,7 +70,7 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 		// iterate through the nodes
 		nodes.each { node ->
 			// find all TemplateFields or TemplateEntity nodes
-			node.getClasses().findAll {it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/ || it.name =~ /\.TemplateFieldType$/}.each { ClassNode owner ->
+			node.getClasses().findAll {it.name =~ /\.Template([A-Za-z]{1,})Field$/ || it.name =~ /\.TemplateEntity$/ || it.name =~ /\.TemplateFieldType$/ || it.name =~ /\.TemplateField$/}.each { ClassNode owner ->
 				// is this TemplateEntity or a TemplateField?
 				if (owner.name =~ /\.TemplateEntity$/) {
 					// remember templateEntity so we can inject
@@ -93,13 +93,13 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 					cacheTemplateFields[ cacheTemplateFields.size() ] = owner
 
 					// inject this template field into TemplateEntity
-					injectTemplateField(templateEntity, owner, templateFieldType)
+					injectTemplateField(templateEntity, owner, templateFieldType, templateField)
 
 					// got some cached template fields to handle?
 					if (templateFields.size()) {
 						templateFields.each {
 							// inject the cached TemplateField into TemplateEntity
-							injectTemplateField(templateEntity, it, templateFieldType)
+							injectTemplateField(templateEntity, it, templateFieldType, templateField)
 						}
 						templateFields = []
 					}
@@ -166,7 +166,7 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	 * @param templateFieldClassNode
 	 * @param classLoader
 	 */
-	private void injectTemplateField(ClassNode templateEntityClassNode, ClassNode templateFieldClassNode, ClassNode templateFieldTypeClassNode) {
+	private void injectTemplateField(ClassNode templateEntityClassNode, ClassNode templateFieldClassNode, ClassNode templateFieldTypeClassNode, ClassNode templateField) {
 		def contains = templateFieldClassNode.fields.find { it.properties.name == "contains" }
 		def owner = contains.properties.owner
 		def typeName = contains.getInitialExpression().variable
@@ -209,6 +209,41 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 
 		// extend TemplateField's hasMany relationship, if required
 		// TODO
+		if (templateFieldClassNode.properties.find{it.name == "gdtAddTemplateFieldHasMany"}) {
+			extendTemplateFieldHasMany(templateField, templateFieldClassNode.properties.find{it.name == "gdtAddTemplateFieldHasMany"}.getInitialExpression().properties.mapEntryExpressions)
+		}
+	}
+
+	/**
+	 * dynamically extend the hasMany relationsship for TemplateField, based on
+	 * the presence of the gdtAddTemplateFieldHasMany variable in the TemplateXXXField
+	 * class, e.g.:
+	 *
+	 * static gdtAddTemplateFieldHasMany = [ontologies: org.dbnp.bgdt.Ontology]
+	 *
+	 * @param templateFieldClassNode
+	 * @param expressions
+	 * @return
+	 */
+	public extendTemplateFieldHasMany(ClassNode templateFieldClassNode, ArrayList expressions) {
+		// does templateEntity contain a hasMany map?
+		if (GrailsASTUtils.hasProperty(templateFieldClassNode, "hasMany")) {
+			PropertyNode hasMany = templateFieldClassNode.getProperty("hasMany")
+			MapExpression initialExpression = hasMany.getInitialExpression()
+			expressions.each{ mapEntryExpression ->
+				if (debug) println " - adding TemplateField hasMany relationship for '${mapEntryExpression.keyExpression.value}'"
+				initialExpression.addMapEntryExpression(mapEntryExpression)
+			}
+		} else {
+			MapExpression initialExpression = new MapExpression()
+			expressions.each{ mapEntryExpression ->
+				if (debug) println " - adding TemplateField hasMany relationship for '${mapEntryExpression.keyExpression.value}'"
+				initialExpression.addMapEntryExpression(mapEntryExpression)
+			}
+			templateFieldClassNode.addProperty("hasMany", Modifier.PUBLIC | Modifier.STATIC, new ClassNode(java.util.Map.class), initialExpression, null, null)
+		}
+
+		//if (debug) hasMany.getInitialExpression().properties.mapEntryExpressions.each { println it }
 	}
 
 	/**

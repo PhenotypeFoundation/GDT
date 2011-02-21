@@ -1,9 +1,5 @@
 package org.dbnp.gdt
 
-// temporary import until bgdt refactoring is done
-
-import org.dbnp.bgdt.*
-
 /**
  * A TemplateField is a specification for either a 'domain field' of a subclass of TemplateEntity or a
  * 'template field' for a specific Template. See the Template class for an explanation of these terms.
@@ -49,8 +45,7 @@ class TemplateField implements Serializable {
 	boolean preferredIdentifier
 
 	static hasMany = [
-		listEntries: TemplateFieldListItem,	// to store the entries to choose from when the type is 'item from predefined list'
-		ontologies: Ontology				// to store the ontologies to choose from when the type is 'ontology term'
+		listEntries: TemplateFieldListItem	// to store the entries to choose from when the type is 'item from predefined list'
 	]
 
 	static constraints = {
@@ -283,75 +278,68 @@ class TemplateField implements Serializable {
 	}
 
 	/**
-	 * Checks whether the given list item is selected in an entity where this template field is used
-	 *
-	 * @param item ListItem to check.
-	 * @returns true iff the list item is part of this template field and the given list
-	 * 					item is selected in an entity where this template field is used. false otherwise
-	 * 					Returns false if the type of this template field is other than STRINGLIST
+	 * Checks whether the item is selected in an entity where this template field is used
+	 * @param mixed item
+	 * @returns boolean
 	 */
-	def entryUsed(TemplateFieldListItem item) {
-		if (this.type != TemplateFieldType.STRINGLIST)
-		return false;
+	def entryUsed(item) {
+		if (this.type == TemplateFieldType.STRINGLIST) {
+			// Checks if the list item is part of this template field and the given list
+			// item is selected in an entity where this template field is used. false otherwise
+			// Returns false if the type of this template field is other than STRINGLIST
 
-		// Find all templates that use this template field
-		def templates = getUses();
+			// Find all templates that use this template field
+			def templates = getUses();
 
-		if (templates.size() == 0)
-		return false;
-
-		// Find all entities that use these templates
-		def c = this.entity.createCriteria()
-		def entities = c {
-			'in'("template", templates)
-		}
-
-		if (entities.size() == 0)
-		return false
-
-		def entitiesWithListItem = entities.findAll { entity -> entity.getFieldValue(this.name).equals(item) }
-
-		return entitiesWithListItem.size() > 0;
-	}
-
-	/**
-	 * Checks whether a term from the given ontology is selected in an entity where this template field is used
-	 *
-	 * @param item ListItem to check.
-	 * @returns true iff the ontology is part of this template field and a term from the given
-	 * 					ontology is selected in an entity where this template field is used. false otherwise
-	 * 					Returns false if the type of this template field is other than ONTOLOGYTERM
-	 */
-	def entryUsed(Ontology item) {
-		if (this.type != TemplateFieldType.ONTOLOGYTERM)
-		return false;
-
-		// Find all templates that use this template field
-		def templates = getUses();
-
-		// If the template field is never used in a template, it will also never
-		// be filled, and this Ontology will never be used
-		if (templates.size() == 0)
-		return false;
-
-		// Find all entities that use these templates
-		def c = this.entity.createCriteria()
-		def entities = c {
-			'in'("template", templates)
-		}
-
-		if (entities.size() == 0)
-		return false
-
-		def entitiesWithOntology = entities.findAll { entity ->
-			def value = entity.getFieldValue(this.name);
-			if (value)
-			return value.ontology.equals(item)
-			else
+			if (templates.size() == 0)
 				return false;
-		}
 
-		return entitiesWithOntology.size() > 0;
+			// Find all entities that use these templates
+			def c = this.entity.createCriteria()
+			def entities = c {
+				'in'("template", templates)
+			}
+
+			if (entities.size() == 0)
+				return false
+
+			def entitiesWithListItem = entities.findAll { entity -> entity.getFieldValue(this.name).equals(item) }
+
+			return entitiesWithListItem.size() > 0;
+		} else if (this.type == TemplateFieldType.ONTOLOGYTERM) {
+	 		// Checks is the ontology is part of this template field and a term from the given
+	 		// ontology is selected in an entity where this template field is used. false otherwise
+	 		// Returns false if the type of this template field is other than ONTOLOGYTERM
+
+			// Find all templates that use this template field
+			def templates = getUses();
+
+			// If the template field is never used in a template, it will also never
+			// be filled, and this Ontology will never be used
+			if (templates.size() == 0)
+				return false;
+
+			// Find all entities that use these templates
+			def c = this.entity.createCriteria()
+			def entities = c {
+				'in'("template", templates)
+			}
+
+			if (entities.size() == 0)
+				return false
+
+			def entitiesWithOntology = entities.findAll { entity ->
+				def value = entity.getFieldValue(this.name);
+				if (value)
+					return value.ontology.equals(item)
+				else
+					return false;
+			}
+
+			return entitiesWithOntology.size() > 0;
+		} else {
+			return false
+		}
 	}
 
 	/**
