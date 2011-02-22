@@ -142,18 +142,18 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 				// we should not have any TemplateFields hanging around which
 				// were not compiled. If so, they are probably in the application
 				// while they should be in a plugin
-				if (templateFields.size()) {
+				if (templateFields.size() || templateFields2.size()) {
 					def count = 1
 					println ""
 					println ""
 					println "----------------------===={ Grails Domain Templates (GDT) WARNING }====-------------------------"
 					println ""
 					println "Compilation of GDT related files has been finished, and the template model has been dynamically"
-					println "extended, but the following template field"+((templateFields.size()>1)?'s were':' was')+" visited by the compiler AFTER the GDT compilation"
-					println "was completed. This means the following field"+((templateFields.size()>1)?'s are':' is')+" NOT available in the application."
+					println "extended, but the following template field"+(((templateFields.size() + templateFields2.size())>1)?'s were':' was')+" visited by the compiler AFTER the GDT compilation"
+					println "was completed. This means the following field"+(((templateFields.size() + templateFields2.size())>1)?'s are':' is')+" NOT available in the application."
 					println ""
-					println "This problem is most likely caused by "+((templateFields.size()>1)?'these files':'this file')+" being in the Application source tree itself,"
-					println "rather in a seperate plugin. To solve this issue, move the class"+((templateFields.size()>1)?'es below into their own':' below into it\'s own')
+					println "This problem is most likely caused by "+(((templateFields.size() + templateFields2.size())>1)?'these files':'this file')+" being in the Application source tree itself,"
+					println "rather in a seperate plugin. To solve this issue, move the class"+(((templateFields.size() + templateFields2.size())>1)?'es below into their own':' below into it\'s own')
 					println "dedicated plugin."
 					println ""
 					templateFields.each {
@@ -161,6 +161,13 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 							println "GDT templateField"+((templateFields.size()>1)?'s:':':')+"\t${count++}.\t${it.name}"
 						} else {
 							println "\t\t\t${count++}.\t${it.name}"
+						}
+					}
+					if (templateFields2) {
+						println ""
+						println "TemplateField hasMany relationships that could not be injected:"
+						templateFields2.each {
+							println it.dump()
 						}
 					}
 					println ""
@@ -252,13 +259,13 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 			PropertyNode hasMany = templateFieldClassNode.getProperty("hasMany")
 			MapExpression initialExpression = hasMany.getInitialExpression()
 			expressions.each{ mapEntryExpression ->
-				if (debug) println "Adding TemplateField hasMany relationship for '${mapEntryExpression.keyExpression.value}'"
+				if (debug) println "injecting TemplateField hasMany relationship for '${mapEntryExpression.keyExpression.value}'"
 				initialExpression.addMapEntryExpression(mapEntryExpression)
 			}
 		} else {
 			MapExpression initialExpression = new MapExpression()
 			expressions.each{ mapEntryExpression ->
-				if (debug) println "Adding TemplateField hasMany relationship for '${mapEntryExpression.keyExpression.value}'"
+				if (debug) println "injecting TemplateField hasMany relationship for '${mapEntryExpression.keyExpression.value}'"
 				initialExpression.addMapEntryExpression(mapEntryExpression)
 			}
 			templateFieldClassNode.addProperty("hasMany", Modifier.PUBLIC | Modifier.STATIC, new ClassNode(java.util.Map.class), initialExpression, null, null)
