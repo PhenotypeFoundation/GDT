@@ -435,12 +435,12 @@ class GdtTagLib extends AjaxflowTagLib {
 		*/
 
 		out << '<div id="upload_button_' + attrs.name + '" class="upload_button">Upload</div>';
-		out << '<input type="hidden" name="' + attrs.name + '" id="' + attrs.name + '" value="existing*' + attrs.value + '">';
+		out << '<input type="hidden" name="' + attrs.name + '" id="' + attrs.name + '" value="existing*' + ( attrs.value ?: "" ) + '">';
 		out << '<div id="' + attrs.name + 'Example" class="upload_info"></div>';
 		out << '<a id="' + attrs.name + 'Delete" class="upload_del" href="#" onClick="if( confirm( \'Are you sure to delete this file?\' ) ) { deleteFile( \'' + attrs.name + '\' ); } return false;"><img src="' + resource(dir: 'images/icons', file: 'delete.png', plugin: 'famfamfam') + '"></a>';
 		out << '<script type="text/javascript">';
 		out << '  $(document).ready( function() { ';
-		out << '    var filename = "' + ( attrs.value ? attrs.value : "" ) + '";';
+		out << '    var filename = "' + ( attrs.value ?: "" ) + '";';
 		out << '    fileUploadField( "' + attrs.name + '" );';
 		out << '    if( filename != "" ) {';
 		out << '      $("#' + attrs.name + 'Delete").show();';
