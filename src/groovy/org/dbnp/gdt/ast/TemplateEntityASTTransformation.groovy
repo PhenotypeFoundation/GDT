@@ -43,11 +43,12 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
  */
 @GroovyASTTransformation(phase = CompilePhase.CONVERSION)
 class TemplateEntityASTTransformation implements ASTTransformation {
-	static debug = true		// debugging on/off
+	static debug = true					// debugging on/off
 	static templateEntity = null		// templateEntity ClassNode
 	static templateField = null			// templateField ClassNode
 	static templateFieldType = null		// templateFieldType ClassNode
-	static templateFields = []			// temporary cache of fields we need to reprocess
+	static templateFields = []			// temporary cache of fields we need to reprocess (templateEntity)
+	static templateFields2 = []			// temporary cache of fields we need to reprocess (templateField::hasMany)
 	static cacheTemplateFields = []		// cache of all template fields
 	static cacheClasses = []			// cache of all other classes
 	static myPackage = "gdt"
@@ -76,12 +77,32 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 					// remember templateEntity so we can inject
 					// templatefields into it
 					templateEntity = owner
+
+					// got some cached template fields to handle?
+					if (templateFields.size()) {
+						templateFields.each {
+							// inject the cached TemplateField into TemplateEntity
+							injectTemplateField(templateEntity, it, templateFieldType, templateField)
+						}
+						templateFields = []
+					}
+
 					return
 				} else if (owner.name =~ /\.TemplateField$/) {
 					// remember templateField so we can inject
 					// a hasMany relationship into TemplateField's
 					// (if required)
 					templateField = owner
+
+					// got some cache to handle?
+					if (templateFields2.size()) {
+						// yes, extend TemplateField to have new hasMany relationships
+						templateFields2.each {
+							extendTemplateFieldHasMany(templateField, it)
+						}
+						templateFields2 = []
+					}
+
 					return
 				} else if (owner.name =~ /\.TemplateFieldType$/) {
 					// remember templateFieldType so we can inject
@@ -94,15 +115,6 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 
 					// inject this template field into TemplateEntity
 					injectTemplateField(templateEntity, owner, templateFieldType, templateField)
-
-					// got some cached template fields to handle?
-					if (templateFields.size()) {
-						templateFields.each {
-							// inject the cached TemplateField into TemplateEntity
-							injectTemplateField(templateEntity, it, templateFieldType, templateField)
-						}
-						templateFields = []
-					}
 				} else {
 					// add this templateField to the cache
 					cacheTemplateFields[ cacheTemplateFields.size() ] = owner
@@ -205,12 +217,21 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 		extendConstraints(templateEntityClassNode, templateFieldClassNode, templateFieldMapName, templateFieldName)
 
 		// extend the TemplateFieldType enum with this templateField
+		// unfortunately it does not seem possible to modify an enum with the
+		// following format:
+		// 		STRING('String','Short text', 'Text', 'max 255 chars'),
+		// as we cannot see (or set) the variables within an enum entry. Only
+		// enums that contain only constants seem to be Transformable:
+		//		STRING, INT, etc
 		//extendTemplateFieldType(templateFieldTypeClassNode, templateFieldClassNode)
 
 		// extend TemplateField's hasMany relationship, if required
-		// TODO
 		if (templateFieldClassNode.properties.find{it.name == "gdtAddTemplateFieldHasMany"}) {
-			extendTemplateFieldHasMany(templateField, templateFieldClassNode.properties.find{it.name == "gdtAddTemplateFieldHasMany"}.getInitialExpression().properties.mapEntryExpressions)
+			if (templateField) {
+				extendTemplateFieldHasMany(templateField, templateFieldClassNode.properties.find{it.name == "gdtAddTemplateFieldHasMany"}.getInitialExpression().properties.mapEntryExpressions)
+			} else {
+				templateFields2[ templateFields2.size() ] = templateFieldClassNode.properties.find{it.name == "gdtAddTemplateFieldHasMany"}.getInitialExpression().properties.mapEntryExpressions
+			}
 		}
 	}
 
@@ -219,7 +240,7 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	 * the presence of the gdtAddTemplateFieldHasMany variable in the TemplateXXXField
 	 * class, e.g.:
 	 *
-	 * static gdtAddTemplateFieldHasMany = [ontologies: org.dbnp.bgdt.Ontology]
+	 * static gdtAddTemplateFieldHasMany = [ontologies: org.dbnp.gdt.Ontology]
 	 *
 	 * @param templateFieldClassNode
 	 * @param expressions
@@ -231,13 +252,13 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 			PropertyNode hasMany = templateFieldClassNode.getProperty("hasMany")
 			MapExpression initialExpression = hasMany.getInitialExpression()
 			expressions.each{ mapEntryExpression ->
-				if (debug) println " - adding TemplateField hasMany relationship for '${mapEntryExpression.keyExpression.value}'"
+				if (debug) println "Adding TemplateField hasMany relationship for '${mapEntryExpression.keyExpression.value}'"
 				initialExpression.addMapEntryExpression(mapEntryExpression)
 			}
 		} else {
 			MapExpression initialExpression = new MapExpression()
 			expressions.each{ mapEntryExpression ->
-				if (debug) println " - adding TemplateField hasMany relationship for '${mapEntryExpression.keyExpression.value}'"
+				if (debug) println "Adding TemplateField hasMany relationship for '${mapEntryExpression.keyExpression.value}'"
 				initialExpression.addMapEntryExpression(mapEntryExpression)
 			}
 			templateFieldClassNode.addProperty("hasMany", Modifier.PUBLIC | Modifier.STATIC, new ClassNode(java.util.Map.class), initialExpression, null, null)

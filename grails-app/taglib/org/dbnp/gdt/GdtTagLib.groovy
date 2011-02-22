@@ -741,4 +741,122 @@ class GdtTagLib extends AjaxflowTagLib {
 			}
 		}
 	}
+
+	/**
+	 * Term form element
+	 * @param Map attributes
+	 * @param Closure help content
+	 */
+	def termElement = { attrs, body ->
+		// render term element
+		baseElement.call(
+			'termSelect',
+			attrs,
+			body
+		)
+	}
+
+	/**
+	 * Term select element
+	 * @param Map attributes
+	 */
+	// TODO: change termSelect to use Term accessions instead of preferred names, to make it possible to track back
+	// terms from multiple ontologies with possibly the same preferred name
+	def termSelect = { attrs ->
+		def from = []
+
+		// got ontologies?
+		if (attrs.ontologies) {
+			// are the ontologies a string?
+			if (attrs.ontologies instanceof String) {
+				attrs.ontologies.split(/\,/).each() { ncboId ->
+					// trim the id
+					ncboId.trim()
+
+					// fetch all terms for this ontology
+					def ontology = Ontology.findAllByNcboId(ncboId)
+
+					// does this ontology exist?
+					if (ontology) {
+						ontology.each() {
+							Term.findAllByOntology(it).each() {
+								// key = ncboId:concept-id
+								from[from.size()] = it.name
+							}
+						}
+					}
+				}
+			} else if (attrs.ontologies instanceof Set) {
+				// are they a set instead?
+				def ontologyList = ""
+
+				// iterate through set
+				attrs.ontologies.each() { ontology ->
+					if (ontology) {
+						ontologyList += ontology.ncboId + ","
+
+						Term.findAllByOntology(ontology).each() {
+							from[from.size()] = it.name
+						}
+
+						// strip trailing comma
+						attrs.ontologies = ontologyList[0..-2]
+					}
+				}
+			}
+
+			// sort alphabetically
+			from.sort()
+
+			// add a dummy field?
+			if (attrs.remove('addDummy')) {
+				from.add(0, '')
+			}
+
+			// define 'from'
+			attrs.from = from
+
+			// add 'rel' attribute
+			attrs.rel = 'term'
+
+			// got an ajaxOnChange defined?
+			attrs = getAjaxOnChange.call(
+				attrs
+			)
+
+			out << select(attrs)
+		} else {
+			out << "<b>ontologies missing!</b>"
+		}
+	}
+
+	/**
+	 * Ontology form element
+	 * @param Map attributes
+	 * @param Closure help content
+	 */
+	def ontologyElement = { attrs, body ->
+		// @see http://www.bioontology.org/wiki/index.php/NCBO_Widgets#Term-selection_field_on_a_form
+		// @see ontology-chooser.js, table-editor.js
+		baseElement.call(
+			'textField',
+			[
+				name: attrs.name,
+				value: attrs.value,
+				description: attrs.description,
+				rel: 'ontology-' + ((attrs.ontology) ? attrs.ontology : 'all'),
+				size: 25
+			],
+			body
+		)
+		out << hiddenField(
+			name: attrs.name + '-concept_id'
+		)
+		out << hiddenField(
+			name: attrs.name + '-ontology_id'
+		)
+		out << hiddenField(
+			name: attrs.name + '-full_id'
+		)
+	}
 }

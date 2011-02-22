@@ -14,8 +14,6 @@
  */
 package org.dbnp.gdt
 
-import org.dbnp.bgdt.*
-
 //import dbnp.authentication.AuthenticationService
 //import grails.plugins.springsecurity.Secured
 import grails.converters.*

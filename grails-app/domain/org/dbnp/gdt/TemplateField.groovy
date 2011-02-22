@@ -46,6 +46,7 @@ class TemplateField implements Serializable {
 
 	static hasMany = [
 		listEntries: TemplateFieldListItem	// to store the entries to choose from when the type is 'item from predefined list'
+		//ontologies: Ontology				// to store the ontologies to choose from when the type is 'ontology term'
 	]
 
 	static constraints = {
