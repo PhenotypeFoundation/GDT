@@ -70,11 +70,15 @@
 }
 
 .tableEditor .ui-selected {
-    background-color: #ffab7b;
+    background-color: #a8c4eb;
+}
+
+.tableEditor .table-editor-selected {
+	background-color: #a8c4eb;
 }
 
 .tableEditor .ui-selecting {
-    background-color: #f2e3bc;
+    background-color: #ebaaa8;
 }
 
 .tableEditor .row .warning {

@@ -76,7 +76,7 @@ TableEditor.prototype = {
             selectAllElement
                 .addClass('selectAll')
                 .html('&nbsp;&nbsp;&nbsp;')
-                .bind('click',function() {
+                .bind('mousedown',function() {
                     that.selectAll(t);
                 });
 
@@ -122,7 +122,8 @@ TableEditor.prototype = {
         // select and bind row
         $(this.options.rowIdentifier, table).each(function() {
             var row = $(this);
-            row.addClass('ui-selected');
+            //row.addClass('ui-selected');
+            row.addClass('table-editor-selected');
             that.attachColumnHandlers(row);
         });
 
@@ -159,7 +160,7 @@ TableEditor.prototype = {
         // cleanup rows
         $(this.options.rowIdentifier, table).each(function() {
             var row = $(this);
-            row.removeClass('ui-selected');
+            row.removeClass('table-editor-selected');
             that.detachColumnHandlers(row);
         });
 
@@ -276,7 +277,7 @@ TableEditor.prototype = {
         // TODO for multiples...
 
         // select all input elements in the selected rows
-        $('.ui-selected', t).each(function() {
+        $('.ui-selected, .table-editor-selected', t).each(function() {
             $(that.options.columnIdentifier + ':eq(' + columnNumber + ') ' + elementSelector, $(this)).each(function() {
                 var me = $(this)
                 if (me.attr('type') != "hidden") {
