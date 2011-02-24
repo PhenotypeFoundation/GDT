@@ -15,7 +15,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 	<head>
-		<meta name="layout" content="dialog"/>
+		<meta name="layout" content="${layout}"/>
 		<title>template editor</title>
 		<script src="${resource(dir: 'js', file: 'templateEditor.js')}" type="text/javascript"></script>
 		<link rel="stylesheet" href="${resource(dir: 'css', file: 'templateEditor.css')}" />
