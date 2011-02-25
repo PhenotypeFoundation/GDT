@@ -107,7 +107,7 @@
     background-color: #006DBA;
     color: #fff;
 }
-.tableEditor div.row:hover input, .tableEditor div.row:hover select {
+.tableEditor div.row:hover input {
     background-color: #6e99d4;
     color: #fff;
 }
