@@ -404,10 +404,14 @@ function updateTemplateFieldPosition( event, ui ) {
 function addTemplateFieldEvent( event, ui ) {
     // Find the new position of the element in the list
     // http://stackoverflow.com/questions/2979643/jquery-ui-sortable-position
-    //
-    // There is also a hidden 'empty template' list item in the list. This is
-	// the last item in the list, so it doesn't matter in this computation
     var newposition = ui.item.index();
+    
+    // There is also a hidden 'empty template' list item in the list. The user might
+	// move the new field to the last position, after the 'empty template' item. In that
+	// case, the index is not correct anymore. For that reason, the index is lowered when
+	// the empty item is before this one
+    if( $( '.empty', ui.item.parent() ).index() < newposition )
+    	newposition--;
 
 	var item_id = ui.item.context.id;
     var id = item_id.substring( item_id.lastIndexOf( '_' ) + 1 );
