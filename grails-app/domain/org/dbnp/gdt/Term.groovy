@@ -18,6 +18,9 @@ class Term implements Serializable {
 	Ontology ontology       // Parent ontology. To enable the unique constraints, we describe the Ontology-Term relation here
 	String accession        // BioPortal: conceptId
 
+	Date dateCreated
+	Date lastUpdated
+
 	static constraints = {
 		accession(unique: true)     // Accession should be unique db-wide
 		name(unique: 'ontology')    // Preferred name should be unique within an ontology

@@ -18,6 +18,9 @@ class Ontology implements Serializable {
 	String versionNumber    // BioPortal: versionNumber
 	int ncboId              // BioPortal: ontologyId
 	int ncboVersionedId     // BioPortal: id
+	Date dateCreated
+	Date lastUpdated
+
 
 	static constraints = {
 		ncboId(unique: true)     // For now, we just want one version of each NCBO ontology in the database

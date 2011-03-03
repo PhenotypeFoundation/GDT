@@ -33,6 +33,9 @@ class Template extends Identity {
 	Object owner
 	Long owner_id
 
+	Date dateCreated
+	Date lastUpdated
+
 	static transients = [ "identifier", "iterator", "maximumIdentity", "owner", "gdtService" ]
 
 	/** The template fields which are the members of this template. This is a List to preserve the field order */
