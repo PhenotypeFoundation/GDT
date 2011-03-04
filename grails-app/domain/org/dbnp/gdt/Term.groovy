@@ -75,4 +75,31 @@ class Term implements Serializable {
 		// sort alphabetically
 		terms.sort()
 	}
+
+	/**
+	 * get or create a term
+	 * @param name
+	 * @param ontology
+	 * @param accession
+	 * @return
+	 */
+	static public getOrCreateTerm(String name, Ontology ontology, String accession) {
+		def term = ontology.giveTerms().find { it.name == name }
+
+		// got the term?
+		if (term) {
+			return term
+		} else {
+			// create a new term
+			term = new Term(
+				name		: name,
+				ontology	: ontology,
+				accession	: accession
+        	)
+
+			if (term.validate() && term.save(failOnError:true)) {
+				return term
+			}
+		}
+	}
 }

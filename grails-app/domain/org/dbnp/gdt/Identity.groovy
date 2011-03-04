@@ -80,7 +80,7 @@ abstract class Identity implements Serializable {
 	 * reset the identifier, this can be used in tests
 	 * to be able to predict identifiers
 	 */
-	final static void resetIdentifier() {
+	synchronized final static resetIdentifier = {->
 		iterator = 0
 	}
 }
