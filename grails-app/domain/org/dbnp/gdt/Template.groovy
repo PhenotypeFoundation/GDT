@@ -96,6 +96,40 @@ class Template extends Identity {
 	}
 
 	/**
+	 * Creates a clone of the given other template and also copies its owner
+	 * @param	otherTemplate
+	 */
+	public Template( Template otherTemplate ) {
+		// create a new template
+		this()
+
+		// copy base values
+		this.name			= otherTemplate.name + " (Copy)"
+		this.description	= otherTemplate.description
+		this.entity			= otherTemplate.entity
+
+		// copy template fields
+		this.fields			= []
+		otherTemplate.fields.each {
+			this.fields.add( it )
+		}
+	}
+
+	/**
+	 * clone template
+	 * @param otherTemplate
+	 * @param owner_id
+	 * @return
+	 */
+	public Template( Template otherTemplate, Long owner_id ) {
+		// clone template
+		this( otherTemplate )
+
+		// set owner
+		this.owner_id = owner_id
+	}
+
+	/**
 	 * overloaded toString method
 	 * @return String
 	 */
@@ -229,6 +263,9 @@ class Template extends Identity {
 	 */
 	def numUses() {
 		def elements = []
+
+		// make sure gdtService is available
+		if (!gdtService) gdtService = new GdtService()
 
 		// iterate through domain classes that use the domain templates
 		gdtService.getTemplateEntities().each {

@@ -14,16 +14,12 @@
  */
 package org.dbnp.gdt
 
-//import dbnp.authentication.AuthenticationService
-//import grails.plugins.springsecurity.Secured
 import grails.converters.*
 
-//@Secured(['IS_AUTHENTICATED_REMEMBERED'])
 class TemplateEditorController {
 	def entityName
 	def entity
 	def gdtService
-	//def authenticationService
 
 	/**
 	 * Fires after every action and determines the layout of the page
@@ -209,7 +205,16 @@ class TemplateEditorController {
 		}
 
 		// Create the template fields and add it to the template
-		def newTemplate = new Template(template, authenticationService.getLoggedInUser());
+		def newTemplate
+println session.dump()
+		if (session.getProperty('loggedInUser') && session.getProperty('loggedInUser').getProperty('id') && session.getProperty('loggedInUser').getProperty('id') instanceof Long) {
+println "A"
+			newTemplate = new Template(template, session.getProperty('loggedInUser').getProperty('id'))
+		} else {
+println "B"
+			newTemplate = new Template(template)
+		}
+
 		if (newTemplate.validate() && newTemplate.save(flush: true)) {
 			def html = g.render(plugin: 'gdt', template: 'elements/liTemplate', model: [template: newTemplate]);
 			def output = [id: newTemplate.id, html: html];
