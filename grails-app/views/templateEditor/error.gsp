@@ -16,13 +16,12 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
  <head>
-  <meta name="layout" content="dialog"/>
+  <meta name="layout" content="${layout}"/>
   <title>error</title>
  </head>
  <body>
 
- <h1>ERRORRRRRR!!!!</h1>
- <img src="http://www.walyou.com/img/microsoft_error_blue_screen_of_death.jpg"/>
+ <h1>Invalid request!</h1>
 
  </body>
 </html>

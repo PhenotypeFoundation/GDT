@@ -206,12 +206,9 @@ class TemplateEditorController {
 
 		// Create the template fields and add it to the template
 		def newTemplate
-println session.dump()
 		if (session.getProperty('loggedInUser') && session.getProperty('loggedInUser').getProperty('id') && session.getProperty('loggedInUser').getProperty('id') instanceof Long) {
-println "A"
 			newTemplate = new Template(template, session.getProperty('loggedInUser').getProperty('id'))
 		} else {
-println "B"
 			newTemplate = new Template(template)
 		}
 
