@@ -237,7 +237,7 @@ abstract class TemplateEntity extends Identity {
 			// template field
 			def templateFieldStore = getStore(field.type)
 
-			if (value) {
+			if (value || value == 0) {
 				templateFieldStore[fieldName] = value
 			} else {
 				templateFieldStore.remove(fieldName)
