@@ -24,9 +24,9 @@ class TemplateStringField extends TemplateFieldTypeNew {
 	static contains				= String
 	static String type			= "STRING"
 	static String casedType		= "String"
-	static String description	= "Short text (<= 255 chars)"
+	static String description	= "Short text (< 255 chars)"
 	static String category		= "Text"
-	static String example		= "max 255 characters"
+	static String example		= "max 254 characters"
 
 	/**
 	 * Static validator closure
@@ -53,9 +53,12 @@ class TemplateStringField extends TemplateFieldTypeNew {
 		}
 
 		// is the value > 255 characters?
-		if (value.size() > 255) {
+		// - it seems like PostgreSQL does not like 255 characters and throws an error:
+		//   ERROR: value too long for type character varying(255)
+		//   so we are cutting it off at 254 characters which DOES work
+		if (value.size() > 254) {
 			// cut it off at 255
-			value = value[0..251]+"..."
+			value = value[0..250]+"..."
 		}
 
 		return value
