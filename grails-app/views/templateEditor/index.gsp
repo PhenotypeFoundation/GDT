@@ -41,7 +41,7 @@
 			</ul>
 
 			<div id="addNew">
-				<a href="#" onClick="editTemplate( 'new' ); this.blur(); return false;">
+				<a href="#" onClick="editTemplate( 'new' ); this.blur(); window.scrollBy(0,1000); $('input#name').focus(); return false;">
 					<b>Create new template</b>
 				</a>
 
