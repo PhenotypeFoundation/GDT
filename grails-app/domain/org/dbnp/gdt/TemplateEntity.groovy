@@ -207,6 +207,9 @@ abstract class TemplateEntity extends Identity {
 	 * @param value The value to be set, this should align with the (template) field type, but there are some convenience setters
 	 */
 	def setFieldValue(String fieldName, value) {
+		setFieldValue(fieldName, value, false)
+	}
+	def setFieldValue(String fieldName, value, Boolean throwException) {
 		// get the template field
 		def TemplateField field	= getField(this.giveFields(), fieldName)
 		def templateFieldClass	= gdtService.getTemplateFieldTypeByCasedName(field.type.casedName)
@@ -218,13 +221,18 @@ abstract class TemplateEntity extends Identity {
 			value = templateFieldClass.castValue(field, value, currentValue)
 			// println " -> ${value} (${value?.class})"
 		} catch (Exception e) {
-			// the value could not be cast, keep the value as-is and do not
-			// propagate the exception as the dynamic validators will notify
-			// the user the value was wrong
+			// the value could not be cast, keep the value as-is
 			def errorMessage = "Error casting ${field.name} of type ${field.type.casedName} with value ${value} (${value?.class}) :: " + e.getMessage()
-			if (log) {
+			if (throwException) {
+			    // propagate the exception to the calling code
+				throw new Exception(errorMessage)
+			} else if (log) {
+				// do not propagate the exception as the dynamic validators will notify
+				// the user the value was wrong
 				log.error errorMessage
 			} else {
+				// do not propagate the exception as the dynamic validators will notify
+				// the user the value was wrong
 				println errorMessage
 			}
 		}
