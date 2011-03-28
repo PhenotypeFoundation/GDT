@@ -13,6 +13,7 @@ public enum TemplateFieldType implements Serializable {
 	TEXT		('Text'			,'Long text'			, 'Text'		, 'unlimited number of chars'),	// text
 	DOUBLE		('Double'		,'Decimal number'		, 'Numerical'	, '1.31'),					// double
 	STRINGLIST	('StringList'	,'Dropdown selection of terms', 'Text'	, ''),						// string list
+	EXTENDIBLESTRINGLIST	('ExtendibleStringList'	, 'Extendible dropdown selection of terms', 'Text'	, ''),						// user extendible string list
 	ONTOLOGYTERM('Term'			,'Term from ontology'	, 'Other'		, 'A term that comes from one or more selected ontologies'),// ontology reference
 	DATE		('Date'			,'Date'					, 'Date'		, '2010-01-01'),			// date
 	RELTIME		('RelTime'		,'Relative time'		, 'Date'		, '3 days'),				// relative date, e.g. days since start of study

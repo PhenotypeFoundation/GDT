@@ -622,6 +622,31 @@ class GdtTagLib extends AjaxflowTagLib {
 								out << '<span class="warning">no values!!</span>'
 							}
 							break
+						case 'EXTENDIBLESTRINGLIST':
+							// Show autocomplete
+							inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
+							
+							out << "$inputElement"(
+								description: ucName,
+								name: prependName + it.escapedName(),
+								value: fieldValue,
+								id: 'extendibleStringList_' + prependName + it.escapedName(),
+								required: it.isRequired()
+							) {helpText}
+
+							def jsEntries = "";
+							
+							if( !it.listEntries.isEmpty() ) {
+								jsEntries = it.listEntries.collect { '"' + it.name.encodeAsJavaScript() + '"' }.join( ', ' );
+							}
+							out << '<script type="text/javascript">' +
+									'var existingTags = [ ' + jsEntries + ' ];' +
+									'$( "#extendibleStringList_' + prependName + it.escapedName() + '" ).autocomplete({' +
+										'source: existingTags' +
+									'});' +
+								'</script>';
+							
+							break
 						case 'ONTOLOGYTERM':
 							// @see http://www.bioontology.org/wiki/index.php/NCBO_Widgets#Term-selection_field_on_a_form
 							// @see ontology-chooser.js
