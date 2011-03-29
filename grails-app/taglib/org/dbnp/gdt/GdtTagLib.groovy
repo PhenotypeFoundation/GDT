@@ -383,24 +383,43 @@ class GdtTagLib extends AjaxflowTagLib {
 
 		// got result?
 		if (attrs.from.size() > 0 || attrs.get('addDummy')) {
-			// transform all values into strings
-			def from = []
-			attrs.from.each { from[from.size()] = it.toString() }
-
 			// sort alphabetically
-			from.sort()
+			attrs.from.sort( { a, b -> a.toString() <=> b.toString() } as Comparator )
 
 			// add a dummy field?
 			if (attrs.remove('addDummy')) {
-				from.add(0, '')
+				attrs.from.add(0, '')
 			}
 
-			// set attributes
-			attrs.from = from
-			attrs.value = (attrs.value) ? attrs.value.toString() : ''
+			// output select element. This is done by hand, since the grails select-tag doesn't
+			// support titles on options. These titles are used to show more information about the 
+			// templates
+			out << '<select'
+			out << ' id="' + ( attrs.id ?: attrs.name ).encodeAsHTML() + '"'
+			out << ' name="' + attrs.name?.encodeAsHTML() + '"' 
+			if( attrs.rel )
+				out << ' rel="' + attrs.rel.encodeAsHTML() + '"'
+			if( attrs.entity )
+				out << ' entity="' + attrs.entity.encodeAsHTML() + '"'
+			if( attrs.onChange ) 
+				out << ' onChange="' + attrs.onChange.encodeAsHTML() + '"'
+			out << ">\n";
+			
+			attrs.from.each {
+				out << '<option'
+				if( it.toString() == attrs.value.toString() )
+					out << ' selected="selected"'
+				out << ' value="' + it.toString().encodeAsHTML() + '"'
+				
+				if( it instanceof Template && it.description )
+					out << ' title="' + it.description?.encodeAsHTML() + '"'
 
-			// output select element
-			out << select(attrs)
+				out << '>'
+				out << it.toString();
+				out << "</option>\n"
+			}
+			
+			out << '</select>';
 		} else {
 			// no, return false to make sure this element
 			// is not rendered in the template
