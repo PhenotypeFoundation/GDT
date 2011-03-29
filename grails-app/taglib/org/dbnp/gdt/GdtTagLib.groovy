@@ -519,18 +519,26 @@ class GdtTagLib extends AjaxflowTagLib {
 		def entity = (attrs.get('entity'))
 		def template = (entity && entity instanceof TemplateEntity) ? entity.template : null
 		def columnWidths = (attrs.get('columnWidths')) ? attrs.remove('columnWidths') : []
-
+		def includeEntities = attrs.get( 'includeEntities' ) ?: false
+		
+		def entityName = entity?.class.name[ entity?.class.name.lastIndexOf( '.' ) + 1 .. -1 ];
+		
 		// got a template?
 		if (template) {
 			// render template fields
-			entity.giveFields().each() {
+			entity.giveFields().each() { 
 				// Format the column name by:
 				// - separating combined names (SampleName --> Sample Name)
 				// - capitalizing every seperate word
 				def ucName = it.name.replaceAll(/[a-z][A-Z][a-z]/) {
 					it[0] + ' ' + it[1..2]
 				}.replaceAll(/\w+/) {
-					it[0].toUpperCase() + ((it.size() > 1) ? it[1..-1] : '')
+					// If the entity is also shown, the entity should be removed from the field name (if present)
+					if( includeEntities && it.toLowerCase() == entityName.toLowerCase() ) {
+						return "";
+					} else {
+						return it[0].toUpperCase() + ((it.size() > 1) ? it[1..-1] : '')
+					}
 				}
 
 				// strip spaces
@@ -538,10 +546,19 @@ class GdtTagLib extends AjaxflowTagLib {
 
 				// do we have to use a specific width for this column?
 				if (columnWidths[ucName]) {
-					out << '<div class="' + attrs.get('class') + '" style="width:' + columnWidths[ucNameSpaceless] + 'px;" rel="resized">' + ucName + (it.unit ? " (${it.unit})" : '')
+					out << '<div class="' + attrs.get('class') + '" style="width:' + columnWidths[ucNameSpaceless] + 'px;" rel="resized">'
 				} else {
-					out << '<div class="' + attrs.get('class') + '">' + ucName + (it.unit ? " (${it.unit})" : '')
+					out << '<div class="' + attrs.get('class') + '">'
 				}
+				
+				out << '<span class="fieldname">'
+				if( includeEntities ) {
+					out << entityName + "<br />";
+				}
+				
+				out << ucName + (it.unit ? " (${it.unit})" : '')
+				out << '</span>'
+				
 				if (it.comment) {
 					out << '<div class="helpIcon"></div>'
 					out << '<div class="helpContent">' + it.comment + '</div>'
