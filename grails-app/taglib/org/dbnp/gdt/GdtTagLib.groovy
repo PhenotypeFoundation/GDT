@@ -641,7 +641,7 @@ class GdtTagLib extends AjaxflowTagLib {
 								out << '<span class="warning">no values!!</span>'
 							}
 							break
-						case 'EXTENDIBLESTRINGLIST':
+						case 'EXTENDABLESTRINGLIST':
 							// Show autocomplete
 							inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
 							
@@ -649,7 +649,7 @@ class GdtTagLib extends AjaxflowTagLib {
 								description: ucName,
 								name: prependName + it.escapedName(),
 								value: fieldValue,
-								id: 'extendibleStringList_' + prependName + it.escapedName(),
+								id: 'extendableStringList_' + prependName + it.escapedName(),
 								required: it.isRequired()
 							) {helpText}
 
@@ -660,7 +660,7 @@ class GdtTagLib extends AjaxflowTagLib {
 							}
 							out << '<script type="text/javascript">' +
 									'var existingTags = [ ' + jsEntries + ' ];' +
-									'$( "#extendibleStringList_' + prependName + it.escapedName() + '" ).autocomplete({' +
+									'$( "#extendableStringList_' + prependName + it.escapedName() + '" ).autocomplete({' +
 										'source: existingTags' +
 									'});' +
 								'</script>';

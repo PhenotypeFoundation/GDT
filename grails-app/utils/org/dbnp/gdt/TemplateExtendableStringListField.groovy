@@ -20,11 +20,11 @@
  */
 package org.dbnp.gdt
 
-class TemplateExtendibleStringListField extends TemplateFieldTypeNew {
+class TemplateExtendableStringListField extends TemplateFieldTypeNew {
 	static contains				= TemplateFieldListItem
-	static String type			= "EXTENDIBLESTRINGLIST"
-	static String casedType		= "ExtendibleStringList"
-	static String description	= "Dropdown selection of items"
+	static String type			= "EXTENDABLESTRINGLIST"
+	static String casedType		= "ExtendableStringList"
+	static String description	= "Extendable selection of items"
 	static String category		= "Text"
 	static String example		= ""
 
@@ -62,6 +62,7 @@ class TemplateExtendibleStringListField extends TemplateFieldTypeNew {
 					return item
 				} else {
 					// Create a new field item
+					println "Create a new list item: " + value
 					TemplateFieldListItem listitem = new TemplateFieldListItem( name: value );
 					field.addToListEntries( listitem );
 					listitem.save();
