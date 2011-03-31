@@ -18,6 +18,10 @@ var formOpened = false;
 // Contains information about the original position of an item, when it is being dragged
 var currentSort = null;
 
+function userMessage( message ) {
+	alert( message );
+}
+
 /*************************************
  *
  * Methods for the index page with templates on it
@@ -87,6 +91,7 @@ function createTemplate( id ) {
         },
 		complete: function( request, textStatus ) {
 			hideWaiting();
+			userMessage( 'Your template was created and added to the list.' );
 		}
     });
 }
@@ -110,10 +115,11 @@ function updateTemplate( id ) {
             updateTemplateListItem( id, data.html );
         },
         error:      function( request ) {
-            alert( "Could not update template: " + request.responseText );
+        	userMessage( "Could not update template" );
         },
 		complete: function( request, textStatus ) {
 			hideWaiting();
+			userMessage( 'Your template was updated.' );
 		}
     });
 }
@@ -141,6 +147,7 @@ function deleteTemplate( id ) {
         },
 		complete: function( request, textStatus ) {
 			hideWaiting();
+			userMessage( 'Your template was deleted.' );
 		}
     });
 
@@ -166,6 +173,7 @@ function cloneTemplate( id ) {
         },
 		complete: function( request, textStatus ) {
 			hideWaiting();
+			userMessage( 'A copy of your template has been created.' );
 		}
     });
 }
@@ -293,6 +301,7 @@ function createTemplateField( id ) {
         },
 		complete: function( request, textStatus ) {
 			hideWaiting();
+			userMessage( 'A new template field was created and can be added to your template.' );
 		}
     });
 }
@@ -320,6 +329,7 @@ function updateTemplateField( id ) {
         },
 		complete: function( request, textStatus ) {
 			hideWaiting();
+			userMessage( 'Your template field has been updated.' );
 		}
     });
 }
@@ -346,6 +356,7 @@ function deleteTemplateField( id ) {
         },
 		complete: function( request, textStatus ) {
 			hideWaiting();
+			userMessage( 'Your template field has been deleted.' );
 		}
     });
 
@@ -590,7 +601,14 @@ function undoMove() {
 	if( currentSort ) {
 		var item = $( '#' + currentSort.id );
 		item.remove();
-		item.insertAfter( currentSort.previous );
+		
+		// Check whether a previous item is saved. If not, the moved item was the 
+		// only item in the list.
+		if( currentSort.previous != null ) {
+			item.insertAfter( currentSort.previous );
+		} else {
+			$(currentSort.parent).append( item );
+		}
 	}
 }
 

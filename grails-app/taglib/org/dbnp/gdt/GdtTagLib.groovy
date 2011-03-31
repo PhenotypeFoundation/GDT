@@ -452,11 +452,16 @@ class GdtTagLib extends AjaxflowTagLib {
 			out << '<a href="' + resource(dir: '') + '/file/get/' + attrs.value + '" class="isExample">Now contains: ' + attrs.value + '</a>'
 		}
 		*/
-
-		out << '<div id="upload_button_' + attrs.name + '" class="upload_button">Upload</div>';
+		def buttonText = attrs.buttonText ?: 'Upload';
+		def hideDelete = attrs.hideDelete ?: false;
+		
+		out << '<div id="upload_button_' + attrs.name + '" class="upload_button">' + buttonText + '</div>';
 		out << '<input type="hidden" name="' + attrs.name + '" id="' + attrs.name + '" value="existing*' + ( attrs.value ?: "" ) + '">';
 		out << '<div id="' + attrs.name + 'Example" class="upload_info"></div>';
-		out << '<a id="' + attrs.name + 'Delete" class="upload_del" href="#" onClick="if( confirm( \'Are you sure to delete this file?\' ) ) { deleteFile( \'' + attrs.name + '\' ); } return false;"><img src="' + resource(dir: 'images/icons', file: 'delete.png', plugin: 'famfamfam') + '"></a>';
+
+		if( !hideDelete )
+			out << '<a id="' + attrs.name + 'Delete" class="upload_del" href="#" onClick="if( confirm( \'Are you sure to delete this file?\' ) ) { deleteFile( \'' + attrs.name + '\' ); } return false;"><img src="' + resource(dir: 'images/icons', file: 'delete.png', plugin: 'famfamfam') + '"></a>';
+			
 		out << '<script type="text/javascript">';
 		out << '  $(document).ready( function() { ';
 		out << '    var filename = "' + ( attrs.value ?: "" ) + '";';
