@@ -29,7 +29,7 @@
 
 		<br />
 
-	<div class="extra stringlist_options" <g:if test="${templateField?.type.toString() == 'STRINGLIST'}">style='display: block;'</g:if>>
+	<div class="extra stringlist_options extendablestringlist_options" <g:if test="${templateField?.type.toString() == 'STRINGLIST' || templateField?.type.toString() == 'EXTENDABLESTRINGLIST'}">style='display: block;'</g:if>>
 	  <label for="type">Items (every item on a new line):</label>
 		<g:textArea name="listEntries" value="${templateField?.listEntries?.name?.join( '\n' )}" />
 	</div>

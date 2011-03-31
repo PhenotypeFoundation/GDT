@@ -7,7 +7,7 @@
 	<label for="name">Name:</label> <g:textField disabled="disabled" name="name" value="${templateField?.name}" /><br />
 	<label for="type">Type:</label> <g:textField disabled="disabled" name="type" value="${templateField?.type}" /><br />
 
-	<div class="extra stringlist_options" <g:if test="${templateField?.type.toString() == 'STRINGLIST'}">style='display: block;'</g:if>>
+	<div class="extra extendablestringlist_options stringlist_options" <g:if test="${templateField?.type.toString() == 'STRINGLIST' || templateField?.type.toString() == 'EXTENDABLESTRINGLIST'}">style='display: block;'</g:if>>
 	  <label for="type">Used items:</label>
 		<g:textArea name="usedListEntries" disabled="disabled" value="${templateField?.getUsedListEntries().name?.join( '\n' )}" />
 	  <label for="type">Extra Items (every item on a new line):</label>
@@ -26,7 +26,7 @@
 	<label for="required">Required:</label> <input type="checkbox" disabled <g:if test="${templateField?.required}">checked</g:if><br />
 
 	<div class="templateFieldButtons">
-	  <g:if test="${ templateField?.type.toString() == 'STRINGLIST' || templateField?.type.toString() == 'ONTOLOGYTERM' }">
+	  <g:if test="${ templateField?.type.toString() == 'STRINGLIST' || templateField?.type.toString() == 'EXTENDABLESTRINGLIST' || templateField?.type.toString() == 'ONTOLOGYTERM' }">
 		<input type="button" value="Save" onClick="updateTemplateField( ${templateField?.id} );">
 		<input type="button" value="Close" onClick="hideTemplateFieldForm( ${templateField?.id} );">
 	  </g:if>

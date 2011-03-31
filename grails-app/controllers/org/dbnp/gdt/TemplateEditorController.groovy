@@ -339,7 +339,7 @@ class TemplateEditorController {
 		}
 
 		// If this field is type stringlist, we have to prepare the parameters
-		if (params.type.toString() == 'STRINGLIST') {
+		if (params.type.toString() == 'STRINGLIST' || params.type.toString() == 'EXTENDABLESTRINGLIST' ) {
 			def listEntries = [];
 			params.listEntries.eachLine {
 				// We don't search for a listitem that might already exist,
@@ -410,7 +410,7 @@ class TemplateEditorController {
 		// For stringlist and ontologyterm fields, the list items can be changed, even when the field is in use
 		// In that case, only never-used items can be removed or changed and items can be added. If that is the case
 		// params.is_disabled is true and we should combine listEntries and extraListEntries with the items already in use.
-		if (params.type.toString() == 'STRINGLIST' || (templateField.type == TemplateFieldType.STRINGLIST && params.is_disabled)) {
+		if (params.type.toString() == 'STRINGLIST' || params.type.toString() == 'EXTENDABLESTRINGLIST' || ( (templateField.type == TemplateFieldType.STRINGLIST || templateField.type == TemplateFieldType.EXTENDABLESTRINGLIST ) && params.is_disabled)) {
 			def listEntryLines = "";
 			def listEntries = [];
 

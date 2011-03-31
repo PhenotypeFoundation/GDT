@@ -260,9 +260,9 @@ function hideTemplateFieldForm( id ) {
  * Clears the form to add a template field after adding one
  */
 function clearTemplateFieldForm( id ) {
-    $( '#templateField_' + id + '_form input#name' ).val( "" );
-    $( '#templateField_' + id + '_form input#unit' ).val( "" );
-    $( '#templateField_' + id + '_form input#required' ).attr( "checked", "" );
+    $( '#templateField_' + id + '_form input[name=name]' ).val( "" );
+    $( '#templateField_' + id + '_form input[name=unit]' ).val( "" );
+    $( '#templateField_' + id + '_form input[name=required]' ).attr( "checked", "" );
     $( '#templateField_' + id + '_form textarea' ).val( "" );
     $( '#templateField_' + id + '_form select' ).attr( 'selectedIndex', 0 );
     $( '#templateField_' + id + '_form .extra' ).hide();

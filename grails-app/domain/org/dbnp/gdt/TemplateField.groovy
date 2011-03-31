@@ -111,9 +111,9 @@ class TemplateField implements Serializable {
 	 * @return ArrayList containing all list items of this template field that have been used in an object.
 	 */
 	def getUsedListEntries() {
-		if (this.type != TemplateFieldType.STRINGLIST)
-		return []
-
+		if (this.type != TemplateFieldType.STRINGLIST && this.type != TemplateFieldType.EXTENDABLESTRINGLIST)
+			return []
+		
 		return this.listEntries.findAll { this.entryUsed(it) }
 	}
 
@@ -123,8 +123,8 @@ class TemplateField implements Serializable {
 	 * @return ArrayList containing all list items of this template field that have nevert been used in an object.
 	 */
 	def getNonUsedListEntries() {
-		if (this.type != TemplateFieldType.STRINGLIST)
-		return []
+		if (this.type != TemplateFieldType.STRINGLIST && this.type != TemplateFieldType.EXTENDABLESTRINGLIST)
+			return []
 
 		return this.listEntries.findAll { !this.entryUsed(it) }
 	}
@@ -284,7 +284,7 @@ class TemplateField implements Serializable {
 	 * @returns boolean
 	 */
 	def entryUsed(item) {
-		if (this.type == TemplateFieldType.STRINGLIST) {
+		if (this.type == TemplateFieldType.STRINGLIST || this.type == TemplateFieldType.EXTENDABLESTRINGLIST) {
 			// Checks if the list item is part of this template field and the given list
 			// item is selected in an entity where this template field is used. false otherwise
 			// Returns false if the type of this template field is other than STRINGLIST

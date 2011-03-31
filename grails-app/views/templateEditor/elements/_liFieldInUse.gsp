@@ -9,7 +9,7 @@
     (<g:if test="${templateField.unit}">${templateField.unit}, </g:if>${templateField.type.name})
     
 <form class="templateField_form" id="templateField_${templateField.id}_form" action="updateField">
-  <g:if test="${ templateField?.type.toString() == 'STRINGLIST' }">
+  <g:if test="${ templateField?.type.toString() == 'STRINGLIST' || templateField?.type.toString() == 'EXTENDABLESTRINGLIST' }">
     <p class="noEditsPossible">You can only add or remove list items that are not used. Field is used in ${numUses} template(s).</p>
   </g:if>
   <g:else>

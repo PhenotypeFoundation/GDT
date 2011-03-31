@@ -9,7 +9,7 @@ package org.dbnp.gdt
  * $Date: 2010-10-20 21:13:14 +0200 (Wed, 20 Oct 2010) $
  */
 class TemplateFieldListItem implements Serializable {
-	// A TemplateFieldListItem always belongs to one TemplateField of TemplateFieldType STRINGLIST
+	// A TemplateFieldListItem always belongs to one TemplateField of TemplateFieldType STRINGLIST or EXTENDABLESTRINGLIST
 	static belongsTo = [parent: TemplateField]
 
 	/** The caption of the list item  */
