@@ -214,6 +214,7 @@ function showTemplateFormEvent(e) {
  * Shows the form to edit a template field
  */
 function showTemplateFieldForm( list_item_id ) {
+	
     // Show the form is this item is not disabled
     if( !formOpened ) {
         formOpened = true;
@@ -225,6 +226,15 @@ function showTemplateFieldForm( list_item_id ) {
 		$( '#availableTemplateFields li:not(#' + list_item_id + ')').addClass( 'ui-state-disabled' );
 		$( '#selectedTemplateFields li:not(#' + list_item_id + ')').addClass( 'ui-state-disabled' );
 
+		// Make sure the opened form is on the page, so scroll down if needed
+		var formElement = $( '#' + list_item_id + '_form' ).parent();
+		var formBottom = formElement.offset().top + formElement.height();
+		var margin = 10;
+		
+		if( formBottom > $(document).scrollTop() + $(window).height() ) {
+			$('html, body').animate( { scrollTop: formBottom + margin - $(window).height() }, 200 );
+		}
+		
 		if( list_item_id != 'templateField_new' ) {
 			// Disable add new
 			$( '#addNew').addClass( 'ui-state-disabled' );
