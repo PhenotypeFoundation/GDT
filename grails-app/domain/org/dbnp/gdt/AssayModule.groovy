@@ -9,7 +9,7 @@ class AssayModule extends Identity {
 	String name
 
 	/** A descriptive string describing the 'platform' of the assay data in the module */
-	String platform
+	//String platform
 
 	/** The base URL at which the module instance is located. This is also used
 	 * as a consumer parameter to identify the module in the authentication process.
