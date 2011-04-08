@@ -53,15 +53,17 @@ abstract class Identity implements Serializable {
 	 * Method to increment the static iterator variable. This method
 	 * is synchronized to assure a thread-safe increment.
 	 * @visibility private
-	 * @void
+	 * @int
 	 */
-	synchronized final private void setIdentifier() {
+	synchronized final private int setIdentifier() {
 		// increment the iterator variable
 		// reset iterator to 1 if it is becoming too high
 		iterator = (iterator >= maximumIdentity) ? 1 : iterator+1
 
 		// set the instance identifier
 		identifier = iterator
+
+		return identifier
 	}
 
 	/**
@@ -71,9 +73,11 @@ abstract class Identity implements Serializable {
 	 */
 	final public int getIdentifier() {
 		// set identifier if not yet set
-		if (!identifier) setIdentifier()
-
-		return identifier
+		if (!identifier) {
+			return setIdentifier()
+		} else {
+			return identifier
+		}
 	}
 
 	/**
