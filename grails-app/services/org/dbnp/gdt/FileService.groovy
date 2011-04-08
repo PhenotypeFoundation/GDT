@@ -161,12 +161,13 @@ class FileService implements Serializable {
                 extension = '';
             }
 
-            // Find a filename that does not yet exist
-            def postfix = 0;
-            def newFilename = basename + postfix + extension;
+            /// Find a filename that does not yet exist
+            def postfix = 2;
+
+            def newFilename = basename + " (copy " + postfix + ")" + extension;
             while( fileExists( newFilename ) ) {
                 postfix++;
-                newFilename = basename + postfix + extension;
+                newFilename = basename + " (copy " + postfix + ")" + extension;
             }
 
             return newFilename;
