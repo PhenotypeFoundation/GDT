@@ -32,8 +32,6 @@ class TermEditorController {
 	def pagesFlow = {
 		// start the flow
 		onStart {
-			println ".start term / ontology editor flow"
-
 			if (params.ontologies) {
 				flow.ontologies		= params.ontologies
 				flow.ontologiesList	= []
@@ -51,7 +49,6 @@ class TermEditorController {
 		terms {
 			render(view: "terms")
 			onRender {
-				println ".rendering term selection popup"
 			}
 			on("add") {
 				def ncboId = params.get('term-ncbo_id')
