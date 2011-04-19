@@ -152,6 +152,9 @@ class TemplateEditorController {
 	 * TODO: improve the error page
 	 */
 	def error = {
+		// set content type
+		response.setContentType("text/html; charset=UTF-8")
+
 		render('view': 'error');
 	}
 
@@ -164,6 +167,9 @@ class TemplateEditorController {
 	 * 					On error the method gives a HTTP response status 500 and the error
 	 */
 	def createTemplate = {
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
+
 		// Decode the entity
 		if (!checkEntity()) {
 			response.status = 500;
@@ -179,6 +185,7 @@ class TemplateEditorController {
 		if (template.validate() && template.save(flush: true)) {
 			def html = g.render(plugin: 'gdt', template: 'elements/liTemplate', model: [template: template]);
 			def output = [id: template.id, html: html];
+			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
 		} else {
 			response.status = 500;
@@ -196,6 +203,9 @@ class TemplateEditorController {
 	 * 					On error the method gives a HTTP response status 500 and the error
 	 */
 	def cloneTemplate = {
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
+
 		// Search for the template field
 		def template = Template.get(params.id);
 		if (!template) {
@@ -215,6 +225,7 @@ class TemplateEditorController {
 		if (newTemplate.validate() && newTemplate.save(flush: true)) {
 			def html = g.render(plugin: 'gdt', template: 'elements/liTemplate', model: [template: newTemplate]);
 			def output = [id: newTemplate.id, html: html];
+			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
 		} else {
 			response.status = 500;
@@ -233,6 +244,9 @@ class TemplateEditorController {
 	 * 				On error the method gives a HTTP response status 500 and the error
 	 */
 	def updateTemplate = {
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
+
 		// Search for the template field
 		def template = Template.get(params.id);
 		if (!template) {
@@ -255,6 +269,7 @@ class TemplateEditorController {
 		if (!template.hasErrors() && template.save(flush: true)) {
 			def html = g.render(plugin: 'gdt', template: 'elements/liTemplate', model: [template: template]);
 			def output = [id: template.id, html: html];
+			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
 		} else {
 			response.status = 500;
@@ -272,6 +287,9 @@ class TemplateEditorController {
 	 * 						On error the method gives a HTTP response status 500 and the error
 	 */
 	def deleteTemplate = {
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
+
 		// Search for the template field
 		def template = Template.get(params.template);
 		if (!template) {
@@ -285,6 +303,7 @@ class TemplateEditorController {
 			template.delete(flush: true)
 
 			def output = [id: template.id];
+			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
 		}
 		catch (org.springframework.dao.DataIntegrityViolationException e) {
@@ -303,6 +322,9 @@ class TemplateEditorController {
 	 * 					On error the method gives a HTTP response status 500 and the error
 	 */
 	def createField = {
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
+
 		// Search for the template
 		def template = Template.get(params.template);
 
@@ -367,6 +389,7 @@ class TemplateEditorController {
 
 			def html = g.render(plugin: 'gdt', template: 'elements/available', model: [templateField: templateField, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list()]);
 			def output = [id: templateField.id, html: html];
+			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
 
 			//render '';
@@ -387,6 +410,9 @@ class TemplateEditorController {
 	 * 				On error the method gives a HTTP response status 500 and the error
 	 */
 	def updateField = {
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
+
 		// Search for the template field
 		def templateField = TemplateField.get(params.id);
 		if (!templateField) {
@@ -507,6 +533,7 @@ class TemplateEditorController {
 
 			def html = g.render(plugin: 'gdt', template: renderTemplate, model: [template: template, templateField: templateField, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list()]);
 			def output = [id: templateField.id, html: html];
+			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
 		} else {
 			response.status = 500;
@@ -524,6 +551,9 @@ class TemplateEditorController {
 	 * 						On error the method gives a HTTP response status 500 and the error
 	 */
 	def deleteField = {
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
+
 		// Search for the template field
 		def templateField = TemplateField.get(params.templateField);
 		if (!templateField) {
@@ -537,6 +567,8 @@ class TemplateEditorController {
 			templateField.delete(flush: true)
 
 			def output = [id: templateField.id];
+			response.setContentType("application/json; charset=UTF-8")
+			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
 		}
 		catch (org.springframework.dao.DataIntegrityViolationException e) {
@@ -557,6 +589,9 @@ class TemplateEditorController {
 	def addField = {
 		// Search for the template
 		def template = Template.get(params.template);
+
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
 
 		if (!template) {
 			response.status = 404;
@@ -607,6 +642,7 @@ class TemplateEditorController {
 
 		def html = g.render(plugin: 'gdt', template: 'elements/selected', model: [templateField: templateField, template: template, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list()]);
 		def output = [id: templateField.id, html: html];
+		response.setContentType("application/json; charset=UTF-8")
 		render output as JSON;
 	}
 
@@ -623,6 +659,9 @@ class TemplateEditorController {
 	def removeField = {
 		// Search for the template
 		def template = Template.get(params.template);
+
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
 
 		if (!template) {
 			response.status = 404;
@@ -660,6 +699,7 @@ class TemplateEditorController {
 
 		def html = g.render(plugin: 'gdt', template: 'elements/available', model: [templateField: templateField, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list()]);
 		def output = [id: templateField.id, html: html];
+		response.setContentType("application/json; charset=UTF-8")
 		render output as JSON;
 	}
 
@@ -677,6 +717,9 @@ class TemplateEditorController {
 	def moveField = {
 		// Search for the template
 		def template = Template.get(params.template);
+
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
 
 		if (!template) {
 			response.status = 404;
@@ -708,6 +751,7 @@ class TemplateEditorController {
 
 		def html = g.render(plugin: 'gdt', template: 'elements/selected', model: [templateField: templateField, template: template, fieldTypes: TemplateFieldType.list()]);
 		def output = [id: templateField.id, html: html];
+		response.setContentType("application/json; charset=UTF-8")
 		render output as JSON;
 	}
 
@@ -737,6 +781,9 @@ class TemplateEditorController {
 	 */
 	def addOntologyById = {
 		def id = params.ncboID;
+
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
 
 		if (!id) {
 			response.status = 500;
@@ -775,6 +822,7 @@ class TemplateEditorController {
 
 		// Save ontology and render the object as JSON
 		ontology.save(flush: true)
+		response.setContentType("application/json; charset=UTF-8")
 		render ontology as JSON
 	}
 
@@ -787,6 +835,9 @@ class TemplateEditorController {
 	 */
 	def addOntologyByTerm = {
 		def id = params.termID;
+
+		// set content type
+		response.setContentType("text/plain; charset=UTF-8")
 
 		if (!id) {
 			response.status = 500;
@@ -823,6 +874,7 @@ class TemplateEditorController {
 
 		// Save ontology and render the object as JSON
 		ontology.save(flush: true)
+		response.setContentType("application/json; charset=UTF-8")
 		render ontology as JSON
 	}
 
