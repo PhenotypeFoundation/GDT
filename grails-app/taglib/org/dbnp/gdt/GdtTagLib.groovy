@@ -66,7 +66,7 @@ class GdtTagLib extends AjaxflowTagLib {
 		if (!renderedElement) return false
 
 		// render a form element
-		out << '<div class="element' + ((attrs.get('required')) ? ' required' : '') + '"' + ((attrs.get('elementId')) ? 'id="' + attrs.remove('elementId') + '"' : '') + '>'
+		out << '<div class="element' + ((attrs.get('class')) ? " ${attrs.get('class')}" : '') + ((attrs.get('required')) ? ' required' : '') + '"' + ((attrs.get('elementId')) ? 'id="' + attrs.remove('elementId') + '"' : '') + '>'
 		out << ' <div class="description">'
 		out << ((description) ? description.replaceAll(/[a-z][A-Z][a-z]/) { it[0] + ' ' + it[1..2] }.replaceAll(/\w+/) { it[0].toUpperCase() + ((it.size() > 1) ? it[1..-1] : '') } : '')
 		out << ' </div>'
@@ -256,15 +256,29 @@ class GdtTagLib extends AjaxflowTagLib {
 	 * @param Closure body  (help text)
 	 */
 	def radioList = { attrs ->
-		def checked = true
+		def checked		= true
+		def value		= ""
+		def description	= ""
 
 		attrs.elements.each {
+			if (it instanceof String) {
+				value		= it
+				description	= it
+			} else {
+				value		= it.key
+				description	= it.value
+			}
+
+			out << "<label for=\"radio-${value}\"${((attrs.get('elementclass')) ? " class=\"${attrs.get('elementclass')}\"" : '')}>"
 			out << radio(
 				name: attrs.name,
-				value: it,
-				checked: (attrs.value == it || (!attrs.value && checked))
+				value: value,
+				id: "radio-${value}",
+				checked: (attrs.value == value || (!attrs.value && checked))
 			)
-			out << it
+			out << description
+			out << "</label>"
+
 			checked = false
 		}
 	}
