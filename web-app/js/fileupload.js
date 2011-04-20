@@ -9,7 +9,7 @@ function fileUploadField(field_id) {
 	/* example 2 */
 	new AjaxUpload('#upload_button_' + field_id, {
 		//action: 'upload.php',
-		action: baseUrl + '/file/upload', // I disabled uploads in this example for security reaaons
+		action: baseUrl + '/file/upload/hoihoi', // I disabled uploads in this example for security reaaons
 		data : {},
 		name : field_id,
 		autoSubmit: true,
