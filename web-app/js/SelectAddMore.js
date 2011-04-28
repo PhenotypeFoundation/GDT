@@ -106,7 +106,7 @@ SelectAddMore.prototype = {
                     uri += arrVars[v] + '=' + ((val) ? val : '') + '&';
                 }
 
-                $('<iframe frameborder="0" src="' + uri + '" sandbox="allow-same-origin" seamless />').dialog({
+                $('<iframe frameborder="0" src="' + uri + '" seamless />').dialog({
                     title   : label,
                     autoOpen: true,
                     width   : width,
