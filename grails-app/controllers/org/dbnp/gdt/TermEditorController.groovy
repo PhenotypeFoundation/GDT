@@ -102,7 +102,7 @@ class TermEditorController {
 							success()
 						} else {
 							flash.errors = ["We encountered a problem while storing the selected term. Please try again."]
-							term.errors.each() { println it }
+							//term.errors.each() { println it }
 							error()
 						}
 					} else {

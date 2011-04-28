@@ -59,6 +59,12 @@ abstract class TemplateEntity extends Identity {
 		systemFields				: TemplateField
 	]
 
+	/**
+	 * define what properties should be fuzzy searchable
+	 * see org.dbnp.gdt.FuzzyStringMatchController and Service
+	 */
+	static fuzzyStringMatchable = [ ]
+
 	// remember required fields when
 	// so we can validate is the required
 	// template fields are set

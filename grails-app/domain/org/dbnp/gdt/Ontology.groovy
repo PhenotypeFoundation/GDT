@@ -101,9 +101,7 @@ class Ontology implements Serializable {
 		// TODO: maybe make a static OntologyService instance to be more efficient, and decorate it with caching?
 		uk.ac.ebi.ontocat.OntologyService os = new uk.ac.ebi.ontocat.bioportal.BioportalOntologyService()
 		uk.ac.ebi.ontocat.OntologyTerm term = os.getTerm( termId );
-		println( term );
 		uk.ac.ebi.ontocat.Ontology o = os.getOntology( term.getOntologyAccession() );
-		println( o );
 
 		// Instantiate and return Ontology object
 		new Ontology(

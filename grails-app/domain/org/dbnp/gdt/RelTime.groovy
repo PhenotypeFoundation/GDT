@@ -283,9 +283,6 @@ class RelTime implements Comparable {
 	}
 
 	public void computeDifference(Date start, Date end) {
-		println([start, end]);
-		println([start.getTime(), end.getTime()]);
-
 		if (start && end) {
 			long seconds = (end.getTime() - start.getTime()) / 1000L;
 			setValue(seconds);

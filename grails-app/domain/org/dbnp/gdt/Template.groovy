@@ -45,7 +45,6 @@ class Template extends Identity {
     static mapping = {}
 
 	def setOwner = { owner ->
-		println "overloaded owner setter ${owner} = ${owner.id}"
 		owner_id = owner.id
 	}
 

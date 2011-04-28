@@ -613,14 +613,17 @@ class GdtTagLib extends AjaxflowTagLib {
 	 * @param String body
 	 */
 	def renderTemplateFields = { attrs ->
-		def renderType = attrs.remove('renderType')
-		def entity = (attrs.get('entity'))
-		def prependName = (attrs.get('name')) ? attrs.remove('name') + '_' : ''
-		def template = (entity && entity instanceof TemplateEntity) ? entity.template : null
-		def inputElement = null
-		def addDummy = (attrs.get('addDummy')) ? true : false
-		def ignore = attrs.get( 'ignore' );
-		
+		def renderType		= attrs.remove('renderType')
+		def entity			= (attrs.get('entity'))
+		def entityName		= entity.getClass().toString().replaceFirst(/^class /,'')
+		def prependName		= (attrs.get('name')) ? attrs.remove('name') + '_' : ''
+		def template		= (entity && entity instanceof TemplateEntity) ? entity.template : null
+		def inputElement	= null
+		def addDummy		= (attrs.get('addDummy')) ? true : false
+		def ignore			= attrs.get( 'ignore' );
+		def fuzzyMatching	= ""
+		def params			= [:]
+
 		if( ignore instanceof String )
 			ignore = [ignore]
 		
@@ -638,7 +641,15 @@ class GdtTagLib extends AjaxflowTagLib {
 					def fieldValue = entity.getFieldValue(it.name)
 					def helpText = (it.comment && renderType == 'element') ? it.comment : ''
 					def ucName = it.name[0].toUpperCase() + it.name.substring(1)
-	
+
+					// check for fuzzy string matching
+					if (it.type.toString() in ['STRING','TEXT'] && it.name in entity.fuzzyStringMatchable) {
+						// yes, extend attributes to contain fuzzyMathching info
+						fuzzyMatching = "${createLink(controller: 'fuzzyStringMatch', action: 'ajaxFuzzyFind', plugin: 'gdt')}&property=${it.name}&entity=${gdtService.encryptEntity(entityName)}"
+					} else {
+						fuzzyMatching = ""
+					}
+
 					// output column opening element?
 					if (renderType == 'column') {
 						out << '<div class="' + attrs.get('class') + '">'
@@ -647,21 +658,34 @@ class GdtTagLib extends AjaxflowTagLib {
 					switch (it.type.toString()) {
 						case ['STRING', 'DOUBLE', 'LONG']:
 							inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
-							out << "$inputElement"(
+
+							params = [
 								description: ucName,
 								name: prependName + it.escapedName(),
 								value: fieldValue,
 								required: it.isRequired()
-							) {helpText}
+							]
+
+							// fuzzy matching enabled?
+							if (fuzzyMatching.size()) params << [ fuzzymatching: fuzzyMatching ]
+
+							out << "$inputElement"(params) {helpText}
 							break
 						case 'TEXT':
 							inputElement = (renderType == 'element') ? 'textAreaElement' : 'textField'
-							out << "$inputElement"(
+
+							params = [
 								description: ucName,
 								name: prependName + it.escapedName(),
 								value: fieldValue,
+								fuzzymatching: fuzzyMatching,
 								required: it.isRequired()
-							) {helpText}
+							]
+
+							// fuzzy matching enabled?
+							if (fuzzyMatching.size()) params << [ fuzzymatching: fuzzyMatching ]
+
+							out << "$inputElement"(params) {helpText}
 							break
 						case 'STRINGLIST':
 							inputElement = (renderType == 'element') ? 'selectElement' : 'select'
