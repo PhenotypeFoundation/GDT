@@ -18,9 +18,14 @@
 	<head>
 		<meta name="layout" content="${layout}"/>
 		<title>Compare templates</title>
-		<script src="${createLinkTo(dir: 'js', file: 'templateEditor.js')}" type="text/javascript"></script>
-		<link rel="stylesheet" href="${createLinkTo(dir: 'css', file: 'templateEditor.css')}" />
-
+		<g:if env="development">
+			<script src="${createLinkTo(dir: 'js', file: 'templateEditor.js')}" type="text/javascript"></script>
+			<link rel="stylesheet" href="${createLinkTo(dir: 'css', file: 'templateEditor.css')}" />
+		</g:if>
+		<g:else>
+			<script src="${createLinkTo(dir: 'js', file: 'templateEditor.min.js')}" type="text/javascript"></script>
+			<link rel="stylesheet" href="${createLinkTo(dir: 'css', file: 'templateEditor.min.css')}" />
+		</g:else>
 		<script src="${createLinkTo(dir: 'js', file: 'jquery.dataTables.min.js')}" type="text/javascript"></script>
 
 		<style type="text/css">

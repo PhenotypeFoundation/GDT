@@ -17,8 +17,14 @@
 	<head>
 		<meta name="layout" content="${layout}"/>
 		<title>template editor</title>
-		<script src="${resource(dir: 'js', file: 'templateEditor.js')}" type="text/javascript"></script>
-		<link rel="stylesheet" href="${resource(dir: 'css', file: 'templateEditor.css')}" />
+		<g:if env="development">
+			<script src="${resource(dir: 'js', file: 'templateEditor.js')}" type="text/javascript"></script>
+			<link rel="stylesheet" href="${resource(dir: 'css', file: 'templateEditor.css')}" />
+		</g:if>
+		<g:else>
+			<script src="${resource(dir: 'js', file: 'templateEditor.min.js')}" type="text/javascript"></script>
+			<link rel="stylesheet" href="${resource(dir: 'css', file: 'templateEditor.min.css')}" />
+		</g:else>
 		<style type="text/css">
 		  #content .templateEditorStep { font-size: 0.8em; }
 		</style>
