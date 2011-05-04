@@ -19,9 +19,11 @@ TableEditor.prototype = {
         headerIdentifier    :   'div.header',
         rowIdentifier       :   'div.row',
         columnIdentifier    :   'div.column',
-        selected            :   null
+		initialize			:	0
     },
-    allSelected : false,
+    tempSelectElement		: null,
+    tempSelectValue			: '',
+	allSelected				: false,
 
     /**
      * initialize object
@@ -29,7 +31,7 @@ TableEditor.prototype = {
      */
     init: function(options) {
         var that = this;
-        
+
         // set class parameters
         if (options) {
             $.each(options, function(key,value) {
@@ -37,47 +39,218 @@ TableEditor.prototype = {
             });
         }
 
-        // got table(s)?
-        var table = $(this.options.tableIdentifier);
-        if (table) {
-            // yes, initialize table(s)
-            that = this;
-            table.each(function() {
-                that.initializeTable(this);
-            });
-        }
+        // intitialize tables
+		$(this.options.tableIdentifier).each(function() {
+			that.initializeTable($(this));
+		});
     },
 
-    /**
-     * initialize table
-     * @param table
-     */
-    initializeTable: function(table) {
-        var that  = this;
-        var t = $(table);
+	initializeTable: function(table) {
+		var that = this;
 
-        // initialize selectable
-        t.selectable({
-            filter: this.options.rowIdentifier,
-            selected: function(event, ui) {
-                that.cleanup(t);
-                that.attachColumnHandlers(ui.selected);
-            },
-            unselected: function(event, ui) {
-                that.cleanup(t);
-                that.detachColumnHandlers(ui.selected);
-            }
-        });
+		// handle key presses
+		this.attachInputElements(table);
+
+		// Bind table wide mouseclicks (lighter implementation than
+		// binding / unbinding select elements directly)
+		// This only works for mozilla browsers, not for ie and
+		 // webkit based browsers
+		if ($.browser.mozilla) {
+			table.bind('click', function() {
+				var element = $('select:focus');
+
+				// did we select a select element?
+				if (element.attr('type')) {
+					that.tempSelectElement	= element;
+					that.tempSelectValue	= $('option:selected',element).val();
+				}
+			});
+			table.bind('mouseup', function() {
+				var element = $('select:focus');
+				var type	= element.attr('type');
+
+				// did we select a select element?
+				if (type) {
+					var column	= element.parent();
+					var row		= element.parent().parent();
+					var value	= $('option:selected',element).val();
+
+					// has the element changed?
+					if (that.tempSelectElement && element[0] == that.tempSelectElement[0] && that.tempSelectValue != value) {
+						// replicate data
+						that.replicateData(table,row,column,type,value);
+					}
+				}
+			});
+		}
+
+		// initialize selectable
+		table.selectable({
+			filter: that.options.rowIdentifier,
+			selected: function(event, ui) {
+				that.cleanup(table);
+
+				// on ie and webkit based browsers we need
+				// to handle mouse clicks differently
+				if (!$.browser.mozilla) {
+					that.attachSelectElementsInRow(table, ui.selected);
+				}
+			},
+			unselected: function(event, ui) {
+				that.cleanup(table);
+
+				// on ie and webkit based browsers we need
+				// to handle mouse clicks differently
+				if (!$.browser.mozilla) {
+					that.detachColumnHandler(ui.unselected);
+				}
+			}
+		});
+
+		// add 'select all' buttons
+		this.addSelectAllButton(table);
+
+		// style the table
+		this.resizeTableColumns(table);
+	},
+
+	/**
+	 * handle keypresses anywhere inside this table
+	 * @param table
+	 */
+	attachInputElements: function(table) {
+		var that = this;
+
+		// bind keypresses anywhere in the table in
+		// 1. select elements
+		// 2. input elements
+		table.bind('keyup.tableEditor', function(e) {
+			var element = $('input:focus,select:focus');
+			var type	= element.attr('type');
+
+			if (element.attr('type')) {
+				var column	= element.parent();
+				var row		= element.parent().parent();
+				var value	= element.val();
+
+				// replicate data
+				that.replicateData(table,row,column,type,value);
+			}
+		});
+	},
+
+	/**
+	 * attach event handlers for select elements in row
+	 * @param table
+	 * @param row
+	 */
+	attachSelectElementsInRow: function(table, row) {
+		var that = this;
+
+		// iterate through all select elements in the selected rows
+		$('select', row).each(function() {
+			var element = $(this);
+			var type	= element.attr('type');
+			var column	= element.parent();
+			var row		= element.parent().parent();
+
+			element.bind('change.tableEditor',function() {
+				// replicate data
+				var value = $('option:selected',element).val();
+				if (value) that.replicateData(table,row,column,type,value);
+			});
+		});
+	},
+
+	/**
+	 * detach event handlers for specific fields in row
+	 * @param row
+	 */
+	detachColumnHandler: function(row) {
+		$('select', row).each(function() {
+			// unbind table editor event handlers
+			$(this).unbind('.tableEditor');
+		});
+	},
+
+	/**
+	 * get the column number of a particular column in a row
+	 *
+	 * @param row
+	 * @param column
+	 * @return int
+	 */
+	getColumnNumber: function(row, column) {
+		var count = 0;
+		var columnNumber = 0;
+
+		// find which column number we are
+		row.children().each(function() {
+			var childColumn = $(this);
+			if (childColumn[0] == column[0]) {
+				columnNumber = count;
+			}
+			count++;
+		});
+
+		return columnNumber;
+	},
+
+	/**
+	 *
+	 */
+	replicateData: function(table, row, column, type, value) {
+		var that 			= this;
+		var columnNumber	= this.getColumnNumber(row, column);
+		var inputSelector	= "";
+
+		// determine inputSelector
+		switch (type) {
+			case('text'):
+				inputSelector = 'input';
+				break;
+			case('select-one'):
+				inputSelector = 'select';
+				break;
+			default:
+				inputSelector = 'input';
+				break;
+		}
+
+		// only replicate if source row is also selected
+		if (row.hasClass('ui-selected') || row.hasClass('table-editor-selected')) {
+			//console.log('replicating column '+columnNumber+' of type '+type+' : '+value);
+
+			// find selected rows in this table
+			$('.ui-selected, .table-editor-selected', table).each(function() {
+				// don't replicate to source row
+				if ($(this)[0] != row[0]) {
+					// find input elements
+					$(that.options.columnIdentifier + ':eq(' + (columnNumber-1) + ') ' + inputSelector, $(this)).each(function() {
+						// set value
+						$(this).val(value);
+					});
+				}
+			});
+		}
+	},
+
+	/**
+	 * insert a select all button in the first column of the header row
+	 * @param table
+	 */
+	addSelectAllButton: function(table) {
+		var that = this;
 
         // insert a 'select all' element in the top-left header column
-        var selectAllElement = $($(this.options.headerIdentifier + ':eq(0)', t ).find(':nth-child(1)')[0]);
+        var selectAllElement = $($(this.options.headerIdentifier + ':eq(0)', table ).find(':nth-child(1)')[0]);
         if (selectAllElement) {
             // set up the selectAll element
             selectAllElement
                 .addClass('selectAll')
                 .html('&nbsp;&nbsp;&nbsp;')
                 .bind('mousedown',function() {
-                    that.selectAll(t);
+                    that.selectAll(table);
                 });
 
             // add a tooltip
@@ -109,43 +282,49 @@ TableEditor.prototype = {
                 }
             });
         }
-    },
+	},
 
     /**
      * select all rows in the table
      * @param table
      */
-    selectAll: function(table) {
-        var that = this;
-        this.cleanup(table);
+	selectAll: function(table) {
+		var that = this;
 
-        // select and bind row
-        $(this.options.rowIdentifier, table).each(function() {
-            var row = $(this);
-            //row.addClass('ui-selected');
-            row.addClass('table-editor-selected');
-            that.attachColumnHandlers(row);
-        });
+		// clean up the table
+		this.cleanup(table);
 
-        // and set flag
-        this.allSelected = true;
-    },
+		// select and bind row
+		$(this.options.rowIdentifier, table).each(function() {
+			var row = $(this);
+			row.addClass('table-editor-selected');
 
-    /**
-     * check if the table needs cleanup
-     * @param table
-     */
-    cleanup: function(table) {
-        // check if all rows were selected
-        if (this.allSelected) {
-            // yes, then we need to cleanup. If we only used the jquery-ui
-            // selector we wouldn't have to do so as it cleans up after
-            // itself. But as we cannot programatically hook into the selector
-            // we have to clean up ourselves. Perform a table cleanup and
-            // unbind every handlers.
-            this.deselectAll(table);
-        }
-    },
+			// on ie and webkit based browsers we need
+			// to handle mouse clicks differently
+			if (!$.browser.mozilla) {
+				that.attachSelectElementsInRow(table, row);
+			}
+		});
+
+		// and set flag
+		this.allSelected = true;
+	},
+
+	/**
+	 * check if the table needs cleanup
+	 * @param table
+	 */
+	cleanup: function(table) {
+	 	// check if all rows were selected
+		if (this.allSelected) {
+			// yes, then we need to cleanup. If we only used the jquery-ui
+			// selector we wouldn't have to do so as it cleans up after
+			// itself. But as we cannot programatically hook into the selector
+			// we have to clean up ourselves. Perform a table cleanup and
+			// unbind every handler.
+			this.deselectAll(table);
+		}
+	},
 
     /**
      * deselect all rows in the table
@@ -161,7 +340,12 @@ TableEditor.prototype = {
         $(this.options.rowIdentifier, table).each(function() {
             var row = $(this);
             row.removeClass('table-editor-selected');
-            that.detachColumnHandlers(row);
+
+			// on ie and webkit based browsers we need
+			// to handle mouse clicks differently
+			if (!$.browser.mozilla) {
+				that.detachColumnHandler(row);
+			}
         });
 
         // and unset flag
@@ -169,179 +353,92 @@ TableEditor.prototype = {
     },
 
     /**
-     * de-attach input handlers for this row
-     * @param row
-     */
-    detachColumnHandlers: function(row) {
-        var that = this;
+     * resize the table columns so that they lineup properly
+     * @param table
+	 */
+    resizeTableColumns: function(table) {
+		var header	= $(this.options.headerIdentifier, table);
+		var width	= 20;		// default column width
+		var column	= 0;
+		var columns	= [];
+		var resized	= [];
 
-        $(this.options.columnIdentifier, row).each(function() {
-            var input = $(':input', $(this));
+		// calculate total width of elements in header
+		header.children().each(function() {
+			// calculate width per column
+			var c = $(this);
 
-            // does this column contain an input field
-            if (input) {
-                // unbind table editor event handlers
-                $(input).unbind('.tableEditor');
-            }            
-        });
+			// if a column header contains help icons / helptext, make sure
+			// to handle them before initializing the table otherwise the
+			// widths are calculations are off...
+			var columnWidth	= c.outerWidth(true);
+
+            width += columnWidth;
+
+			// remember column
+			resized[ column ] = (c.attr('rel') == 'resized');
+			columns[ column ] = c.width();
+			column++;
+		});
+
+		// resize the header
+		header.css({ width: width + 'px' });
+
+		// set table row width and assume column widths are
+		// identical to those in the header (css!)
+		$(this.options.rowIdentifier, table).each(function() {
+			var row = $(this);
+			var column = 0;
+			row.children().each(function() {
+				var child = $(this);
+				child.css({ width: columns[ column] + 'px' });
+				if (resized[ column ]) {
+					$(':input', child).each(function() {
+						$(this).css({width: (columns[ column ] - 10) + 'px'});
+					});
+				}
+				column++;
+			});
+			row.css({ width: width + 'px' });
+		});
+
+		// add sliders?
+		if (header.width() > table.width()) {
+			// yes, add a top and a bottom slider
+            this.addSlider(table, 'before');
+            this.addSlider(table, 'after');
+		}
     },
 
-    /**
-     * attach handlers to the input elements in a table row
-     * @param row
-     */
-    attachColumnHandlers: function(row) {
-        var that = this;
-        var count = 0;
+   	/**
+   	 * add a slider to a table (either before or after the table)
+   	 * @param table
+   	 * @param location
+	 */
+   	addSlider: function(table, location) {
+   		var that	= this;
+   		var header	= $(this.options.headerIdentifier, table);
+		var sliderContainer = $(document.createElement('div'));
 
-        // define regular expressions
-        var regAutoComplete = new RegExp("ui-autocomplete-input");
+		// add to table
+		sliderContainer.addClass('sliderContainer');
 
-        $(this.options.columnIdentifier, row).each(function() {
-            var input = $(':input', $(this));
-            var inputElement = $(input)
-            var type = inputElement.attr('type');
+		// where?
+		if (location == 'before') {
+			table.before(sliderContainer);
+		} else {
+			table.after(sliderContainer);
+		}
 
-            // does this column contain an input field
-            if (input && type) {
-                // check field type
-                switch (type) {
-                    case 'text':
-                        // text input
-                        var columnNumber = count;
-
-                        // handle special cases
-                        // if (inputElement.attr('rel') && regBp.test(inputElement.attr('rel'))) {
-                        if (regAutoComplete.test(inputElement.attr('class'))) {
-                            // this is a jquery-ui autocomplete field
-                            inputElement.bind('autocompleteclose.tableEditor', function() {
-                                // TODO: autocompletion deselects rows... which is what we don't want
-                                //       to happen of course...
-                                that.updateSingleInputElements(input, columnNumber, 'input');
-                            });
-                        } else {
-                            // regular text element
-                            inputElement.bind('keyup.tableEditor', function() {
-                                that.updateSingleInputElements(input, columnNumber, 'input');
-                            });
-                        }
-                        break;
-                    case 'select-one':
-                        // single select
-                        var columnNumber = count;
-                        inputElement.bind('change.tableEditor', function() {
-                            that.updateSingleInputElements(input, columnNumber, 'select');
-
-                            // probably we want to bind these extra event handlers
-                            // separately, but for now this will suffice :)
-                            that.handleExtraEvents( inputElement );
-                        });
-                        break;
-                    case 'checkbox':
-                        // checkbox
-                        var columnNumber = count;
-                        inputElement.bind('click.tableEditor', function() {
-                            that.updateSingleInputElements(input, columnNumber, 'input');
-                        });
-                        break;
-                    case 'hidden':
-                        // hidden is hidden :)
-                        break;
-                    case null:
-                        // not an input field...
-                        break;
-                    default:
-                        // oops, we need to extend this logic!
-                        alert('unsupported element of type ' + type + ', please file a bug report containing this message and a screenshot for table-editor.js')
-                        break;
-                }
-            }
-
-            count++;
-        });
-    },
-
-    /**
-     * update all input elements in a selected column
-     * @param element
-     * @param columnNumber
-     * @param elementSelector
-     */
-    updateSingleInputElements: function(element, columnNumber, elementSelector) {
-        var that = this;
-        var e = $(element);
-        var c = e.parent();     // column
-        var r = c.parent();     // row
-        var t = r.parent();     // table
-        var v = this.getValue(e);
-        // TODO for multiples...
-
-        // select all input elements in the selected rows
-        $('.ui-selected, .table-editor-selected', t).each(function() {
-            $(that.options.columnIdentifier + ':eq(' + columnNumber + ') ' + elementSelector, $(this)).each(function() {
-                var me = $(this)
-                if (me.attr('type') != "hidden") {
-                    var myVal = that.getValue(me);
-                    if (myVal != v) {
-                        that.setValue(me, v);
-                    }
-                }
-            })
-        })
-    },
-
-    /**
-     * get the value /status of an input field based on it's type
-     * @param input
-     */
-    getValue: function(input) {
-        var i = $(input);
-
-        switch (i.attr('type')) {
-            case 'checkbox':
-                return i.attr('checked');
-                break;
-            default:
-                return i.val();
-                break;
-        }
-    },
-
-    /**
-     * set the value / status of an input field based on it's type
-     * @param input
-     * @param value
-     */
-    setValue: function(input, value) {
-        var i = $(input);
-
-        switch (i.attr('type')) {
-            case 'checkbox':
-                return i.attr('checked', value);
-                break;
-            default:
-                return i.val(value);
-                break;
-        }
-    },
-
-    /**
-     * execute extra functions when binding to a particular event. The extra change
-     * handlers are called after replicating template fields
-     * example: <select ... tableEditorChangeEvent="console.log(element);" ... />
-     * @param element
-     */
-    handleExtraEvents: function( element ) {
-        // define parameters
-        var events = ['change'];
-
-        // check if we need to execute some more event handlers
-        for ( var i=0; i < events.length; i++ ) {
-            var call = element.attr('tableEditor' + events[ i ].substr(0, 1).toUpperCase() + events[ i ].substr(1).toLowerCase() + 'Event');
-            if ( call ) {
-                // yes, execute!
-                eval( call );
-            }
-        }
-    }
+		// initialize slider
+		sliderContainer.slider({
+			value	: 1,
+			min		: 1,
+			max		: header.width() - table.width(),
+			step	: 1,
+			slide	: function(event, ui) {
+				$(that.options.headerIdentifier + ', ' + that.options.rowIdentifier, table).css({ 'margin-left': ( 1 - ui.value ) + 'px' });
+			}
+		});
+   	}
 }
