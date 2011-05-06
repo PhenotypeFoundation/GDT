@@ -18,7 +18,7 @@ TableEditor.prototype = {
         tableIdentifier     :   'div.table',
         headerIdentifier    :   'div.header',
         rowIdentifier       :   'div.row',
-        columnIdentifier    :   'div.column',
+        columnIdentifier    :   'div.column, div.firstColumn',
 		initialize			:	0
     },
 	allSelected				: false,
@@ -85,6 +85,8 @@ TableEditor.prototype = {
 					that.attachSelectElementsInRow(table, ui.selected);
 					that.attachCheckboxElementsInRow(table, ui.selected);
 				}
+
+				that.attachDatepickerOnChangeInRow(table, ui.selected);
 			},
 			unselected: function(event, ui) {
 				that.cleanup(table);
@@ -137,7 +139,7 @@ TableEditor.prototype = {
 	attachSelectElementsInRow: function(table, row) {
 		var that = this;
 
-		// iterate through all select elements in the selected rows
+		// iterate through all select elements in the row
 		$('select', row).each(function() {
 			var element = $(this);
 			var type	= element.attr('type');
@@ -160,7 +162,7 @@ TableEditor.prototype = {
 	attachCheckboxElementsInRow: function(table, row) {
 		var that = this;
 
-		// iterate through all checkboxes in the selected rows
+		// iterate through all checkboxes in the row
 		$('input:checkbox', row).each(function() {
 			var element	= $(this);
 			var type	= element.attr('type');
@@ -169,6 +171,28 @@ TableEditor.prototype = {
 
 			element.bind('click.tableEditor',function() {
 				that.replicateData(table,row,column,type,element.attr('checked'));
+			});
+		});
+	},
+
+	/**
+	 * attach change event handlers to all input fields that have date/datetime pickers
+	 * so we can replicate those values as well
+	 * @param table
+	 * @param row
+	 */
+	attachDatepickerOnChangeInRow: function(table, row) {
+		var that = this;
+
+		// iterate through all date / datetime elements in the row
+		$("input[type=text][rel$='date'], input[type=text][rel$='datetime']", row).each(function() {
+			var element	= $(this);
+			var type	= element.attr('type');
+			var column	= element.parent();
+			var row		= element.parent().parent();
+
+			element.bind('change.tableEditor', function() {
+				that.replicateData(table,row,column,type,element.val());
 			});
 		});
 	},
@@ -243,7 +267,7 @@ TableEditor.prototype = {
 				// don't replicate to source row
 				if ($(this)[0] != row[0]) {
 					// find input elements
-					$(that.options.columnIdentifier + ':eq(' + (columnNumber-1) + ') ' + inputSelector, $(this)).each(function() {
+					$(inputSelector, $(that.options.columnIdentifier, $(this))[columnNumber]).each(function() {
 						// set value
 						switch (type) {
 							case('checkbox'):
