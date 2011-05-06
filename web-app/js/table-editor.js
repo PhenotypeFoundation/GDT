@@ -21,8 +21,6 @@ TableEditor.prototype = {
         columnIdentifier    :   'div.column',
 		initialize			:	0
     },
-    tempSelectElement		: null,
-    tempSelectValue			: '',
 	allSelected				: false,
 
     /**
@@ -54,32 +52,23 @@ TableEditor.prototype = {
 		// Bind table wide mouseclicks (lighter implementation than
 		// binding / unbinding select elements directly)
 		// This only works for mozilla browsers, not for ie and
-		 // webkit based browsers
+		// webkit based browsers
 		if ($.browser.mozilla) {
-			table.bind('click', function() {
-				var element = $('select:focus');
+			table.bind('click', function(event) {
+				var target	= event.target;
+				var element	= $(target);
+				var type	= target.localName;
+				var pe		= (type=='option') ? $(target.parentNode) : element;
+				var peType	= pe.attr('type');
+				var column	= pe.parent();
+				var row		= column.parent();
 
-				// did we select a select element?
-				if (element.attr('type')) {
-					that.tempSelectElement	= element;
-					that.tempSelectValue	= $('option:selected',element).val();
-				}
-			});
-			table.bind('mouseup', function() {
-				var element = $('select:focus');
-				var type	= element.attr('type');
-
-				// did we select a select element?
-				if (type) {
-					var column	= element.parent();
-					var row		= element.parent().parent();
-					var value	= $('option:selected',element).val();
-
-					// has the element changed?
-					if (that.tempSelectElement && element[0] == that.tempSelectElement[0] && that.tempSelectValue != value) {
-						// replicate data
-						that.replicateData(table,row,column,type,value);
-					}
+				// did the user select anything?
+				if (type == 'option') {
+					// the user selected an option in a select
+					that.replicateData(table,row,column,pe.attr('type'),target.value);
+				} else if (peType == 'checkbox') {
+					that.replicateData(table,row,column,pe.attr('type'),target.checked);
 				}
 			});
 		}
@@ -94,6 +83,7 @@ TableEditor.prototype = {
 				// to handle mouse clicks differently
 				if (!$.browser.mozilla) {
 					that.attachSelectElementsInRow(table, ui.selected);
+					that.attachCheckboxElementsInRow(table, ui.selected);
 				}
 			},
 			unselected: function(event, ui) {
@@ -163,6 +153,27 @@ TableEditor.prototype = {
 	},
 
 	/**
+	 * attach event handlers for checkboxes in a row
+	 * @param table
+	 * @param row
+	 */
+	attachCheckboxElementsInRow: function(table, row) {
+		var that = this;
+
+		// iterate through all checkboxes in the selected rows
+		$('input:checkbox', row).each(function() {
+			var element	= $(this);
+			var type	= element.attr('type');
+			var column	= element.parent();
+			var row		= element.parent().parent();
+
+			element.bind('click.tableEditor',function() {
+				that.replicateData(table,row,column,type,element.attr('checked'));
+			});
+		});
+	},
+
+	/**
 	 * detach event handlers for specific fields in row
 	 * @param row
 	 */
@@ -197,7 +208,12 @@ TableEditor.prototype = {
 	},
 
 	/**
-	 *
+	 * replicate form data to selected rows
+	 * @param table
+	 * @param row
+	 * @param column
+	 * @param type
+	 * @param value
 	 */
 	replicateData: function(table, row, column, type, value) {
 		var that 			= this;
@@ -209,6 +225,7 @@ TableEditor.prototype = {
 			case('text'):
 				inputSelector = 'input';
 				break;
+			case('select'):
 			case('select-one'):
 				inputSelector = 'select';
 				break;
@@ -228,7 +245,14 @@ TableEditor.prototype = {
 					// find input elements
 					$(that.options.columnIdentifier + ':eq(' + (columnNumber-1) + ') ' + inputSelector, $(this)).each(function() {
 						// set value
-						$(this).val(value);
+						switch (type) {
+							case('checkbox'):
+								$(this).attr('checked', value);
+								break;
+							default:
+								$(this).val(value);
+								break;
+						}
 					});
 				}
 			});
@@ -303,6 +327,7 @@ TableEditor.prototype = {
 			// to handle mouse clicks differently
 			if (!$.browser.mozilla) {
 				that.attachSelectElementsInRow(table, row);
+				that.attachCheckboxElementsInRow(table, row);
 			}
 		});
 
