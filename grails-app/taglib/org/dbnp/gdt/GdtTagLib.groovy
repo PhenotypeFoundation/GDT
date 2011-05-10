@@ -35,8 +35,7 @@ class GdtTagLib extends AjaxflowTagLib {
 	def templateEditorMenu = { attrs ->
 		// find all domain entities that use the Grails Domain Templates
 		gdtService.getTemplateEntities().each {
-			//out << "${((attrs.get('wrap')) ? '<'+attrs.get('wrap')+'>' : '')}<a href=\"${resource()}/templateEditor?entity=${encryptedEntity}&standalone=true\">${readableClassName} templates</a>${((attrs.get('wrap')) ? '<'+attrs.get('wrap')+'>' : '')}"
-			out << "${((attrs.get('wrap')) ? '<' + attrs.get('wrap') + '>' : '')}<a href=\"${resource()}/templateEditor?entity=${it.encoded}&standalone=true\">${it.description} templates</a>${((attrs.get('wrap')) ? '<' + attrs.get('wrap') + '>' : '')}"
+			out << "${((attrs.get('wrap')) ? '<' + attrs.get('wrap') + '>' : '')}<a href=\"${resource()}/templateEditor?entity=${it.encoded}&standalone=true\">${it.description} templates</a>${((attrs.get('wrap')) ? '</' + attrs.get('wrap') + '>' : '')}"
 		}
 
 		// export and import links

@@ -19,9 +19,18 @@ TableEditor.prototype = {
         headerIdentifier    :   'div.header',
         rowIdentifier       :   'div.row',
         columnIdentifier    :   'div.column, div.firstColumn',
-		initialize			:	0
+		initialize			:	0,
+		minRowSliderCount	:	20,
+		scrollTimeout		:	200,
+		snapHeader			:	true
     },
 	allSelected				: false,
+	tables					: [],
+	date					: new Date(),
+	timed					: null,
+	window					: $(window),
+	document				: $(document),
+	scrollTop				: 0,
 
     /**
      * initialize object
@@ -39,9 +48,97 @@ TableEditor.prototype = {
 
         // intitialize tables
 		$(this.options.tableIdentifier).each(function() {
-			that.initializeTable($(this));
+			var table = $(this);
+
+			// initialize table
+			that.initializeTable(table);
+
+			// cache table object
+			that.tables[ that.tables.length ] = table;
 		});
+
+		// handle window scroll event if we have tables
+		if (that.tables.length && that.options.snapHeader) {
+			that.window.scroll(function () {
+				// clear timeout if it is set
+				if (that.timed) clearTimeout(that.timed);
+
+				// and set a new timeout
+				that.timed = setTimeout(function(thisObj) { thisObj.onScrollEnd(); }, that.options.scrollTimeout, that);
+			});
+		}
     },
+
+	/**
+	 * handle end of page scroll
+	 * @void
+	 */
+	onScrollEnd: function() {
+		var that		= this;
+		var time		= this.date.getTime();
+		var top			= this.window.scrollTop();
+		var bottom		= top + this.window.height();
+		var direction	= (top > this.scrollTop) ? 'down' : 'up';
+
+		// make sure we only fire once
+		if (top > this.scrollTop || top < this.scrollTop) {
+			this.scrollTop	= top;
+
+			// iterate through tables
+			for (var i in that.tables) {
+				var table		= that.tables[i];
+				var offset		= table.offset();
+				var tableTop	= offset.top;
+				var tableBottom	= tableTop + table.height();
+				var header		= $(that.options.headerIdentifier, table);
+
+				// check if table is visible
+				if (tableTop <= bottom && tableBottom >= top) {
+					var topRow		= null;
+					var topRowNo	= 0;
+					var headerNo	= 0;
+					var count		= 0;
+
+					$(that.options.rowIdentifier + ", " + that.options.headerIdentifier, table).each(function() {
+						var row			= $(this);
+						var rowTop		= row.offset().top;
+						var rowBottom	= rowTop + row.height();
+						count++;
+
+
+						// find the top most visible row
+						if (
+							!topRow &&
+							(
+								/*(rowTop < top && rowBottom >= top) ||*/
+								(rowTop >= top && rowTop <= bottom)
+							)
+						) {
+							topRow = row;
+							topRowNo = count;
+						}
+
+						// is this the header?
+						if (row[0] == header[0]) headerNo = count;
+					});
+
+					// got a topRow?
+					if (topRow) {
+						// check if we need to move the header
+						if (headerNo == topRowNo) {
+							// fine as it is, do nothing
+						} else if (headerNo > topRowNo) {
+							// we move the header up
+							topRow.before(header);
+						} else if (headerNo < topRowNo) {
+							// we move the header down
+							topRow.after(header);
+						}
+					}
+				}
+			}
+		}
+	},
 
 	initializeTable: function(table) {
 		var that = this;
@@ -454,7 +551,7 @@ TableEditor.prototype = {
 		// add sliders?
 		if (header.width() > table.width()) {
 			// yes, add a top and a bottom slider
-            this.addSlider(table, 'before');
+            if ($(this.options.rowIdentifier, table).size() > this.options.minRowSliderCount) this.addSlider(table, 'before');
             this.addSlider(table, 'after');
 		}
     },
@@ -475,7 +572,7 @@ TableEditor.prototype = {
 		// where?
 		if (location == 'before') {
 			table.before(sliderContainer);
-		} else {
+		} else if (location == 'after') {
 			table.after(sliderContainer);
 		}
 
