@@ -61,11 +61,18 @@ TableEditor.prototype = {
 		// handle window scroll event if we have tables
 		if (that.tables.length && that.options.snapHeader) {
 			that.window.scroll(function () {
-				// clear timeout if it is set
-				if (that.timed) clearTimeout(that.timed);
+					// to do: clear timeout if it is set
+					if (that.timed) clearTimeout(that.timed);
 
-				// and set a new timeout
-				that.timed = setTimeout(function(thisObj) { thisObj.onScrollEnd(); }, that.options.scrollTimeout, that);
+					// and set a new timeout
+					if ($.browser.msie) {
+						// ie does not support setTimeout arguments
+						that.timed = setTimeout(function() { that.onScrollEnd(); }, that.options.scrollTimeout);
+					} else {
+						// but the rest of the browsers that actually
+						// work as expected DO accept arguments
+						that.timed = setTimeout(function(thisObj) { thisObj.onScrollEnd(); }, that.options.scrollTimeout, that);
+					}
 			});
 		}
     },
