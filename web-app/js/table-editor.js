@@ -22,7 +22,8 @@ TableEditor.prototype = {
 		initialize			:	0,
 		minRowSliderCount	:	20,
 		scrollTimeout		:	200,
-		snapHeader			:	true
+		snapHeader			:	true,
+		verticalSlider		:	true
     },
 	allSelected				: false,
 	tables					: [],
@@ -130,9 +131,15 @@ TableEditor.prototype = {
 						} else if (headerNo > topRowNo) {
 							// we move the header up
 							topRow.before(header);
+
+							// reposition vertical slider?
+							if (that.options.verticalSlider) that.repositionVerticalSlider(table,header);
 						} else if (headerNo < topRowNo) {
 							// we move the header down
 							topRow.after(header);
+
+							// reposition vertical slider?
+							if (that.options.verticalSlider) that.repositionVerticalSlider(table,header);
 						}
 					}
 				}
@@ -140,6 +147,23 @@ TableEditor.prototype = {
 		}
 	},
 
+	/**
+	 * move slider to the same position as the table header
+	 * @param table
+	 * @param header
+	 */
+	repositionVerticalSlider: function(table, header) {
+		// get vertical slider
+		var slider	= table.prev();
+
+		// move slider to header top
+		slider.animate( { top: header.offset().top } , 200);
+	},
+
+	/**
+	 * initialize table
+	 * @param table
+	 */
 	initializeTable: function(table) {
 		var that = this;
 
@@ -550,9 +574,15 @@ TableEditor.prototype = {
 
 		// add sliders?
 		if (header.width() > table.width()) {
-			// yes, add a top and a bottom slider
-            if ($(this.options.rowIdentifier, table).size() > this.options.minRowSliderCount) this.addSlider(table, 'before');
-            this.addSlider(table, 'after');
+			// add vertical slider?
+			if (this.options.verticalSlider) {
+				// yes
+				this.addVerticalSlider(table);
+			} else {
+				// no, add a top and a bottom slider
+            	if ($(this.options.rowIdentifier, table).size() > this.options.minRowSliderCount) this.addSlider(table, 'before');
+            	this.addSlider(table, 'after');
+			}
 		}
     },
 
@@ -586,5 +616,32 @@ TableEditor.prototype = {
 				$(that.options.headerIdentifier + ', ' + that.options.rowIdentifier, table).css({ 'margin-left': ( 1 - ui.value ) + 'px' });
 			}
 		});
-   	}
+   	},
+
+	/**
+	 * add a vertical slider to a table
+	 * @param table
+	 */
+	addVerticalSlider: function(table) {
+		// add a vertical slider to the header
+		var that			= this;
+		var header			= $(this.options.headerIdentifier, table);
+		var sliderContainer	= $(document.createElement('div')).addClass('verticalSliderContainer');
+		var max				= header.width() - table.width();
+
+		// add to header
+		table.before(sliderContainer);
+
+		// initialize slider
+		sliderContainer.slider({
+			orientation: "vertical",
+			value	: max,
+			min		: 1,
+			max		: max,
+			step	: 1,
+			slide	: function(event, ui) {
+				$(that.options.headerIdentifier + ', ' + that.options.rowIdentifier, table).css({ 'margin-left': ( 0 - (max - ui.value) ) + 'px' });
+			}
+		});
+	}
 }
