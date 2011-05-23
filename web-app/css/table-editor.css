@@ -65,14 +65,12 @@
     border-top: 1px solid #8e908f;
     width: auto;
 }
-.tableEditor .row input, .tableEditor .row select {
+.tableEditor .row input[type=text], .tableEditor .row select {
     background-color: #fff;
 }
-
 .tableEditor .ui-selected {
     background-color: #a8c4eb;
 }
-
 .tableEditor .table-editor-selected {
 	background-color: #a8c4eb;
 }

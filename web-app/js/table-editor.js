@@ -32,6 +32,7 @@ TableEditor.prototype = {
 	window					: $(window),
 	document				: $(document),
 	scrollTop				: 0,
+	actionCallback			: [],
 
     /**
      * initialize object
@@ -75,6 +76,8 @@ TableEditor.prototype = {
 					}
 			});
 		}
+
+		return this;
     },
 
 	/**
@@ -232,6 +235,81 @@ TableEditor.prototype = {
 
 		// style the table
 		this.resizeTableColumns(table);
+
+		// handle actions
+		this.attachActionHandlers(table);
+	},
+
+	/**
+	 * register a callback function for action callbacks
+	 * @param string
+	 * @param function
+	 */
+	registerActionCallback: function(name, callback) {
+		this.actionCallback[ name ] = callback;
+	},
+
+	/**
+	 * attach action handlers
+	 *
+	 * usage:
+	 *  <input type="button" value="" action="deleteEvent" class="delete" identifier="${event.getIdentifier()}" />
+	 *  ...
+	 * 	tableEditor.registerActionCallback('deleteEvent', function() {
+	 * 		if (confirm('are you sure you want to delete ' + ((this.length>1) ? 'these '+this.length+' events?' : 'this event?'))) {
+	 * 			$('input[name="do"]').val(this);
+	 * 			<af:ajaxSubmitJs name="deleteEvent" afterSuccess="onPage()" />
+	 * 		}
+	 * 	});
+	 *
+	 * @param table
+	 */
+	attachActionHandlers: function(table) {
+		var that = this;
+
+		// find all actions in this table
+		$('[action]', table).each(function() {
+			var action	= $(this);
+			var id		= (action.attr('identifier')) ? action.attr('identifier') : '';
+			action.bind('click', function() {
+				that.handleAction(action.attr('action'),id,table);
+			});
+		});
+	},
+
+	/**
+	 * handle an action click
+	 *
+	 * @param callbackFunctionName
+	 * @param id
+	 * @param table
+	 */
+	handleAction: function(callbackFunctionName, id, table) {
+		var ids		= [];
+		var exists	= false;
+		var callback= this.actionCallback[callbackFunctionName];
+
+		// gather identifiers
+		$('.ui-selected, .table-editor-selected', table).each(function() {
+			var row		= $(this);
+			var rowId	= row.attr('identifier');
+
+			if (rowId) {
+				ids[ ids.length ] = rowId;
+				if (rowId == id) exists = true;
+			}
+		});
+
+		// got id's?
+		if (callback) {
+			if (ids.length && exists) {
+				//eval(callbackFunction+"(ids);");
+				callback.call(ids);
+			} else if (id) {
+				//eval(callbackFunction+"([id]);");
+				callback.call([id]);
+			}
+		}
 	},
 
 	/**
