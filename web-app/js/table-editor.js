@@ -242,6 +242,15 @@ TableEditor.prototype = {
 
 	/**
 	 * register a callback function for action callbacks
+	 *
+	 * usage:
+	 * 	tableEditor.registerActionCallback('deleteEvent', function() {
+	 * 		if (confirm('are you sure you want to delete ' + ((this.length>1) ? 'these '+this.length+' events?' : 'this event?'))) {
+	 * 			$('input[name="do"]').val(this);
+	 * 			<af:ajaxSubmitJs name="deleteEvent" afterSuccess="onPage()" />
+	 * 		}
+	 * 	});
+	 *
 	 * @param string
 	 * @param function
 	 */
@@ -253,14 +262,10 @@ TableEditor.prototype = {
 	 * attach action handlers
 	 *
 	 * usage:
+	 * <div class="row" identitief="${event.getIdentifier()}">
 	 *  <input type="button" value="" action="deleteEvent" class="delete" identifier="${event.getIdentifier()}" />
 	 *  ...
-	 * 	tableEditor.registerActionCallback('deleteEvent', function() {
-	 * 		if (confirm('are you sure you want to delete ' + ((this.length>1) ? 'these '+this.length+' events?' : 'this event?'))) {
-	 * 			$('input[name="do"]').val(this);
-	 * 			<af:ajaxSubmitJs name="deleteEvent" afterSuccess="onPage()" />
-	 * 		}
-	 * 	});
+	 * </div>
 	 *
 	 * @param table
 	 */
