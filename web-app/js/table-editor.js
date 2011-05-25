@@ -376,12 +376,12 @@ TableEditor.prototype = {
 		// iterate through all checkboxes in the row
 		$('input:checkbox', row).each(function() {
 			var element	= $(this);
-			var type	= element.attr('type');
+			var type	= 'checkbox';
 			var column	= element.parent();
 			var row		= element.parent().parent();
 
 			element.bind('click.tableEditor',function() {
-				that.replicateData(table,row,column,type,element.attr('checked'));
+				that.replicateData(table,row,column,type,element.is(':checked'));
 			});
 		});
 	},
@@ -463,6 +463,9 @@ TableEditor.prototype = {
 			case('select'):
 			case('select-one'):
 				inputSelector = 'select';
+				break;
+			case('checkbox'):
+				inputSelector = 'input:checkbox';
 				break;
 			default:
 				inputSelector = 'input';
