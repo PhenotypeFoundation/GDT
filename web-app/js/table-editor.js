@@ -212,8 +212,8 @@ TableEditor.prototype = {
 
 				// on ie and webkit based browsers we need
 				// to handle mouse clicks differently
+				that.attachSelectElementsInRow(table, ui.selected);
 				if (!$.browser.mozilla) {
-					that.attachSelectElementsInRow(table, ui.selected);
 					that.attachCheckboxElementsInRow(table, ui.selected);
 				}
 
@@ -353,7 +353,7 @@ TableEditor.prototype = {
 		// iterate through all select elements in the row
 		$('select', row).each(function() {
 			var element = $(this);
-			var type	= element.attr('type');
+			var type	= 'select';
 			var column	= element.parent();
 			var row		= element.parent().parent();
 
@@ -469,6 +469,12 @@ TableEditor.prototype = {
 				break;
 		}
 
+		// as of jQuery 1.4.4 setting an option using 'val' does not work
+		// find the selected index
+		if (inputSelector == 'select') {
+			var selectedIndex = $(inputSelector, $(that.options.columnIdentifier, row)[columnNumber])[0].selectedIndex;
+		}
+
 		// only replicate if source row is also selected
 		if (row.hasClass('ui-selected') || row.hasClass('table-editor-selected')) {
 			//console.log('replicating column '+columnNumber+' of type '+type+' : '+value);
@@ -483,6 +489,10 @@ TableEditor.prototype = {
 						switch (type) {
 							case('checkbox'):
 								$(this).attr('checked', value);
+								break;
+							case('select'):
+								// bug in jQuery 1.4.4, $(this).val(...) does not work
+								$(this)[0].options[selectedIndex].selected = true;
 								break;
 							default:
 								$(this).val(value);
