@@ -116,12 +116,10 @@ TableEditor.prototype = {
 						var rowBottom	= rowTop + row.height();
 						count++;
 
-
 						// find the top most visible row
 						if (
 							!topRow &&
 							(
-								/*(rowTop < top && rowBottom >= top) ||*/
 								(rowTop >= top && rowTop <= bottom)
 							)
 						) {
@@ -222,11 +220,8 @@ TableEditor.prototype = {
 			unselected: function(event, ui) {
 				that.cleanup(table);
 
-				// on ie and webkit based browsers we need
-				// to handle mouse clicks differently
-				if (!$.browser.mozilla) {
-					that.detachColumnHandler(ui.unselected);
-				}
+				// detach listeners
+				that.detachColumnHandler(ui.unselected);
 			}
 		});
 
