@@ -218,10 +218,8 @@ TableEditor.prototype = {
 				that.attachDatepickerOnChangeInRow(table, ui.selected);
 			},
 			unselected: function(event, ui) {
-				that.cleanup(table);
-
-				// detach listeners
 				that.detachColumnHandler(ui.unselected);
+				//that.cleanup(table);
 			}
 		});
 
@@ -450,6 +448,8 @@ TableEditor.prototype = {
 		var columnNumber	= this.getColumnNumber(row, column);
 		var inputSelector	= "";
 
+		if (!type) return;
+
 		// determine inputSelector
 		switch (type) {
 			case('text'):
@@ -559,17 +559,20 @@ TableEditor.prototype = {
 		var that = this;
 
 		// clean up the table
-		this.cleanup(table);
+		//this.cleanup(table);
 
 		// select and bind row
 		$(this.options.rowIdentifier, table).each(function() {
 			var row = $(this);
-			row.addClass('table-editor-selected');
+
+			// add class
+			if (!row.hasClass('table-editor-selected'))
+				row.addClass('table-editor-selected');
 
 			// on ie and webkit based browsers we need
 			// to handle mouse clicks differently
+			that.attachSelectElementsInRow(table, row);
 			if (!$.browser.mozilla) {
-				that.attachSelectElementsInRow(table, row);
 				that.attachCheckboxElementsInRow(table, row);
 			}
 		});
@@ -591,6 +594,7 @@ TableEditor.prototype = {
 			// we have to clean up ourselves. Perform a table cleanup and
 			// unbind every handler.
 			this.deselectAll(table);
+			this.allSelected = false;
 		}
 	},
 
