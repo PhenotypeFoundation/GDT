@@ -81,94 +81,6 @@ TableEditor.prototype = {
     },
 
 	/**
-	 * handle end of page scroll
-	 * @void
-	 */
-	onScrollEnd: function() {
-		var that		= this;
-		var time		= this.date.getTime();
-		var top			= this.window.scrollTop();
-		var bottom		= top + this.window.height();
-		var direction	= (top > this.scrollTop) ? 'down' : 'up';
-
-		// make sure we only fire once
-		if (top > this.scrollTop || top < this.scrollTop) {
-			this.scrollTop	= top;
-
-			// iterate through tables
-			for (var i in that.tables) {
-				var table		= that.tables[i];
-				var offset		= table.offset();
-				var tableTop	= offset.top;
-				var tableBottom	= tableTop + table.height();
-				var header		= $(that.options.headerIdentifier, table);
-
-				// check if table is visible
-				if (tableTop <= bottom && tableBottom >= top) {
-					var topRow		= null;
-					var topRowNo	= 0;
-					var headerNo	= 0;
-					var count		= 0;
-
-					$(that.options.rowIdentifier + ", " + that.options.headerIdentifier, table).each(function() {
-						var row			= $(this);
-						var rowTop		= row.offset().top;
-						var rowBottom	= rowTop + row.height();
-						count++;
-
-						// find the top most visible row
-						if (
-							!topRow &&
-							(
-								(rowTop >= top && rowTop <= bottom)
-							)
-						) {
-							topRow = row;
-							topRowNo = count;
-						}
-
-						// is this the header?
-						if (row[0] == header[0]) headerNo = count;
-					});
-
-					// got a topRow?
-					if (topRow) {
-						// check if we need to move the header
-						if (headerNo == topRowNo) {
-							// fine as it is, do nothing
-						} else if (headerNo > topRowNo) {
-							// we move the header up
-							topRow.before(header);
-
-							// reposition vertical slider?
-							if (that.options.verticalSlider) that.repositionVerticalSlider(table,header);
-						} else if (headerNo < topRowNo) {
-							// we move the header down
-							topRow.after(header);
-
-							// reposition vertical slider?
-							if (that.options.verticalSlider) that.repositionVerticalSlider(table,header);
-						}
-					}
-				}
-			}
-		}
-	},
-
-	/**
-	 * move slider to the same position as the table header
-	 * @param table
-	 * @param header
-	 */
-	repositionVerticalSlider: function(table, header) {
-		// get vertical slider
-		var slider	= table.prev();
-
-		// move slider to header top
-		slider.animate( { top: header.offset().top } , 200);
-	},
-
-	/**
 	 * initialize table
 	 * @param table
 	 */
@@ -210,15 +122,15 @@ TableEditor.prototype = {
 
 				// on ie and webkit based browsers we need
 				// to handle mouse clicks differently
-				that.attachSelectElementsInRow(table, ui.selected);
 				if (!$.browser.mozilla) {
 					that.attachCheckboxElementsInRow(table, ui.selected);
 				}
 
+				that.attachSelectElementsInRow(table, ui.selected);
 				that.attachDatepickerOnChangeInRow(table, ui.selected);
 			},
 			unselected: function(event, ui) {
-				that.detachColumnHandler(ui.unselected);
+				that.detachColumnHandlers(ui.unselected);
 				//that.cleanup(table);
 			}
 		});
@@ -405,11 +317,13 @@ TableEditor.prototype = {
 	 * detach event handlers for specific fields in row
 	 * @param row
 	 */
-	detachColumnHandler: function(row) {
-		$('select', row).each(function() {
-			// unbind table editor event handlers
-			$(this).unbind('.tableEditor');
-		});
+	detachColumnHandlers: function(row) {
+		if (!this.allSelected) {
+			$("select, input[type=text][rel$='date'], input[type=text][rel$='datetime'], input:checkbox", row).each(function() {
+				// unbind table editor event handlers
+				$(this).unbind('.tableEditor');
+			});
+		}
 	},
 
 	/**
@@ -569,12 +483,16 @@ TableEditor.prototype = {
 			if (!row.hasClass('table-editor-selected'))
 				row.addClass('table-editor-selected');
 
+			// detach handlers in this row
+			that.detachColumnHandlers(row);
+
 			// on ie and webkit based browsers we need
 			// to handle mouse clicks differently
-			that.attachSelectElementsInRow(table, row);
 			if (!$.browser.mozilla) {
 				that.attachCheckboxElementsInRow(table, row);
 			}
+			that.attachSelectElementsInRow(table, row);
+			that.attachDatepickerOnChangeInRow(table, row);
 		});
 
 		// and set flag
@@ -616,7 +534,7 @@ TableEditor.prototype = {
 			// on ie and webkit based browsers we need
 			// to handle mouse clicks differently
 			if (!$.browser.mozilla) {
-				that.detachColumnHandler(row);
+				that.detachColumnHandlers(row);
 			}
         });
 
@@ -745,5 +663,93 @@ TableEditor.prototype = {
 				$(that.options.headerIdentifier + ', ' + that.options.rowIdentifier, table).css({ 'margin-left': ( 0 - (max - ui.value) ) + 'px' });
 			}
 		});
+	},
+
+	/**
+	 * handle end of page scroll
+	 * @void
+	 */
+	onScrollEnd: function() {
+		var that		= this;
+		var time		= this.date.getTime();
+		var top			= this.window.scrollTop();
+		var bottom		= top + this.window.height();
+		var direction	= (top > this.scrollTop) ? 'down' : 'up';
+
+		// make sure we only fire once
+		if (top > this.scrollTop || top < this.scrollTop) {
+			this.scrollTop	= top;
+
+			// iterate through tables
+			for (var i in that.tables) {
+				var table		= that.tables[i];
+				var offset		= table.offset();
+				var tableTop	= offset.top;
+				var tableBottom	= tableTop + table.height();
+				var header		= $(that.options.headerIdentifier, table);
+
+				// check if table is visible
+				if (tableTop <= bottom && tableBottom >= top) {
+					var topRow		= null;
+					var topRowNo	= 0;
+					var headerNo	= 0;
+					var count		= 0;
+
+					$(that.options.rowIdentifier + ", " + that.options.headerIdentifier, table).each(function() {
+						var row			= $(this);
+						var rowTop		= row.offset().top;
+						var rowBottom	= rowTop + row.height();
+						count++;
+
+						// find the top most visible row
+						if (
+							!topRow &&
+							(
+								(rowTop >= top && rowTop <= bottom)
+							)
+						) {
+							topRow = row;
+							topRowNo = count;
+						}
+
+						// is this the header?
+						if (row[0] == header[0]) headerNo = count;
+					});
+
+					// got a topRow?
+					if (topRow) {
+						// check if we need to move the header
+						if (headerNo == topRowNo) {
+							// fine as it is, do nothing
+						} else if (headerNo > topRowNo) {
+							// we move the header up
+							topRow.before(header);
+
+							// reposition vertical slider?
+							if (that.options.verticalSlider) that.repositionVerticalSlider(table,header);
+						} else if (headerNo < topRowNo) {
+							// we move the header down
+							topRow.after(header);
+
+							// reposition vertical slider?
+							if (that.options.verticalSlider) that.repositionVerticalSlider(table,header);
+						}
+					}
+				}
+			}
+		}
+	},
+
+	/**
+	 * move slider to the same position as the table header
+	 * @param table
+	 * @param header
+	 */
+	repositionVerticalSlider: function(table, header) {
+		// get vertical slider
+		var slider	= table.prev();
+
+		// move slider to header top
+		slider.animate( { top: header.offset().top } , 200);
 	}
 }
