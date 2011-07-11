@@ -386,10 +386,17 @@ abstract class TemplateEntity extends Identity {
 	public void setTemplate(Template template) {
 		// got a template?
 		if (this.template) {
-			// yes, are we setting a different template?
-			if (this.template != template) {
-				// make sure the non-overlapping fields are unset
-				this.template.fields.findAll { !(it in template.fields) }.each {
+			if( template ) {
+				// yes, are we setting a different template?
+				if (this.template != template) {
+					// make sure the non-overlapping fields are unset
+					this.template.fields.findAll { !(it in template.fields) }.each {
+						this.setFieldValue(it.name,null)
+					}
+				}
+			} else {
+				// Unset all fields, since the template is removed
+				this.template.fields.each {
 					this.setFieldValue(it.name,null)
 				}
 			}
