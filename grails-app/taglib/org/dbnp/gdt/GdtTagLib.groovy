@@ -541,49 +541,46 @@ class GdtTagLib extends AjaxflowTagLib {
 		
 		def entityName = entity?.class.name[ entity?.class.name.lastIndexOf( '.' ) + 1 .. -1 ];
 		
-		// got a template?
-		if (template) {
-			// render template fields
-			entity.giveFields().each() { 
-				// Format the column name by:
-				// - separating combined names (SampleName --> Sample Name)
-				// - capitalizing every seperate word
-				def ucName = it.name.replaceAll(/[a-z][A-Z][a-z]/) {
-					it[0] + ' ' + it[1..2]
-				}.replaceAll(/\w+/) {
-					// If the entity is also shown, the entity should be removed from the field name (if present)
-					if( includeEntities && it.toLowerCase() == entityName.toLowerCase() ) {
-						return "";
-					} else {
-						return it[0].toUpperCase() + ((it.size() > 1) ? it[1..-1] : '')
-					}
-				}
+        // render entity fields
+        entity.giveFields().each() {
+            // Format the column name by:
+            // - separating combined names (SampleName --> Sample Name)
+            // - capitalizing every seperate word
+            def ucName = it.name.replaceAll(/[a-z][A-Z][a-z]/) {
+                it[0] + ' ' + it[1..2]
+            }.replaceAll(/\w+/) {
+                // If the entity is also shown, the entity should be removed from the field name (if present)
+                if( includeEntities && it.toLowerCase() == entityName.toLowerCase() ) {
+                    return "";
+                } else {
+                    return it[0].toUpperCase() + ((it.size() > 1) ? it[1..-1] : '')
+                }
+            }
 
-				// strip spaces
-				def ucNameSpaceless = ucName.replaceAll(/ /) { '' }
+            // strip spaces
+            def ucNameSpaceless = ucName.replaceAll(/ /) { '' }
 
-				// do we have to use a specific width for this column?
-				if (columnWidths[ucName]) {
-					out << '<div class="' + attrs.get('class') + '" style="width:' + columnWidths[ucNameSpaceless] + 'px;" rel="resized">'
-				} else {
-					out << '<div class="' + attrs.get('class') + '">'
-				}
-				
-				out << '<span class="fieldname">'
-				if( includeEntities ) {
-					out << entityName + "<br />";
-				}
-				
-				out << ucName + (it.unit ? " (${it.unit})" : '')
-				out << '</span>'
-				
-				if (it.comment) {
-					out << '<div class="helpIcon"></div>'
-					out << '<div class="helpContent">' + it.comment + '</div>'
-				}
-				out << '</div>'
-			}
-		}
+            // do we have to use a specific width for this column?
+            if (columnWidths[ucName]) {
+                out << '<div class="' + attrs.get('class') + '" style="width:' + columnWidths[ucNameSpaceless] + 'px;" rel="resized">'
+            } else {
+                out << '<div class="' + attrs.get('class') + '">'
+            }
+
+            out << '<span class="fieldname">'
+            if( includeEntities ) {
+                out << entityName + "<br />";
+            }
+
+            out << ucName + (it.unit ? " (${it.unit})" : '')
+            out << '</span>'
+
+            if (it.comment) {
+                out << '<div class="helpIcon"></div>'
+                out << '<div class="helpContent">' + it.comment + '</div>'
+            }
+            out << '</div>'
+        }
 	}
 
 	/**
@@ -629,220 +626,217 @@ class GdtTagLib extends AjaxflowTagLib {
 		// Put all ignored fields into lower case, in order to perform a case insensitive search
 		ignore = ignore.collect { it.toLowerCase() }
 
-		// got a template?
-		if (template) {
-			// render template fields
-			entity.giveFields().each() {
-				// Check whether this field should be ignored. This is true if its name occurs in the ignore parameter
-				// and the field is not required
-				if( it.isRequired() || !ignore || !ignore.contains( it.name?.toLowerCase() ) ) {
-					
-					def fieldValue = entity.getFieldValue(it.name)
-					def helpText = (it.comment && renderType == 'element') ? it.comment : ''
-					def ucName = it.name[0].toUpperCase() + it.name.substring(1)
+        // render entity fields
+        entity.giveFields().each() {
+            // Check whether this field should be ignored. This is true if its name occurs in the ignore parameter
+            // and the field is not required
+            if( it.isRequired() || !ignore || !ignore.contains( it.name?.toLowerCase() ) ) {
 
-					// check for fuzzy string matching
-					if (it.type.toString() in ['STRING','TEXT'] && it.name in entity.fuzzyStringMatchable) {
-						// yes, extend attributes to contain fuzzyMathching info
-						fuzzyMatching = "${createLink(controller: 'fuzzyStringMatch', action: 'ajaxFuzzyFind', plugin: 'gdt')}&property=${it.name}&entity=${gdtService.encryptEntity(entityName)}"
-					} else {
-						fuzzyMatching = ""
-					}
+                def fieldValue = entity.getFieldValue(it.name)
+                def helpText = (it.comment && renderType == 'element') ? it.comment : ''
+                def ucName = it.name[0].toUpperCase() + it.name.substring(1)
 
-					// output column opening element?
-					if (renderType == 'column') {
-						out << '<div class="' + attrs.get('class') + '">'
-					}
-	
-					switch (it.type.toString()) {
-						case ['STRING', 'DOUBLE', 'LONG']:
-							inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
+                // check for fuzzy string matching
+                if (it.type.toString() in ['STRING','TEXT'] && it.name in entity.fuzzyStringMatchable) {
+                    // yes, extend attributes to contain fuzzyMathching info
+                    fuzzyMatching = "${createLink(controller: 'fuzzyStringMatch', action: 'ajaxFuzzyFind', plugin: 'gdt')}&property=${it.name}&entity=${gdtService.encryptEntity(entityName)}"
+                } else {
+                    fuzzyMatching = ""
+                }
 
-							params = [
-								description: ucName,
-								name: prependName + it.escapedName(),
-								value: fieldValue,
-								required: it.isRequired()
-							]
+                // output column opening element?
+                if (renderType == 'column') {
+                    out << '<div class="' + attrs.get('class') + '">'
+                }
 
-							// fuzzy matching enabled?
-							if (fuzzyMatching.size()) params << [ fuzzymatching: fuzzyMatching ]
+                switch (it.type.toString()) {
+                    case ['STRING', 'DOUBLE', 'LONG']:
+                        inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
 
-							out << "$inputElement"(params) {helpText}
-							break
-						case 'TEXT':
-							inputElement = (renderType == 'element') ? 'textAreaElement' : 'textField'
+                        params = [
+                            description: ucName,
+                            name: prependName + it.escapedName(),
+                            value: fieldValue,
+                            required: it.isRequired()
+                        ]
 
-							params = [
-								description: ucName,
-								name: prependName + it.escapedName(),
-								value: fieldValue,
-								fuzzymatching: fuzzyMatching,
-								required: it.isRequired()
-							]
+                        // fuzzy matching enabled?
+                        if (fuzzyMatching.size()) params << [ fuzzymatching: fuzzyMatching ]
 
-							// fuzzy matching enabled?
-							if (fuzzyMatching.size()) params << [ fuzzymatching: fuzzyMatching ]
+                        out << "$inputElement"(params) {helpText}
+                        break
+                    case 'TEXT':
+                        inputElement = (renderType == 'element') ? 'textAreaElement' : 'textField'
 
-							out << "$inputElement"(params) {helpText}
-							break
-						case 'STRINGLIST':
-							inputElement = (renderType == 'element') ? 'selectElement' : 'select'
-							if (!it.listEntries.isEmpty()) {
-								out << "$inputElement"(
-									description: ucName,
-									name: prependName + it.escapedName(),
-									from: it.listEntries,
-									value: fieldValue,
-									required: it.isRequired()
-								) {helpText}
-							} else {
-								out << '<span class="warning">no values!!</span>'
-							}
-							break
-						case 'EXTENDABLESTRINGLIST':
-							// Show autocomplete
-							inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
-							
-							out << "$inputElement"(
-								description: ucName,
-								name: prependName + it.escapedName(),
-								value: fieldValue,
-								id: 'extendableStringList_' + prependName + it.escapedName(),
-								required: it.isRequired()
-							) {helpText}
+                        params = [
+                            description: ucName,
+                            name: prependName + it.escapedName(),
+                            value: fieldValue,
+                            fuzzymatching: fuzzyMatching,
+                            required: it.isRequired()
+                        ]
 
-							def jsEntries = "";
-							
-							if( !it.listEntries.isEmpty() ) {
-								jsEntries = it.listEntries.collect { '"' + it.name.encodeAsJavaScript() + '"' }.join( ', ' );
-							}
-							out << '<script type="text/javascript">' +
-									'var existingTags = [ ' + jsEntries + ' ];' +
-									'$( "#extendableStringList_' + prependName + it.escapedName() + '" ).autocomplete({' +
-										'source: existingTags' +
-									'});' +
-								'</script>';
-							
-							break
-						case 'ONTOLOGYTERM':
-							// @see http://www.bioontology.org/wiki/index.php/NCBO_Widgets#Term-selection_field_on_a_form
-							// @see ontology-chooser.js
-							inputElement = (renderType == 'element') ? 'termElement' : 'termSelect'
-	
-							// override addDummy to always add the dummy...
-							addDummy = true
-	
-							if (it.ontologies) {
-								out << "$inputElement"(
-									description: ucName,
-									name: prependName + it.escapedName(),
-									value: fieldValue.toString(),
-									ontologies: it.ontologies,
-									addDummy: addDummy,
-									required: it.isRequired()
-								) {helpText}
-							} else {
-								out << "$inputElement"(
-									description: ucName,
-									name: prependName + it.escapedName(),
-									value: fieldValue.toString(),
-									addDummy: addDummy,
-									required: it.isRequired()
-								) {helpText}
-							}
-							break
-						case 'DATE':
-							inputElement = (renderType == 'element') ? 'dateElement' : 'textField'
-	
-							// transform value?
-							if (fieldValue instanceof Date) {
-								if (fieldValue.getHours() == 0 && fieldValue.getMinutes() == 0) {
-									// transform date instance to formatted string (dd/mm/yyyy)
-									fieldValue = String.format('%td/%<tm/%<tY', fieldValue)
-								} else {
-									// transform to date + time
-									fieldValue = String.format('%td/%<tm/%<tY %<tH:%<tM', fieldValue)
-								}
-							}
-	
-							// render element
-							out << "$inputElement"(
-								description: ucName,
-								name: prependName + it.escapedName(),
-								value: fieldValue,
-								rel: 'date',
-								required: it.isRequired()
-							) {helpText}
-							break
-						case ['RELTIME']:
-							inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
-							out << "$inputElement"(
-								description: ucName,
-								name: prependName + it.escapedName(),
-								value: new RelTime(fieldValue).toString(),
-								addExampleElement: true,
-								onBlur: 'showExampleReltime(this)',
-								required: it.isRequired()
-							) {helpText}
-							break
-						case ['FILE']:
-							inputElement = (renderType == 'element') ? 'fileFieldElement' : 'fileField'
-							out << "$inputElement"(
-								description: ucName,
-								name: prependName + it.escapedName(),
-								value: fieldValue ? fieldValue : "",
-								addExampleElement: true,
-								required: it.isRequired()
-							) {helpText}
-							break
-						case ['BOOLEAN']:
-							inputElement = (renderType == 'element') ? 'checkBoxElement' : 'checkBox'
-							out << "$inputElement"(
-								description: ucName,
-								name: prependName + it.escapedName(),
-								value: fieldValue,
-								required: it.isRequired()
-							) {helpText}
-							break
-						case ['TEMPLATE']:
-							inputElement = (renderType == 'element') ? 'templateElement' : 'templateSelect'
-							out << "$inputElement"(
-								description: ucName,
-								name: prependName + it.escapedName(),
-								addDummy: true,
-								entity: it.entity,
-								value: fieldValue,
-								required: it.isRequired()
-							) {helpText}
-							break
-						case ['MODULE']:
-							def from = []
-							AssayModule.findAll().each { from[from.size()] = it.toString() }
-	
-							inputElement = (renderType == 'element') ? 'selectElement' : 'select'
-							out << "$inputElement"(
-								description: ucName,
-								name: prependName + it.escapedName(),
-								from: from,
-								value: fieldValue.toString(),
-								required: it.isRequired()
-							) {helpText}
-							break
-							break
-						default:
-							// unsupported field type
-							out << '<span class="warning">!' + it.type + '</span>'
-							break
-					}
-	
-					// output column closing element?
-					if (renderType == 'column') {
-						out << '</div>'
-					}
-				} // end if ignored
-			}
-		}
+                        // fuzzy matching enabled?
+                        if (fuzzyMatching.size()) params << [ fuzzymatching: fuzzyMatching ]
+
+                        out << "$inputElement"(params) {helpText}
+                        break
+                    case 'STRINGLIST':
+                        inputElement = (renderType == 'element') ? 'selectElement' : 'select'
+                        if (!it.listEntries.isEmpty()) {
+                            out << "$inputElement"(
+                                description: ucName,
+                                name: prependName + it.escapedName(),
+                                from: it.listEntries,
+                                value: fieldValue,
+                                required: it.isRequired()
+                            ) {helpText}
+                        } else {
+                            out << '<span class="warning">no values!!</span>'
+                        }
+                        break
+                    case 'EXTENDABLESTRINGLIST':
+                        // Show autocomplete
+                        inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
+
+                        out << "$inputElement"(
+                            description: ucName,
+                            name: prependName + it.escapedName(),
+                            value: fieldValue,
+                            id: 'extendableStringList_' + prependName + it.escapedName(),
+                            required: it.isRequired()
+                        ) {helpText}
+
+                        def jsEntries = "";
+
+                        if( !it.listEntries.isEmpty() ) {
+                            jsEntries = it.listEntries.collect { '"' + it.name.encodeAsJavaScript() + '"' }.join( ', ' );
+                        }
+                        out << '<script type="text/javascript">' +
+                                'var existingTags = [ ' + jsEntries + ' ];' +
+                                '$( "#extendableStringList_' + prependName + it.escapedName() + '" ).autocomplete({' +
+                                    'source: existingTags' +
+                                '});' +
+                            '</script>';
+
+                        break
+                    case 'ONTOLOGYTERM':
+                        // @see http://www.bioontology.org/wiki/index.php/NCBO_Widgets#Term-selection_field_on_a_form
+                        // @see ontology-chooser.js
+                        inputElement = (renderType == 'element') ? 'termElement' : 'termSelect'
+
+                        // override addDummy to always add the dummy...
+                        addDummy = true
+
+                        if (it.ontologies) {
+                            out << "$inputElement"(
+                                description: ucName,
+                                name: prependName + it.escapedName(),
+                                value: fieldValue.toString(),
+                                ontologies: it.ontologies,
+                                addDummy: addDummy,
+                                required: it.isRequired()
+                            ) {helpText}
+                        } else {
+                            out << "$inputElement"(
+                                description: ucName,
+                                name: prependName + it.escapedName(),
+                                value: fieldValue.toString(),
+                                addDummy: addDummy,
+                                required: it.isRequired()
+                            ) {helpText}
+                        }
+                        break
+                    case 'DATE':
+                        inputElement = (renderType == 'element') ? 'dateElement' : 'textField'
+
+                        // transform value?
+                        if (fieldValue instanceof Date) {
+                            if (fieldValue.getHours() == 0 && fieldValue.getMinutes() == 0) {
+                                // transform date instance to formatted string (dd/mm/yyyy)
+                                fieldValue = String.format('%td/%<tm/%<tY', fieldValue)
+                            } else {
+                                // transform to date + time
+                                fieldValue = String.format('%td/%<tm/%<tY %<tH:%<tM', fieldValue)
+                            }
+                        }
+
+                        // render element
+                        out << "$inputElement"(
+                            description: ucName,
+                            name: prependName + it.escapedName(),
+                            value: fieldValue,
+                            rel: 'date',
+                            required: it.isRequired()
+                        ) {helpText}
+                        break
+                    case ['RELTIME']:
+                        inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
+                        out << "$inputElement"(
+                            description: ucName,
+                            name: prependName + it.escapedName(),
+                            value: new RelTime(fieldValue).toString(),
+                            addExampleElement: true,
+                            onBlur: 'showExampleReltime(this)',
+                            required: it.isRequired()
+                        ) {helpText}
+                        break
+                    case ['FILE']:
+                        inputElement = (renderType == 'element') ? 'fileFieldElement' : 'fileField'
+                        out << "$inputElement"(
+                            description: ucName,
+                            name: prependName + it.escapedName(),
+                            value: fieldValue ? fieldValue : "",
+                            addExampleElement: true,
+                            required: it.isRequired()
+                        ) {helpText}
+                        break
+                    case ['BOOLEAN']:
+                        inputElement = (renderType == 'element') ? 'checkBoxElement' : 'checkBox'
+                        out << "$inputElement"(
+                            description: ucName,
+                            name: prependName + it.escapedName(),
+                            value: fieldValue,
+                            required: it.isRequired()
+                        ) {helpText}
+                        break
+                    case ['TEMPLATE']:
+                        inputElement = (renderType == 'element') ? 'templateElement' : 'templateSelect'
+                        out << "$inputElement"(
+                            description: ucName,
+                            name: prependName + it.escapedName(),
+                            addDummy: true,
+                            entity: it.entity,
+                            value: fieldValue,
+                            required: it.isRequired()
+                        ) {helpText}
+                        break
+                    case ['MODULE']:
+                        def from = []
+                        AssayModule.findAll().each { from[from.size()] = it.toString() }
+
+                        inputElement = (renderType == 'element') ? 'selectElement' : 'select'
+                        out << "$inputElement"(
+                            description: ucName,
+                            name: prependName + it.escapedName(),
+                            from: from,
+                            value: fieldValue.toString(),
+                            required: it.isRequired()
+                        ) {helpText}
+                        break
+                        break
+                    default:
+                        // unsupported field type
+                        out << '<span class="warning">!' + it.type + '</span>'
+                        break
+                }
+
+                // output column closing element?
+                if (renderType == 'column') {
+                    out << '</div>'
+                }
+            } // end if ignored
+        }
 	}
 
 	/**
