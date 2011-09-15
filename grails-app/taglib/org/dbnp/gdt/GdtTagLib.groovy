@@ -625,7 +625,7 @@ class GdtTagLib extends AjaxflowTagLib {
             // and the field is not required
             if( it.isRequired() || !ignore || !ignore.contains( it.name?.toLowerCase() ) ) {
 
-				_showTemplateField( entity, it, attrs, renderType );
+				_showTemplateField( entity, it, null, attrs, renderType );
 
             } // end if ignored
         }
@@ -639,22 +639,32 @@ class GdtTagLib extends AjaxflowTagLib {
 	def renderTemplateField = { attrs, body ->
 		def entity			= attrs.get('entity')
 		def templateField	= attrs.get( 'templateField' );
+		def value			= attrs.get( 'value' );
 	
-		if( !entity || !templateField ) {
-			println "No entity or field given.";
+		if( !templateField ) {
+			out << "Templatefield given.";
+		} else if( !entity && !value ) {
+			out << "No entity and value given.";
 		} else {
-			_showTemplateField( entity, templateField, attrs )
+			_showTemplateField( entity, templateField, value, attrs )
 		}
 	}
 		
-	protected void _showTemplateField( entity, templateField, attrs = null, renderType = "" ) {
-		def fieldValue = entity.getFieldValue(templateField.name)
+	protected void _showTemplateField( entity, templateField, value = null, attrs = null, renderType = "" ) {
+		def fieldValue;
+		
+		// Use the user supplied value if given, otherwise
+		if( value != null ) {
+			fieldValue = value
+		} else {
+			fieldValue = entity.getFieldValue(templateField.name)
+		}
+		
 		def helpText = (templateField.comment && renderType == 'element') ? templateField.comment : ''
 		def ucName = templateField.name[0].toUpperCase() + templateField.name.substring(1)
 		
-		def entityName		= entity.getClass().toString().replaceFirst(/^class /,'')
+		def entityName		= entity?.getClass().toString().replaceFirst(/^class /,'')
 		def prependName		= (attrs?.get('name')) ? attrs?.remove('name') + '_' : ''
-		def template		= (entity && entity instanceof TemplateEntity) ? entity.template : null
 		def addDummy		= (attrs?.get('addDummy')) ? true : false
 		def params			= [:]
 
