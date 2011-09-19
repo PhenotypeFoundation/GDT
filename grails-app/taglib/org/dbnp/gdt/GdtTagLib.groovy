@@ -642,9 +642,9 @@ class GdtTagLib extends AjaxflowTagLib {
 		def value			= attrs.get( 'value' );
 	
 		if( !templateField ) {
-			out << "Templatefield given.";
-		} else if( !entity && !value ) {
-			out << "No entity and value given.";
+			out << "No templatefield given.";
+		} else if( !entity && value == null ) {
+			out << "No entity or value given.";
 		} else {
 			_showTemplateField( entity, templateField, value, attrs )
 		}
