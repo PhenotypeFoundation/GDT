@@ -664,7 +664,7 @@ class GdtTagLib extends AjaxflowTagLib {
 		def ucName = templateField.name[0].toUpperCase() + templateField.name.substring(1)
 		
 		def entityName		= entity?.getClass().toString().replaceFirst(/^class /,'')
-		def prependName		= (attrs?.get('name')) ? attrs?.remove('name') + '_' : ''
+		def prependName		= (attrs?.get('name')) ? attrs?.get('name') + '_' : ''
 		def addDummy		= (attrs?.get('addDummy')) ? true : false
 		def params			= [:]
 
