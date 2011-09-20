@@ -672,7 +672,7 @@ class GdtTagLib extends AjaxflowTagLib {
 		def inputElement	= null
 		
 		// check for fuzzy string matching
-		if (templateField.type.toString() in ['STRING','TEXT'] && templateField.name in entity.fuzzyStringMatchable) {
+		if (templateField.type.toString() in ['STRING','TEXT'] && templateField.name in entity?.fuzzyStringMatchable) {
 			// yes, extend attributes to contain fuzzyMathching info
 			fuzzyMatching = "${createLink(controller: 'fuzzyStringMatch', action: 'ajaxFuzzyFind', plugin: 'gdt')}&property=${templateField.name}&entity=${gdtService.encryptEntity(entityName)}"
 		} else {
