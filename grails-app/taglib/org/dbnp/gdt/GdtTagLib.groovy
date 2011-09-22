@@ -624,9 +624,7 @@ class GdtTagLib extends AjaxflowTagLib {
             // Check whether this field should be ignored. This is true if its name occurs in the ignore parameter
             // and the field is not required
             if( it.isRequired() || !ignore || !ignore.contains( it.name?.toLowerCase() ) ) {
-
 				_showTemplateField( entity, it, null, attrs, renderType );
-
             } // end if ignored
         }
 	}
