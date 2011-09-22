@@ -624,7 +624,235 @@ class GdtTagLib extends AjaxflowTagLib {
             // Check whether this field should be ignored. This is true if its name occurs in the ignore parameter
             // and the field is not required
             if( it.isRequired() || !ignore || !ignore.contains( it.name?.toLowerCase() ) ) {
-				_showTemplateField( entity, it, null, attrs, renderType );
+				// I'm really sorry about this solution. I would like to call _showTemplateField like this:
+				//   this._showTemplateField( entity, it, null, attrs, renderType );
+				// However, due to a bug in groovy 1.7.8 (see http://grails.1312388.n4.nabble.com/Grails-1-3-7-and-bean-fields-td3311784.html)
+				// that solution shows a very strange message about
+				//   org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack$GroovyPageProxyWriter@885ea3
+				// This issue should be resolved in groovy 1.7.10. As soon as grails updates to a newer
+				// version of groovy, this solution can be changed.
+				def templateField = it;
+				def value = null;
+
+				def fieldValue;
+				
+				// Use the user supplied value if given, otherwise
+				if( value != null ) {
+					fieldValue = value
+				} else {
+					fieldValue = entity.getFieldValue(templateField.name)
+				}
+				
+				def helpText = (templateField.comment && renderType == 'element') ? templateField.comment : ''
+				def ucName = templateField.name[0].toUpperCase() + templateField.name.substring(1)
+				
+				def entityName		= entity?.getClass().toString().replaceFirst(/^class /,'')
+				def prependName		= (attrs?.get('name')) ? attrs?.get('name') + '_' : ''
+				def addDummy		= (attrs?.get('addDummy')) ? true : false
+				def params			= [:]
+		
+				def fuzzyMatching	= ""
+				def inputElement	= null
+				
+				// check for fuzzy string matching
+				if (templateField.type.toString() in ['STRING','TEXT'] && templateField.name in entity?.fuzzyStringMatchable) {
+					// yes, extend attributes to contain fuzzyMathching info
+					fuzzyMatching = "${createLink(controller: 'fuzzyStringMatch', action: 'ajaxFuzzyFind', plugin: 'gdt')}&property=${templateField.name}&entity=${gdtService.encryptEntity(entityName)}"
+				} else {
+					fuzzyMatching = ""
+				}
+		
+				// output column opening element?
+				if (renderType == 'column') {
+					out << '<div class="' + attrs.get('class') + '">'
+				}
+		
+				switch (templateField.type.toString()) {
+					case ['STRING', 'DOUBLE', 'LONG']:
+						inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
+		
+						params = [
+							description: ucName,
+							name: prependName + templateField.escapedName(),
+							value: fieldValue,
+							required: templateField.isRequired()
+						]
+		
+						// fuzzy matching enabled?
+						if (fuzzyMatching.size()) params << [ fuzzymatching: fuzzyMatching ]
+		
+						out << "$inputElement"(params) {helpText}
+						break
+					case 'TEXT':
+						inputElement = (renderType == 'element') ? 'textAreaElement' : 'textField'
+		
+						params = [
+							description: ucName,
+							name: prependName + templateField.escapedName(),
+							value: fieldValue,
+							fuzzymatching: fuzzyMatching,
+							required: templateField.isRequired()
+						]
+		
+						// fuzzy matching enabled?
+						if (fuzzyMatching.size()) params << [ fuzzymatching: fuzzyMatching ]
+		
+						out << "$inputElement"(params) {helpText}
+						break
+					case 'STRINGLIST':
+						inputElement = (renderType == 'element') ? 'selectElement' : 'select'
+						if (!templateField.listEntries.isEmpty()) {
+							out << "$inputElement"(
+								description: ucName,
+								name: prependName + templateField.escapedName(),
+								from: templateField.listEntries,
+								value: fieldValue,
+								required: templateField.isRequired()
+							) {helpText}
+						} else {
+							out << '<span class="warning">no values!!</span>'
+						}
+						break
+					case 'EXTENDABLESTRINGLIST':
+						// Show autocomplete
+						inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
+		
+						out << "$inputElement"(
+							description: ucName,
+							name: prependName + templateField.escapedName(),
+							value: fieldValue,
+							id: 'extendableStringList_' + prependName + templateField.escapedName(),
+							required: templateField.isRequired()
+						) {helpText}
+		
+						def jsEntries = "";
+		
+						if( !templateField.listEntries.isEmpty() ) {
+							jsEntries = templateField.listEntries.collect { '"' + templateField.name.encodeAsJavaScript() + '"' }.join( ', ' );
+						}
+						out << '<script type="text/javascript">' +
+								'var existingTags = [ ' + jsEntries + ' ];' +
+								'$( "#extendableStringList_' + prependName + templateField.escapedName() + '" ).autocomplete({' +
+									'source: existingTags' +
+								'});' +
+							'</script>';
+		
+						break
+					case 'ONTOLOGYTERM':
+						// @see http://www.bioontology.org/wiki/index.php/NCBO_Widgets#Term-selection_field_on_a_form
+						// @see ontology-chooser.js
+						inputElement = (renderType == 'element') ? 'termElement' : 'termSelect'
+		
+						// override addDummy to always add the dummy...
+						addDummy = true
+		
+						if (templateField.ontologies) {
+							out << "$inputElement"(
+								description: ucName,
+								name: prependName + templateField.escapedName(),
+								value: fieldValue.toString(),
+								ontologies: templateField.ontologies,
+								addDummy: addDummy,
+								required: templateField.isRequired()
+							) {helpText}
+						} else {
+							out << "$inputElement"(
+								description: ucName,
+								name: prependName + templateField.escapedName(),
+								value: fieldValue.toString(),
+								addDummy: addDummy,
+								required: templateField.isRequired()
+							) {helpText}
+						}
+						break
+					case 'DATE':
+						inputElement = (renderType == 'element') ? 'dateElement' : 'textField'
+		
+						// transform value?
+						if (fieldValue instanceof Date) {
+							if (fieldValue.getHours() == 0 && fieldValue.getMinutes() == 0) {
+								// transform date instance to formatted string (dd/mm/yyyy)
+								fieldValue = String.format('%td/%<tm/%<tY', fieldValue)
+							} else {
+								// transform to date + time
+								fieldValue = String.format('%td/%<tm/%<tY %<tH:%<tM', fieldValue)
+							}
+						}
+		
+						// render element
+						out << "$inputElement"(
+							description: ucName,
+							name: prependName + templateField.escapedName(),
+							value: fieldValue,
+							rel: 'date',
+							required: templateField.isRequired()
+						) {helpText}
+						break
+					case ['RELTIME']:
+						inputElement = (renderType == 'element') ? 'textFieldElement' : 'textField'
+						out << "$inputElement"(
+							description: ucName,
+							name: prependName + templateField.escapedName(),
+							value: new RelTime(fieldValue).toString(),
+							addExampleElement: true,
+							onBlur: 'showExampleReltime(this)',
+							required: templateField.isRequired()
+						) {helpText}
+						break
+					case ['FILE']:
+						inputElement = (renderType == 'element') ? 'fileFieldElement' : 'fileField'
+						out << "$inputElement"(
+							description: ucName,
+							name: prependName + templateField.escapedName(),
+							value: fieldValue ? fieldValue : "",
+							addExampleElement: true,
+							required: templateField.isRequired()
+						) {helpText}
+						break
+					case ['BOOLEAN']:
+						inputElement = (renderType == 'element') ? 'checkBoxElement' : 'checkBox'
+						out << "$inputElement"(
+							description: ucName,
+							name: prependName + templateField.escapedName(),
+							value: fieldValue,
+							required: templateField.isRequired()
+						) {helpText}
+						break
+					case ['TEMPLATE']:
+						inputElement = (renderType == 'element') ? 'templateElement' : 'templateSelect'
+						out << "$inputElement"(
+							description: ucName,
+							name: prependName + templateField.escapedName(),
+							addDummy: true,
+							entity: templateField.entity,
+							value: fieldValue,
+							required: templateField.isRequired()
+						) {helpText}
+						break
+					case ['MODULE']:
+						def from = []
+						AssayModule.findAll().each { from[from.size()] = it.toString() }
+		
+						inputElement = (renderType == 'element') ? 'selectElement' : 'select'
+						out << "$inputElement"(
+							description: ucName,
+							name: prependName + templateField.escapedName(),
+							from: from,
+							value: fieldValue.toString(),
+							required: templateField.isRequired()
+						) {helpText}
+						break
+						break
+					default:
+						// unsupported field type
+						out << '<span class="warning">!' + templateField.type + '</span>'
+						break
+				}
+		
+				// output column closing element?
+				if (renderType == 'column') {
+					out << '</div>'
+				}
             } // end if ignored
         }
 	}
