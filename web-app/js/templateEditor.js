@@ -295,13 +295,13 @@ function createTemplateField( id ) {
             clearTemplateFieldForm( id );
             hideTemplateFieldForm( id );
             addFieldListItem( data.id, data.html );
+			userMessage( 'A new template field was created and can be added to your template.' );
         },
         error:       function( request ) {
             alert( "Could not add template field: " + request.responseText );
         },
 		complete: function( request, textStatus ) {
 			hideWaiting();
-			userMessage( 'A new template field was created and can be added to your template.' );
 		}
     });
 }
