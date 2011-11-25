@@ -91,6 +91,9 @@ SelectAddMore.prototype = {
         // add a magic option to the end of the select element
         e.append('<option value="" class="' + style + '">' + label + '</option>');
 
+		// when the select box size is changed after initialization, the initial change binding must be removed
+		e.unbind('change');
+
         // and bind and onChange event
         e.bind('change', function() {
             // was our magic option selected?
