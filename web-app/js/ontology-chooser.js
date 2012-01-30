@@ -1,6 +1,6 @@
 /**
- * Ontology chooser JavaScript class
- * Copyright (C) 2010 Jeroen Wesbeek
+ *  Ontology Chooser, use any NCBO ontology with a text input element
+ *  Copyright (C) 2010 Jeroen Wesbeek
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,8 @@
  *
  * Description:
  * ------------
- * NCBO wrote a javascript library to search for terms in one
- * or more ontologies. However, this 'widget' contained it's
- * own autocomplete implementation, and it was conflicting with
- * other JavaScript libraries in our project (mainly the table
- * editor).
- *
- * This Ontology Chooser aims at
+ * This javascript is one script replacement of the NCBO's default
+ * implementation and it aims at
  * - utilizing the autocomplete functionality provided by the
  *   jquery-ui library to create a common look and feel
  *   throughout the application
@@ -76,7 +71,6 @@
  *
  * @author		Jeroen Wesbeek
  * @since		20100312
- * @package		wizard
  * @requires	jquery, jquery-ui, jquery.ui.autocomplete.html.js
  * @see			http://jquery.com
  * @see			http://jqueryui.com
