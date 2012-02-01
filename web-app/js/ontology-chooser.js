@@ -180,7 +180,7 @@ OntologyChooser.prototype = {
 
 				// set the spinner
 				if (that.options.spinner) {
-					inputElement.css({ 'background': 'url(' + that.options.spinner + ') no-repeat right top' });
+					inputElement.css({ 'background': 'url(' + that.options.spinner + ') no-repeat right center' });
 				}
 				selected = false;
 			},
