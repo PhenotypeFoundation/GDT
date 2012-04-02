@@ -780,7 +780,7 @@ class TemplateEditorController {
 	 * @return JSON	Ontology object
 	 */
 	def addOntologyById = {
-		def id = params.ncboID;
+		def id = (params.containsKey('ncboID')) ? (params.ncboID as int) : 0;
 
 		// set content type
 		response.setContentType("text/plain; charset=UTF-8")
@@ -791,7 +791,7 @@ class TemplateEditorController {
 			return;
 		}
 
-		if (Ontology.findByNcboId(Integer.parseInt(id))) {
+		if (Ontology.findByNcboId(id)) {
 			response.status = 500;
 			render 'This ontology was already added to the system';
 			return;
@@ -800,7 +800,7 @@ class TemplateEditorController {
 		def ontology = null;
 
 		try {
-			ontology = dbnp.data.Ontology.getBioPortalOntology(id);
+            ontology = Ontology.getBioPortalOntology(id)
 		} catch (Exception e) {
 			response.status = 500;
 			render 'Ontology with ID ' + id + ' not found';
@@ -834,7 +834,7 @@ class TemplateEditorController {
 	 * @deprecated User addOntologyById instead, using the ncboId given by the JSON call
 	 */
 	def addOntologyByTerm = {
-		def id = params.termID;
+		def id = (params.containsKey('termID')) ? (params.termID as int) : 0;
 
 		// set content type
 		response.setContentType("text/plain; charset=UTF-8")

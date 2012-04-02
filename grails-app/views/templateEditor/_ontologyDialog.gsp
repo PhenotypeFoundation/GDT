@@ -17,7 +17,9 @@
  <script type="text/javascript">
 	$(document).ready(function() {
 		// initialize the ontology chooser
-    	new OntologyChooser().init();
+    	new OntologyChooser().init({
+            spinner: '${resource(plugin:'gdt', dir:'images', file:'spinner.gif')}'
+        });
 
 	});
  </script>
