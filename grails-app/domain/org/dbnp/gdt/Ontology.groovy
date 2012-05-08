@@ -21,6 +21,9 @@ class Ontology implements Serializable {
 	Date dateCreated
 	Date lastUpdated
 
+    static mapping = {
+        description(type: 'text')
+    }
 
 	static constraints = {
 		ncboId(unique: true)     // For now, we just want one version of each NCBO ontology in the database
