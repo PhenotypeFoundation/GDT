@@ -178,8 +178,20 @@ function cloneTemplate( id ) {
     });
 }
 
+/**
+ * Opens templateRequest dialog
+ */
+function requestTemplate( id ) {
+    //define popup's width/height
+    var requestWidth = 800;
+    var requestHeight = 490;
+    //open window
+    requestWindow = window.open(baseUrl + '/forms/templateRequestForm.gsp', 'bla', 'width='+requestWidth+', height='+requestHeight+', resizable=0, left='+ (window.screen.width - requestWidth) / 2 + ',top=' + (window.screen.height - requestHeight) / 2);
+    requestWindow.focus()
+}
+
 // Adds a new listitem when a field has been added
-function addTemplateListItem( id, newHTML ) {
+function  addTemplateListItem( id, newHTML ) {
 	// Create a new listitem
 	var li = $( newHTML );
 
