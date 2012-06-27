@@ -20,11 +20,16 @@
  */
 
 class GdtGrailsPlugin {
-    def version			= "0.2.2"
+    def version			= "0.2.3"
     def grailsVersion	= "1.3.7 > *"
     def dependsOn		= [ajaxflow: "0.2.1 > *", crypto: "2.0 > *", jquery: "1.7.1 > *" ]
     def pluginExcludes	= [
-            "grails-app/views/error.gsp"
+            "grails-app/views/error.gsp",
+            "grails-app/conf/DataSource.groovy",
+            "web-app/css",
+            "web-app/images",
+            "web-app/js/prototype",
+            "web-app/js/application.js"
     ]
     def author			= "Jeroen Wesbeek"
     def authorEmail 	= "work@osx.eu"
@@ -35,7 +40,19 @@ If you, for example, have a Company Domain Class, but companies would like to re
 for every type of company (e.g. a financial institution template, university template, etc). Using these Templateted Domain Classed creates more dynamic
 flexibility in the application.
 '''
-    def documentation = "http://grails.org/plugin/gdt"
+    def documentation   = "https://github.com/PhenotypeFoundation/GDT/blob/master/README.md"
+    def license         = "APACHE"
+    def issueManagement = [system: "github", url: "https://github.com/PhenotypeFoundation/GDT/issues"]
+    def scm             = [url: "https://github.com/PhenotypeFoundation/GDT"]
+    def organization    = [ name: "Phenotype Foundatiom", url: "http://phenotypefoundation.org/" ]
+    def developers      = [
+            [ name: "Kees van Bochove", email: "kees@thehyve.nl" ],
+            [ name: "Tjeerd Abma", email: "t.w.abma@gmail.com" ],
+            [ name: "Siemen Sikkema", email: "s.h.sikkema@gmail.com" ],
+            [ name: "Ferry Jagers", email: "ferryjagers@gmail.com" ],
+            [ name: "Taco Steemers", email: "taco@thehyve.nl" ],
+            [ name: "Tjeerd van Dijk", email: "tjeerd@thehyve.nl" ]
+    ]
 
     def doWithWebDescriptor = { xml ->
         // TODO Implement additions to web.xml (optional), this event occurs before 
