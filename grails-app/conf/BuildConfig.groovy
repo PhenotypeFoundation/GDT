@@ -30,8 +30,8 @@ grails.project.dependency.resolution = {
 
     plugins {
         build(  ":tomcat:$grailsVersion",
-                ":release:latest.integration",
-                ":rest-client-builder:latest.integration"
+                ":release:latest.release",
+                ":rest-client-builder:latest.release"
         ) {
             // plugin only plugin, should not be transitive to the application
             export = false
