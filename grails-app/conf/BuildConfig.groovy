@@ -17,6 +17,7 @@ grails.project.dependency.resolution = {
 
         mavenCentral()
         mavenRepo "http://nexus.nmcdsp.org/content/repositories/releases"
+        mavenRepo "http://ontocat.sourceforge.net/maven/repo"
         mavenRepo "http://repository.springsource.com/maven/bundles/release"
         mavenRepo "http://repository.springsource.com/maven/bundles/external"
         mavenRepo "http://repository.springsource.com/maven/libraries/release"
@@ -26,6 +27,7 @@ grails.project.dependency.resolution = {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
 
         // runtime 'mysql:mysql-connector-java:5.1.5'
+        runtime "uk.ac.ebi:ontoCAT:0.9.8"
     }
 
     plugins {
