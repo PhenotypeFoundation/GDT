@@ -46,8 +46,16 @@ abstract class Identity implements Serializable {
 	private int maximumIdentity = 99999
 	static int iterator = 0
 
+	// UUID of this instance
+	String UUID
+
 	// transients
 	static transients = [ "identifier", "iterator", "maximumIdentity" ]
+
+	// constraints
+	static constraints = {
+		UUID(nullable:true, unique:true, maxSize: 255)
+	}
 
 	/**
 	 * Method to increment the static iterator variable. This method
@@ -86,5 +94,30 @@ abstract class Identity implements Serializable {
 	 */
 	synchronized final static resetIdentifier = {->
 		iterator = 0
+	}
+
+	/**
+	 * Returns the UUID of this instance and generates one if needed
+	 *
+	 * @return String UUID
+	 */
+	final public String giveUUID() {
+		String UUID = ""
+
+		// does this instance have an UUID?
+		if (!this.UUID) {
+			// no, generate generic UUID
+			this.UUID = java.util.UUID.randomUUID().toString()
+
+			// has this instance already been saved?
+			if (this.id) {
+				// yes, re-save the instance
+				if (!this.save(flush: true)) {
+					log.error("Could not save UUID: ${this.getErrors()}")
+				}
+			}
+		}
+
+		return this.UUID
 	}
 }
