@@ -1,10 +1,9 @@
 <g:set var="numUses" value="${template.numUses()}" />
 <span class="listButtons">
   <img class="disabled" src="${resource( dir: 'images/icons', file: 'application_edit.png', plugin: 'famfamfam' )}" alt="Template properties are only editable for (template)Admins." title="Template properties are only editable for (template)Admins.">
-  <img class="disabled" src="${resource( dir: 'images/icons', file: 'application_form.png', plugin: 'famfamfam' )}" alt="Template fields can only be removed by (template)Admins." title="Template fields can only be removed by (template)Admins.">
+  <img onClick="editFields( ${template.id} );" src="${resource( dir: 'images/icons', file: 'application_form_magnify.png', plugin: 'famfamfam' )}" alt="View available templatefields" title="View available templatefields">
   <img class="disabled" src="${resource( dir: 'images/icons', file: 'page_copy.png', plugin: 'famfamfam' )}" alt="Templates can only be cloned by (template)Admins." title="Templates can only be cloned by (template)Admins.">
   <img class="disabled" src="${resource( dir: 'images/icons', file: 'delete.png', plugin: 'famfamfam' )}" alt="Templates can only be deleted by (template)Admins." title="Templates can only be deleted by (template)Admins.">
-  <img onClick="requestTemplate( ${ template.id } );" src="${resource( dir: 'images/icons', file: 'email.png', plugin: 'famfamfam' )}" alt="Request a new template or template modification." title="Request a new template or template modification.">
 </span>
 ${template.name}
 

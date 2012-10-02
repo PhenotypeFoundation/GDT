@@ -15,11 +15,14 @@
 package org.dbnp.gdt
 
 import grails.converters.*
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class TemplateEditorController {
 	def entityName
 	def entity
 	def gdtService
+    def mailService
+    def authenticationService
 
 	/**
 	 * Fires after every action and determines the layout of the page
@@ -232,6 +235,34 @@ class TemplateEditorController {
 			render 'Template could not be cloned because errors occurred.';
 			return
 		}
+	}
+
+    /**
+   	 * Creates a new template using a AJAX call
+   	 *
+   	 * @return JSON object with two entries:
+   	 * 						id: [id of this object]
+   	 * 						html: HTML to replace the contents of the LI-item that was updated.
+   	 * 					On error the method gives a HTTP response status 500 and the error
+   	 */
+   	def sendRequest = {
+
+   		// set content type
+   		response.setContentType("application/json; charset=UTF-8")
+
+        def config = ConfigurationHolder.getConfig()
+        def templateadminMail = config.templateadmin.email
+        def body = g.render(plugin: 'gdt', template: 'requestEmail', model: [user: authenticationService.getLoggedInUser(), requestcat: params.requestcat, requestnm: params.requestnm, rname: params.rname, rtype: params.rtype, specification: params.specification]);
+
+        mailService.sendMail {
+            to      templateadminMail
+            subject "New template request"
+            html    body.toString()
+        }
+
+        def output = [];
+        response.setContentType("application/json; charset=UTF-8")
+        render output as JSON;
 	}
 
 	/**
