@@ -1,5 +1,5 @@
 <span class="listButtons">
-  <img onClick="showTemplateFieldForm( 'templateField_' + ${templateField.id}); this.blur(); return false;" src="${resource( dir: 'images/icons', file: 'application_edit.png', plugin: 'famfamfam' )}" alt="Show template field properties" title="Show template field properties">
+  <img onClick="showTemplateFieldForm( ${templateField.id}); this.blur(); return false;" src="${resource( dir: 'images/icons', file: 'application_edit.png', plugin: 'famfamfam' )}" alt="Show template field properties" title="Show template field properties">
   <g:if test="${templateField.isFilledInTemplate(template)}">
 	<img class="disabled" src="${resource( dir: 'images/icons', file: 'delete.png', plugin: 'famfamfam' )}" alt="This field can not be removed from the template, as this field is already in use." title="This field can not be removed from the template, as this field is already in use.">
   </g:if>

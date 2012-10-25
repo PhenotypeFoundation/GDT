@@ -46,6 +46,23 @@ function editTemplate( id ) {
 
 		// Show the form
 		$( '#template_' + id + '_form' ).show();
+
+        // Disable all other listitems
+		$( '#templates li:not(#template_' + id + ')').addClass( 'ui-state-disabled' );
+
+		// Make sure the opened form is on the page, so scroll down if needed
+		var formElement = $( '#template_' + id + '_form' ).parent();
+		var formBottom = formElement.offset().top + formElement.height();
+		var margin = 10;
+
+		if( formBottom > $(document).scrollTop() + $(window).height() ) {
+			$('html, body').animate( { scrollTop: formBottom + margin - $(window).height() }, 200 );
+	}
+
+		if( id != 'new' && id != 'requestTemplate') {
+			// Disable add new
+            $( '#addNew').addClass( 'ui-state-disabled' );
+		}
 	}
 }
 
@@ -54,6 +71,10 @@ function editTemplate( id ) {
  */
 function hideTemplateForm( id ) {
     $( '#template_' + id + '_form' ).hide();
+
+    // Enable all other listitems
+    $( '#templates li:not(#template_' + id + ')').removeClass( 'ui-state-disabled' );
+	$( '#addNew').removeClass( 'ui-state-disabled' );
 
     formOpened = false;
 }
@@ -64,6 +85,14 @@ function hideTemplateForm( id ) {
  */
 function clearTemplateForm( id ) {
     $( '#template_' + id + '_form input#name' ).val( "" );
+    $( '#template_' + id + '_form textarea' ).val( "" );
+}
+
+/**
+ * Clears the form after submitting a templaterequest
+ */
+function clearTemplateRequestForm( id ) {
+    $( '#template_' + id + '_form input#rname' ).val( "" );
     $( '#template_' + id + '_form textarea' ).val( "" );
 }
 
@@ -182,12 +211,56 @@ function cloneTemplate( id ) {
  * Opens templateRequest dialog
  */
 function requestTemplate( id ) {
-    //define popup's width/height
-    var requestWidth = 800;
-    var requestHeight = 490;
-    //open window
-    requestWindow = window.open(baseUrl + '/forms/templateRequestForm.gsp', 'bla', 'width='+requestWidth+', height='+requestHeight+', resizable=0, left='+ (window.screen.width - requestWidth) / 2 + ',top=' + (window.screen.height - requestHeight) / 2);
-    requestWindow.focus()
+    var formEl = $( '#template_' + id + '_form' );
+
+	showWaiting();
+
+    // Update the field
+    $.ajax({
+        url:        baseUrl + '/templateEditor/' + formEl.attr( 'action' ),
+        data:       formEl.serialize(),
+		dataType:   'json',
+        type:       "POST",
+        success:    function(data, textStatus, request) {
+            clearTemplateRequestForm( id );
+			hideTemplateForm( id );
+        },
+        error:      function( request ) {
+            alert( "Could not create template: " + request.responseText );
+        },
+		complete: function( request, textStatus ) {
+			hideWaiting();
+            alert ("Your request has been sent to the templateadmin(s)")
+        }
+    });
+}
+
+/**
+ * Opens templateRequest dialog
+ */
+function requestTemplateField( id ) {
+    var formEl = $( '#templateField_' + id + '_form' );
+
+    showWaiting();
+
+    // Update the field
+    $.ajax({
+        url:        baseUrl + '/templateEditor/' + formEl.attr( 'action' ),
+        data:       formEl.serialize(),
+		dataType:   'json',
+        type:       "POST",
+        success:    function(data, textStatus, request) {
+            clearTemplateFieldRequestForm( id );
+			hideTemplateFieldForm( id );
+        },
+        error:      function( request ) {
+            alert( "Could not create template: " + request.responseText );
+        },
+		complete: function( request, textStatus ) {
+			hideWaiting();
+            alert ("Your request has been sent to the templateadmin(s)")
+		}
+    });
 }
 
 // Adds a new listitem when a field has been added
@@ -234,28 +307,30 @@ function showTemplateFormEvent(e) {
  * Shows the form to edit a template field
  */
 function showTemplateFieldForm( list_item_id ) {
-	
+
     // Show the form is this item is not disabled
     if( !formOpened ) {
         formOpened = true;
 
 		// Show the form
-		$( '#' + list_item_id + '_form' ).show();
+		$( '#templateField_' + list_item_id + '_form' ).show();
 
 		// Disable all other listitems
-		$( '#availableTemplateFields li:not(#' + list_item_id + ')').addClass( 'ui-state-disabled' );
-		$( '#selectedTemplateFields li:not(#' + list_item_id + ')').addClass( 'ui-state-disabled' );
+		$( '#availableTemplateFields li:not(#templateField_' + list_item_id + ')').addClass( 'ui-state-disabled' );
+		$( '#selectedTemplateFields li:not(#templateField_' + list_item_id + ')').addClass( 'ui-state-disabled' );
+        $( '#disabledavailableTemplateFields li:not(#templateField_' + list_item_id + ')').addClass( 'ui-state-disabled' );
+   		$( '#disabledselectedTemplateFields li:not(#templateField_' + list_item_id + ')').addClass( 'ui-state-disabled' );
 
 		// Make sure the opened form is on the page, so scroll down if needed
-		var formElement = $( '#' + list_item_id + '_form' ).parent();
+		var formElement = $( '#templateField_' + list_item_id + '_form' ).parent();
 		var formBottom = formElement.offset().top + formElement.height();
 		var margin = 10;
 		
 		if( formBottom > $(document).scrollTop() + $(window).height() ) {
 			$('html, body').animate( { scrollTop: formBottom + margin - $(window).height() }, 200 );
 		}
-		
-		if( list_item_id != 'templateField_new' ) {
+
+		if( list_item_id != 'new' && list_item_id != 'requestTemplateField') {
 			// Disable add new
 			$( '#addNew').addClass( 'ui-state-disabled' );
 		}
@@ -270,7 +345,9 @@ function hideTemplateFieldForm( id ) {
 
     // Enable all other listitems
     $( '#availableTemplateFields li:not(#templateField_' + id + ')').removeClass( 'ui-state-disabled' );
-	$( '#selectedTemplateFields li:not(#' + id + ')').removeClass( 'ui-state-disabled' );
+	$( '#selectedTemplateFields li:not(#templateField_' + id + ')').removeClass( 'ui-state-disabled' );
+    $( '#disabledavailableTemplateFields li:not(#templateField_' + id + ')').removeClass( 'ui-state-disabled' );
+	$( '#disabledselectedTemplateFields li:not(#templateField_' + id + ')').removeClass( 'ui-state-disabled' );
 	$( '#addNew').removeClass( 'ui-state-disabled' );
 
     formOpened = false;
@@ -286,6 +363,15 @@ function clearTemplateFieldForm( id ) {
     $( '#templateField_' + id + '_form textarea' ).val( "" );
     $( '#templateField_' + id + '_form select' ).attr( 'selectedIndex', 0 );
     $( '#templateField_' + id + '_form .extra' ).hide();
+}
+
+/**
+ * Clears the form after submitting a templaterequest
+ */
+function clearTemplateFieldRequestForm( id ) {
+    $( '#templateField_' + id + '_form input[name=rname]' ).val( "" );
+    $( '#templateField_' + id + '_form textarea' ).val( "" );
+    $( '#templateField_' + id + '_form select' ).attr( 'selectedIndex', 0 );
 }
 
 /**

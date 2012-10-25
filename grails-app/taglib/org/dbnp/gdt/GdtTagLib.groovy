@@ -24,7 +24,6 @@ import nl.grails.plugins.ajaxflow.AjaxflowTagLib
 
 class GdtTagLib extends AjaxflowTagLib {
 	def gdtService
-    def authenticationService
 
 	// define default text field width
 	static defaultTextFieldSize = 25;
@@ -386,13 +385,9 @@ class GdtTagLib extends AjaxflowTagLib {
 		}
 
 		// add a rel element if it does not exist
-		if (authenticationService.getLoggedInUser().hasTemplateAdminRights() || authenticationService.getLoggedInUser().hasAdminRights()) {
-			attrs.rel = 'templateAdmin'
+		if (!attrs.rel) {
+			attrs.rel = 'template'
 		}
-
-        else {
-      		attrs.rel = 'templateUser'
-      	}
 
 		// got an ajaxOnChange defined?
 		attrs = getAjaxOnChange.call(

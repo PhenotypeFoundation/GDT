@@ -77,11 +77,6 @@
  * @see			http://github.com/scottgonzalez/jquery-ui-extensions
  * @see			http://bioportal.bioontology.org/ontologies/
  * @see			http://bioportal.bioontology.org/search/json_search/?q=musculus
- *
- * Revision information:
- * $Rev: 1344 $
- * $Author: work@osx.eu $
- * $Date: 2011-01-07 00:10:00 +0100 (Fri, 07 Jan 2011) $
  */
 function OntologyChooser() {
 }

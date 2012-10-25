@@ -90,23 +90,40 @@
 				<ol id="domainFields" class="templateFields <g:if test="${template.inUse()}">inUse</g:if>">
 					<g:render template="elements/domainField" var="domainField" collection="${domainFields}" model="['template':template]"/>
 				</ol>
-				<ol id="selectedTemplateFields" class="templateFields <g:if test="${template.inUse()}">inUse</g:if>">
-					<g:render template="elements/selected" var="templateField" collection="${template.fields}" model="['template':template]"/>
+                <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                <ol id="selectedTemplateFields" class="templateFields <g:if test="${template.inUse()}">inUse</g:if>">
+                </sec:ifAnyGranted>
+                <sec:ifNotGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                <ol id="disabledselectedTemplateFields" class="templateFields">
+                </sec:ifNotGranted>
+				    <g:render template="elements/selected" var="templateField" collection="${template.fields}" model="['template':template]"/>
 					<% /* NB: this empty field should always be the last in the list! */ %>
 					<li class="empty ui-state-default" <g:if test="${template.fields?.size() > 0 }">style='display: none;'</g:if>>This template does not yet contain any fields. Drag a field to this list or use the 'Add field button'.</li>
 				</ol>
 			</div>
 			<div class="templateEditorStep" id="step3_availableFields">
 				<h3>Available fields</h3>
+                <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
 
-				<p>These fields are available for adding to the template. Drag a field to the template to add it.</p>
-				<ol id="availableTemplateFields" class="templateFields">
+                </sec:ifAnyGranted>
+                <sec:ifNotGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+
+                </sec:ifNotGranted>
+                <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                    <p>These fields are available for adding to the template. Drag a field to the template to add it.</p>
+                    <ol id="availableTemplateFields" class="templateFields">
+                </sec:ifAnyGranted>
+                <sec:ifNotGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                    <p>These fields are available for adding to the template. Request the addition of the field to the template, request a modification to an existing field or request a whole new field.</p>
+                    <ol id="disabledavailableTemplateFields" class="templateFields">
+                </sec:ifNotGranted>
 					<g:render template="elements/available" var="templateField" collection="${allFields - template.fields}" />
 					<li class="empty ui-state-default" <g:if test="${allFields.size() > template.fields.size()}">style='display: none;'</g:if>>There are no additional fields that can be added. Use the 'Create new field' button to create new fields.</li>
 				</ol>
 
+                <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
 				<div id="addNew">
-					<a href="#" onClick="showTemplateFieldForm( 'templateField_new' ); this.blur(); return false;">
+					<a href="#" onClick="showTemplateFieldForm( 'new' ); this.blur(); return false;">
 						<b>Create new field</b>
 					</a>
 
@@ -114,6 +131,25 @@
 						<g:render template="elements/fieldForm" model="['templateField': null, 'fieldTypes': fieldTypes, 'encryptedEntity': encryptedEntity, 'is_new': true]"/>
 					</form>
 				</div>
+                </sec:ifAnyGranted>
+
+                <sec:ifNotGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                <div id="addNew">
+                    <a class href="#" onClick="showTemplateFieldForm( 'requestTemplateField' ); this.blur(); return false;">
+                        <b>Request new/modification to templatefield</b>
+                    </a>
+
+                    <form class="templateField_form" id="templateField_requestTemplateField_form" action="sendRequest">
+                        <g:render template="elements/requestTemplateFieldForm" model="['templateField': null, 'fieldTypes': fieldTypes, 'encryptedEntity': encryptedEntity]"/>
+                        <div class="templateFieldButtons">
+                        <input type="button" value="Send" onClick="requestTemplateField ( 'requestTemplateField' );">
+                        <input type="button" value="Cancel" onClick="hideTemplateFieldForm( 'requestTemplateField' );">
+                        </div>
+                    </form>
+            	</div>
+                </sec:ifNotGranted>
+
+
 			</div>
 		</g:if>
 		<br clear="all" />
