@@ -22,7 +22,6 @@
 package org.dbnp.gdt
 
 import grails.test.*
-import java.util.List;
 
 class TemplateEntityTests extends GrailsUnitTestCase {
 

@@ -21,8 +21,6 @@
 
 package org.dbnp.gdt
 
-import java.util.List;
-
 import grails.test.*
 
 
