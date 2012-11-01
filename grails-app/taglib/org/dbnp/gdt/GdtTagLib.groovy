@@ -876,7 +876,7 @@ class GdtTagLib extends AjaxflowTagLib {
 		}
 	}
 		
-	protected void _showTemplateField( entity, templateField, value = null, attrs = null, renderType = "" ) {
+	private void _showTemplateField( entity, templateField, value = null, attrs = null, renderType = "" ) {
 		def fieldValue;
 		
 		// Use the user supplied value if given, otherwise
