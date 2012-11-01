@@ -125,7 +125,7 @@ class GdtService implements Serializable {
 				getSecret()
 			)
 		) */
-		entityName
+		entityName.replaceAll(/^class /, '')
 	}
 
 	/**
