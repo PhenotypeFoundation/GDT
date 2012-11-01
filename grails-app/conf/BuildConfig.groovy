@@ -42,7 +42,8 @@ grails.project.dependency.resolution = {
         compile(":hibernate:$grailsVersion",
 		        ":jquery:1.7.2",
                 ":webflow:1.3.8",
-                ":ajaxflow:0.2.4"
+                ":ajaxflow:0.2.4",
+                ":crypto:2.0"
         ) {
             export = false
         }

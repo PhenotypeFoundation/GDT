@@ -22,6 +22,7 @@ package org.dbnp.gdt
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.apache.commons.lang.RandomStringUtils
+import cr.co.arquetipos.crypto.Blowfish
 
 class GdtService implements Serializable {
     // Must be false, since the webflow can't use a transactional service. See
@@ -119,13 +120,12 @@ class GdtService implements Serializable {
 	 */
 	def String encryptEntity(String entityName) {
 		// generate a Blowfish encrypted and Base64 encoded string
-		/*return URLEncoder.encode(
+		return URLEncoder.encode(
 			Blowfish.encryptBase64(
 				entityName.replaceAll(/^class /, ''),
 				getSecret()
 			)
-		) */
-		entityName
+		)
 	}
 
 	/**
@@ -135,8 +135,7 @@ class GdtService implements Serializable {
 	 */
 	def String decryptEntity(String entity) {
 		// generate a Blowfish decrypted and Base64 decoded string.
-		//return Blowfish.decryptBase64(entity, getSecret())
-		entity
+		return Blowfish.decryptBase64(entity, getSecret())
 	}
 
 	/**
