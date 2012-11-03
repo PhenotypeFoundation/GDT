@@ -43,7 +43,7 @@ class TemplateEditorController {
 	 */
 	private void showEntity(String targetEntity) {
 		// redirect to template editor page of the specified entity
-		params.entity = gdtService.decryptEntity(targetEntity)
+		params.entity = gdtService.decodeEntity(targetEntity)
 		redirect(action: "index", params: params)
 	}
 
@@ -918,14 +918,26 @@ class TemplateEditorController {
 	 */
 	def checkEntity = {
 		// got a entity get parameter?
-		entityName = gdtService.decryptEntity(params.get('entity'))
+        try {
+            entityName = gdtService.decodeEntity(params.get('entity'))
+        }
+        catch(Exception e) {
+            error()
+            return false
+        }
 		if (!entityName) {
 			error();
 			return false;
 		}
 
 		// Create an object of this type
-		entity = gdtService.getInstanceByEntityName(entityName)
+		try {
+            entity = gdtService.getInstanceByEntityName(entityName)
+        }
+        catch(Exception e) {
+            error()
+            return false
+        }
 		if (!entity) {
 			error();
 			return false

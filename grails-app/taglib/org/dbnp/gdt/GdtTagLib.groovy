@@ -374,7 +374,7 @@ class GdtTagLib extends AjaxflowTagLib {
 		def entity = attrs.remove('entity')
 
 		// enctrypt entity
-		attrs['entity'] = gdtService.encryptEntity(entity.toString())
+		attrs['entity'] = gdtService.encodeEntity(entity.toString())
 
 		// fetch templates
 		attrs.from = (entity) ? Template.findAllByEntity(entity) : Template.findAll()
@@ -657,7 +657,7 @@ class GdtTagLib extends AjaxflowTagLib {
 				// check for fuzzy string matching
 				if (templateField.type.toString() in ['STRING','TEXT'] && templateField.name in entity?.fuzzyStringMatchable) {
 					// yes, extend attributes to contain fuzzyMathching info
-					fuzzyMatching = "${createLink(controller: 'fuzzyStringMatch', action: 'ajaxFuzzyFind', plugin: 'gdt')}&property=${templateField.name}&entity=${gdtService.encryptEntity(entityName)}"
+					fuzzyMatching = "${createLink(controller: 'fuzzyStringMatch', action: 'ajaxFuzzyFind', plugin: 'gdt')}&property=${templateField.name}&entity=${gdtService.encodeEntity(entityName)}"
 				} else {
 					fuzzyMatching = ""
 				}
@@ -900,7 +900,7 @@ class GdtTagLib extends AjaxflowTagLib {
 		// check for fuzzy string matching
 		if (templateField.type.toString() in ['STRING','TEXT'] && templateField.name in entity?.fuzzyStringMatchable) {
 			// yes, extend attributes to contain fuzzyMathching info
-			fuzzyMatching = "${createLink(controller: 'fuzzyStringMatch', action: 'ajaxFuzzyFind', plugin: 'gdt')}&property=${templateField.name}&entity=${gdtService.encryptEntity(entityName)}"
+			fuzzyMatching = "${createLink(controller: 'fuzzyStringMatch', action: 'ajaxFuzzyFind', plugin: 'gdt')}&property=${templateField.name}&entity=${gdtService.encodeEntity(entityName)}"
 		} else {
 			fuzzyMatching = ""
 		}

@@ -21,15 +21,12 @@
 package org.dbnp.gdt
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.apache.commons.lang.RandomStringUtils
 
 class GdtService implements Serializable {
     // Must be false, since the webflow can't use a transactional service. See
     // http://www.grails.org/WebFlow for more information
     static transactional = false
 
-	// cached crypto secret
-	static cachedSecret
 
 	// cached template entities
 	static cachedEntities
@@ -67,7 +64,7 @@ class GdtService implements Serializable {
 					description	: matches[0][1].replaceAll(/([A-Z])/, ' $1').replaceFirst(/^ /,''),
 					entity		: myInstance.toString().replaceFirst(/^class /,''),
 					instance	: myInstance,
-					encoded		: encryptEntity(myInstance.toString())
+					encoded		: encodeEntity(myInstance.toString())
 				]
 			}
 		}
@@ -79,53 +76,13 @@ class GdtService implements Serializable {
 	}
 
 	/**
-	 * return the crypto secret
-	 *
-	 * fetches the pre-configured secret, or generates
-	 * a random secret on the fly
-	 *
-	 * For a static secret (works perhaps better in multi
-	 * server/ loadbalanced environments) add the following
-	 * to your Config.groovy:
-	 *
-	 * crypto {
-	 * 	shared.secret = "yourSecretCanBeInHere"
-	 * }
-	 *
-	 * @return String
-	 */
-	private getSecret() {
-		// do we have a static secret?
-		if (cachedSecret) return cachedSecret
-
-		// is the secret in the configuration?
-		def grailsApplication = ApplicationHolder.application
-		if (!grailsApplication.config.crypto) {
-			// we have not secret, generate a random secret
-			grailsApplication.config.crypto.shared.secret = RandomStringUtils.random(32, true, true)
-		}
-
-		// set static secret
-		cachedSecret = grailsApplication.config.crypto.shared.secret
-
-		// and return the static secret
-		return cachedSecret
-	}
-
-	/**
 	 * encrypt the name of an entity
 	 * @param String entityName
 	 * @return String
 	 */
-	def String encryptEntity(String entityName) {
-		// generate a Blowfish encrypted and Base64 encoded string
-		/*return URLEncoder.encode(
-			Blowfish.encryptBase64(
-				entityName.replaceAll(/^class /, ''),
-				getSecret()
-			)
-		) */
-		entityName.replaceAll(/^class /, '')
+	def String encodeEntity(String entityName) {
+		// encode the class name, looks unprofessional to have Java class names in URL
+        java.net.URLEncoder.encode(entityName.replaceAll(/^class /, '').bytes.encodeBase64().toString(),"UTF-8")
 	}
 
 	/**
@@ -133,10 +90,10 @@ class GdtService implements Serializable {
 	 * @param String entity
 	 * @return String
 	 */
-	def String decryptEntity(String entity) {
-		// generate a Blowfish decrypted and Base64 decoded string.
-		//return Blowfish.decryptBase64(entity, getSecret())
-		entity
+	def String decodeEntity(String entity) {
+        // URL decode and base64 decode
+        new String(java.net.URLDecoder.decode(entity,"UTF-8").decodeBase64())
+
 	}
 
 	/**
@@ -145,7 +102,7 @@ class GdtService implements Serializable {
 	 * @return Object
 	 */
 	def getInstanceByEntity(String entity) {
-		return getInstanceByEntityName(decryptEntity(entity))
+		return getInstanceByEntityName(decodeEntity(entity))
 	}
 
 	/**
@@ -156,6 +113,12 @@ class GdtService implements Serializable {
 	def getInstanceByEntityName(String entityName) {
 		def grailsApplication = ApplicationHolder.application
 		def entity
+
+        // Check whether the entityName is actually a domain class
+        def entities = getTemplateEntities()
+        if (!entities.entity*.equals(entityName).count { it }) {
+            throw new InvalidClassException("Unregistered class name passed: ${entityName}")
+        }
 
 		// dynamically instantiate the entity (if possible)
 		try {
