@@ -118,7 +118,7 @@ class TemplateEditorController {
 
 		if (selectedTemplate) {
 			template = Template.get(selectedTemplate);
-			domainFields = template.entity.giveDomainFields();
+			domainFields = template.entity.newInstance().giveDomainFields();
 		} else {
 			redirect(action: "index", params: [entity: params.entity])
 			return;
@@ -384,7 +384,9 @@ class TemplateEditorController {
 		}
 
 		// See whether this exists as domain field. If it does, raise an error
-		def domainFields = template.entity.giveDomainFields()
+        // template.entity.domainFields would work as well,
+        // but that would be relying on a convention in the implementation of the domain classes overriding TemplateEntity
+		def domainFields = template.entity.newInstance().giveDomainFields()
 		if (domainFields.find { it.name.toLowerCase() == params.name.toLowerCase() }) {
 			response.status = 500;
 			render "All templates for entity " + template.entity + " contain a domain field with name " + params.name + ". You can not create a field with this name.";;
