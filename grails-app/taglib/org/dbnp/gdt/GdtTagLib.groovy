@@ -25,6 +25,9 @@ import nl.grails.plugins.ajaxflow.AjaxflowTagLib
 class GdtTagLib extends AjaxflowTagLib {
 	def gdtService
 
+    // Grails 2 doesn't seem to propagate the namespace definition anymore, so redefining it here
+    static namespace = "af"
+
 	// define default text field width
 	static defaultTextFieldSize = 25;
 
