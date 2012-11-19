@@ -8,5 +8,8 @@
 //
 //    ant.mkdir(dir:"${basedir}/grails-app/jobs")
 //
-grails clean
-grails compile
+// while 'grails' works locally, it does not work on jenkins continuous integration
+// servers... commented out
+//
+// grails clean
+// grails compile
