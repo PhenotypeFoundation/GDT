@@ -386,7 +386,7 @@ class GdtTagLib extends AjaxflowTagLib {
 		}
 
 		// add a rel element if it does not exist
-		if (authenticationService.getLoggedInUser().hasTemplateAdminRights() || authenticationService.getLoggedInUser().hasAdminRights()) {
+		if (authenticationService.getLoggedInUser().hasTemplateAdminRights()) {
 			attrs.rel = 'templateAdmin'
 		}
 

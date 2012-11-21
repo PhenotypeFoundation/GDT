@@ -46,24 +46,22 @@
 				</g:each>
 			</ul>
 
-            <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
-                <div id="addNew">
-                    <a href="#" onClick="editTemplate( 'new' ); this.blur(); window.scrollBy(0,1000); $('input#name').focus(); return false;">
-                        <b>Create new template</b>
-                    </a>
+			<div id="addNew">
+				<a href="#" onClick="editTemplate( 'new' ); this.blur(); window.scrollBy(0,1000); $('input#name').focus(); return false;">
+					<b>Create new template</b>
+				</a>
 
-                    <form class="templateField_form" id="template_new_form" action="createTemplate">
-                        <g:hiddenField name="entity" value="${encryptedEntity}" />
-                        <g:hiddenField name="ontologies" value="${ontologies}" />
-                        <g:hiddenField name="standalone" value="${extraparams?.standalone}" />
-                        <g:render template="elements/templateForm" model="['template': null]"/>
-                        <div class="templateFieldButtons">
-                            <input type="button" value="Save" onClick="createTemplate( 'new' );">
-                            <input type="button" value="Cancel" onClick="hideTemplateForm( 'new' );">
-                        </div>
-                    </form>
-                </div>
-            </sec:ifAnyGranted>
+				<form class="templateField_form" id="template_new_form" action="createTemplate">
+					<g:hiddenField name="entity" value="${encryptedEntity}" />
+					<g:hiddenField name="ontologies" value="${ontologies}" />
+					<g:hiddenField name="standalone" value="${extraparams?.standalone}" />
+					<g:render template="elements/templateForm" model="['template': null]"/>
+					<div class="templateFieldButtons">
+						<input type="button" value="Save" onClick="createTemplate( 'new' );">
+						<input type="button" value="Cancel" onClick="hideTemplateForm( 'new' );">
+					</div>
+				</form>
+			</div>
 
 			<g:form action="template" name="templateChoice" method="GET">
 				<g:hiddenField name="entity" value="${encryptedEntity}" />

@@ -1,6 +1,6 @@
 <li id="template_${template.id}"class="ui-state-default">
   <g:set var="templateAdmin" value="${false}"/>
-  <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+  <sec:ifAllGranted roles="ROLE_TEMPLATEADMIN">
       <g:if test="${!template.inUse()}">
         <g:render template="elements/liTemplateEditable" model="['template': template, 'standalone': standalone]"/>
       </g:if>
@@ -8,9 +8,9 @@
         <g:render template="elements/liTemplateNonDeletable" model="['template': template, 'standalone': standalone]"/>
       </g:else>
       <g:set var="templateAdmin" value="${true}"/>
-  </sec:ifAnyGranted>
+  </sec:ifAllGranted>
 
-  <g:if test="${!templateAdmin}">
+  <g:if test="${templateAdmin == false}">
       <g:render template="elements/liTemplateNonEditable" model="['template': template, 'standalone': standalone]"/>
   </g:if>
 </li>
