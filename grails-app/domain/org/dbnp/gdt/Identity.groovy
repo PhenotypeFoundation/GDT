@@ -102,22 +102,19 @@ abstract class Identity implements Serializable {
 	 * @return String UUID
 	 */
 	final public String giveUUID() {
-		String UUID = ""
 
 		// does this instance have an UUID?
 		if (!this.UUID) {
 			// no, generate generic UUID
 			this.UUID = java.util.UUID.randomUUID().toString()
-
-			// has this instance already been saved?
-			if (this.id) {
-				// yes, re-save the instance
-				if (!this.save(flush: true)) {
-					log.error("Could not save UUID: ${this.getErrors()}")
-				}
-			}
 		}
 
 		return this.UUID
 	}
+
+	// Make sure UUID's are always generated before save
+	def beforeInsert() {
+		giveUUID()
+	}
+
 }
