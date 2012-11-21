@@ -1,10 +1,9 @@
 <g:set var="numUses" value="${template.numUses()}" />
 <span class="listButtons">
-  <img class="disabled" src="${resource( dir: 'images/icons', file: 'application_edit.png', plugin: 'famfamfam' )}" alt="Template properties are only editable for (template)Admins." title="Template properties are only editable for (template)Admins.">
-  <img class="disabled" src="${resource( dir: 'images/icons', file: 'application_form.png', plugin: 'famfamfam' )}" alt="Template fields can only be removed by (template)Admins." title="Template fields can only be removed by (template)Admins.">
-  <img class="disabled" src="${resource( dir: 'images/icons', file: 'page_copy.png', plugin: 'famfamfam' )}" alt="Templates can only be cloned by (template)Admins." title="Templates can only be cloned by (template)Admins.">
-  <img class="disabled" src="${resource( dir: 'images/icons', file: 'delete.png', plugin: 'famfamfam' )}" alt="Templates can only be deleted by (template)Admins." title="Templates can only be deleted by (template)Admins.">
-  <img onClick="requestTemplate( ${ template.id } );" src="${resource( dir: 'images/icons', file: 'email.png', plugin: 'famfamfam' )}" alt="Request a new template or template modification." title="Request a new template or template modification.">
+  <img onClick="editTemplate( ${template.id} );" src="${resource( dir: 'images/icons', file: 'application_edit.png', plugin: 'famfamfam' )}" alt="Edit template properties" title="Edit template properties">
+  <img onClick="editFields( ${template.id} );"src="${resource( dir: 'images/icons', file: 'application_form.png', plugin: 'famfamfam' )}" alt="Add/remove template fields" title="Add/remove template fields">
+  <img onClick="cloneTemplate( ${template.id} );"src="${resource( dir: 'images/icons', file: 'page_copy.png', plugin: 'famfamfam' )}" alt="Clone this template" title="Clone this template">
+  <img class="disabled" src="${resource( dir: 'images/icons', file: 'delete.png', plugin: 'famfamfam' )}" alt="Deleting this template is not possible. Template is used in ${numUses} objects." title="Deleting this template is not possible. Template is used in ${numUses} objects.">
 </span>
 ${template.name}
 
