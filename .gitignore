@@ -3,6 +3,7 @@
 *Db.script
 .settings
 eclipse
+plugin.xml
 stacktrace.log
 target
 /plugins
