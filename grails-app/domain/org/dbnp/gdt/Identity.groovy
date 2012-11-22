@@ -57,6 +57,10 @@ abstract class Identity implements Serializable {
 		UUID(nullable:true, unique:true, maxSize: 255)
 	}
 
+    static mapping = {
+        UUID(lazy: false)
+    }
+
 	/**
 	 * Method to increment the static iterator variable. This method
 	 * is synchronized to assure a thread-safe increment.
@@ -102,11 +106,13 @@ abstract class Identity implements Serializable {
 	 * @return String UUID
 	 */
 	final public String giveUUID() {
-
+        println "checking for ${this.UUID} - ${this.dump()}"
 		// does this instance have an UUID?
 		if (!this.UUID) {
 			// no, generate generic UUID
 			this.UUID = java.util.UUID.randomUUID().toString()
+            println "generated ${this.UUID}"
+            this.save()
 		}
 
 		return this.UUID
@@ -114,6 +120,7 @@ abstract class Identity implements Serializable {
 
 	// Make sure UUID's are always generated before save
 	def beforeInsert() {
+        println "triggered while ${this.UUID}"
 		giveUUID()
 	}
 
