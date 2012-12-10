@@ -54,10 +54,7 @@ abstract class TemplateEntity extends Identity {
 	 * 		templateLongFields: Long
 	 * @see org.dbnp.gdt.ast.TemplateEntityASTTransformation
 	 */
-	static hasMany = [
-		//templateStringListFields	: TemplateFieldListItem,
-		systemFields				: TemplateField
-	]
+	static hasMany = [:]
 
 	/**
 	 * define what properties should be fuzzy searchable
