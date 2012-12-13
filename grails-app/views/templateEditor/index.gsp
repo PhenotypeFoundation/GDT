@@ -37,28 +37,28 @@
 		<div class="templateEditorStep" id="step1_template">
 			<h3>Select template</h3>
 			<p>Showing templates for <b>${humanReadableEntity}</b><g:if test="${templates.size() > 0 }"> (<g:link controller="templateEditor" action="compare" params="${[entity: encryptedEntity] + extraparams}"><b>compare</b></g:link>)</g:if>.</p>
-            <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+            <g:if test='${templateadmin}'>
                 <p>Please select a template to edit or create a new template.</p>
-            </sec:ifAnyGranted>
-            <sec:ifNotGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+            </g:if>
+            <g:else>
                 <p>Please select a template to view the templatefields within the template or request a new/modification to a template.</p>
-            </sec:ifNotGranted>
+            </g:else>
 
 			<ul id="templates">
                 <li class="empty ui-state-default" <g:if test="${templates.size() > 0 }">style='display: none;'</g:if>>
-                <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                <g:if test='${templateadmin}'>
                     There are no templates for ${humanReadableEntity}. Use the 'Add template' button to add fields.</li>
-                </sec:ifAnyGranted>
-                <sec:ifNotGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                </g:if>
+                <g:else>
                     There are no templates for ${humanReadableEntity}. Use the 'Add template' button to add fields.</li>
-                </sec:ifNotGranted>
+                </g:else>
                 </li>
                 <g:each in="${templates}" var="currentTemplate">
 				  <g:render template="elements/liTemplate" model="['template': currentTemplate, 'extraparams': extraparams]"/>
 				</g:each>
 			</ul>
 
-            <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+            <g:if test='${templateadmin}'>
                 <div id="addNew">
                     <a href="#" onClick="editTemplate( 'new' ); this.blur(); window.scrollBy(0,1000); $('input#name').focus(); return false;">
                         <b>Create new template</b>
@@ -75,9 +75,9 @@
                         </div>
                     </form>
                 </div>
-            </sec:ifAnyGranted>
+            </g:if>
 
-            <sec:ifNotGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+            <g:else>
                 <div id="addNew">
                     <a href="#" onClick="editTemplate( 'requestTemplate' ); this.blur(); window.scrollBy(0,1000); $('input#name').focus(); return false;">
                           <b>Request new/modification to template</b>
@@ -95,7 +95,7 @@
                         </div>
                     </form>
                 </div>
-            </sec:ifNotGranted>
+            </g:else>
 
 			<g:form action="template" name="templateChoice" method="GET">
 				<g:hiddenField name="entity" value="${encryptedEntity}" />

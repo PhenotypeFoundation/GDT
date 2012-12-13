@@ -8,5 +8,5 @@
 (<g:if test="${templateField.unit}">${templateField.unit}, </g:if>${templateField.type.name})
 
 <form class="templateField_form" id="templateField_${templateField.id}_form" action="updateField">
-	<g:render template="elements/disabledFieldForm" model="['templateField': templateField, 'ontologies': ontologies, 'fieldTypes': fieldTypes]"/>
+	<g:render template="elements/alldisabledFieldForm" model="['templateField': templateField, 'ontologies': ontologies, 'fieldTypes': fieldTypes]"/>
 </form>

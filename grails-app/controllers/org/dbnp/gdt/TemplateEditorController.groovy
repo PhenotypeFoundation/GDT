@@ -68,7 +68,8 @@ class TemplateEditorController {
 			templates: templates,
 			encryptedEntity: params.entity,
 			humanReadableEntity: humanReadableEntity,
-			ontologies: params.ontologies
+			ontologies: params.ontologies,
+            templateadmin: authenticationService.getLoggedInUser().hasTemplateAdminRights()
 		];
 	}
 
@@ -144,7 +145,8 @@ class TemplateEditorController {
 
 			template: template,
 			allFields: allFields,
-			domainFields: domainFields
+			domainFields: domainFields,
+            templateadmin: authenticationService.getLoggedInUser().hasTemplateAdminRights()
 		];
 
 	}
@@ -186,7 +188,7 @@ class TemplateEditorController {
 		// Create the template fields and add it to the template
 		def template = new Template(params);
 		if (template.validate() && template.save(flush: true)) {
-			def html = g.render(plugin: 'gdt', template: 'elements/liTemplate', model: [template: template]);
+			def html = g.render(plugin: 'gdt', template: 'elements/liTemplate', model: [template: template, templateadmin: authenticationService.getLoggedInUser().hasTemplateAdminRights()]);
 			def output = [id: template.id, html: html];
 			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
@@ -226,7 +228,7 @@ class TemplateEditorController {
 		}
 
 		if (newTemplate.validate() && newTemplate.save(flush: true)) {
-			def html = g.render(plugin: 'gdt', template: 'elements/liTemplate', model: [template: newTemplate]);
+			def html = g.render(plugin: 'gdt', template: 'elements/liTemplate', model: [template: newTemplate, templateadmin: authenticationService.getLoggedInUser().hasTemplateAdminRights() ]);
 			def output = [id: newTemplate.id, html: html];
 			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
@@ -238,24 +240,16 @@ class TemplateEditorController {
 	}
 
     /**
-   	 * Creates a new template using a AJAX call
-   	 *
-   	 * @return JSON object with two entries:
-   	 * 						id: [id of this object]
-   	 * 						html: HTML to replace the contents of the LI-item that was updated.
-   	 * 					On error the method gives a HTTP response status 500 and the error
+   	 * Sends templaterequest to (template)admins via mailService
    	 */
    	def sendRequest = {
 
    		// set content type
    		response.setContentType("application/json; charset=UTF-8")
-
-        def config = ConfigurationHolder.getConfig()
-        def templateadminMail = config.templateadmin.email
         def body = g.render(plugin: 'gdt', template: 'requestEmail', model: [user: authenticationService.getLoggedInUser(), requestcat: params.requestcat, requestnm: params.requestnm, rname: params.rname, rtype: params.rtype, specification: params.specification]);
 
         mailService.sendMail {
-            to      templateadminMail
+            to      authenticationService.getTemplateAdminEmails()
             subject "New template request"
             html    body.toString()
         }
@@ -298,7 +292,7 @@ class TemplateEditorController {
 
 		template.properties = params
 		if (!template.hasErrors() && template.save(flush: true)) {
-			def html = g.render(plugin: 'gdt', template: 'elements/liTemplate', model: [template: template]);
+			def html = g.render(plugin: 'gdt', template: 'elements/liTemplate', model: [template: template, templateadmin: authenticationService.getLoggedInUser().hasTemplateAdminRights()]);
 			def output = [id: template.id, html: html];
 			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
@@ -420,7 +414,7 @@ class TemplateEditorController {
 		def templateField = new org.dbnp.gdt.TemplateField(params);
 		if (templateField.save(flush: true)) {
 
-			def html = g.render(plugin: 'gdt', template: 'elements/available', model: [templateField: templateField, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list()]);
+			def html = g.render(plugin: 'gdt', template: 'elements/available', model: [templateField: templateField, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list(), templateadmin: authenticationService.getLoggedInUser().hasTemplateAdminRights() ||  authenticationService.getLoggedInUser().hasAdminRights()]);
 			def output = [id: templateField.id, html: html];
 			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
@@ -564,7 +558,7 @@ class TemplateEditorController {
 			if (params.templateId)
 			template = Template.findById(params.templateId);
 
-			def html = g.render(plugin: 'gdt', template: renderTemplate, model: [template: template, templateField: templateField, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list()]);
+			def html = g.render(plugin: 'gdt', template: renderTemplate, model: [template: template, templateField: templateField, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list(), templateadmin: authenticationService.getLoggedInUser().hasTemplateAdminRights()]);
 			def output = [id: templateField.id, html: html];
 			response.setContentType("application/json; charset=UTF-8")
 			render output as JSON;
@@ -673,7 +667,7 @@ class TemplateEditorController {
 		}
 		template.save(flush: true);
 
-		def html = g.render(plugin: 'gdt', template: 'elements/selected', model: [templateField: templateField, template: template, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list()]);
+		def html = g.render(plugin: 'gdt', template: 'elements/selected', model: [templateField: templateField, template: template, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list(), templateadmin:  authenticationService.getLoggedInUser().hasTemplateAdminRights()]);
 		def output = [id: templateField.id, html: html];
 		response.setContentType("application/json; charset=UTF-8")
 		render output as JSON;
@@ -730,7 +724,7 @@ class TemplateEditorController {
 		template.save(flush: true);
 
 
-		def html = g.render(plugin: 'gdt', template: 'elements/available', model: [templateField: templateField, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list()]);
+		def html = g.render(plugin: 'gdt', template: 'elements/available', model: [templateField: templateField, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list(), templateadmin: authenticationService.getLoggedInUser().hasTemplateAdminRights()]);
 		def output = [id: templateField.id, html: html];
 		response.setContentType("application/json; charset=UTF-8")
 		render output as JSON;
@@ -782,7 +776,7 @@ class TemplateEditorController {
 		template.fields.add(Integer.parseInt(params.position), moveField);
 		template.save(flush: true);
 
-		def html = g.render(plugin: 'gdt', template: 'elements/selected', model: [templateField: templateField, template: template, fieldTypes: TemplateFieldType.list()]);
+		def html = g.render(plugin: 'gdt', template: 'elements/selected', model: [templateField: templateField, template: template, fieldTypes: TemplateFieldType.list(), templateadmin: authenticationService.getLoggedInUser().hasTemplateAdminRights()]);
 		def output = [id: templateField.id, html: html];
 		response.setContentType("application/json; charset=UTF-8")
 		render output as JSON;

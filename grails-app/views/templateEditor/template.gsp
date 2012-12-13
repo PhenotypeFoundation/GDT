@@ -85,43 +85,47 @@
 		<g:if test="${template}">
 			<div class="templateEditorStep" id="step2_selectedFields">
 				<h3 class="templateName">${template.name} (<a class="switch" href="${createLink(action:'index',params: [ 'entity': encryptedEntity ] + extraparams )}">switch</a>)</h3>
-
-				<p>Currently, this template contains the following fields. Drag fields to reorder. Drag fields to the list of available fields to remove the field from the template.</p>
+                <g:if test="${templateadmin}">
+                    <p>Currently, this template contains the following fields. Drag fields to reorder. Drag fields to the list of available fields to remove the field from the template.</p>
+                </g:if>
+                <g:else>
+                    <p>Currently, this template contains the following fields. An addition/modification to the current fields can be requested.</p>
+                </g:else>
 				<ol id="domainFields" class="templateFields <g:if test="${template.inUse()}">inUse</g:if>">
 					<g:render template="elements/domainField" var="domainField" collection="${domainFields}" model="['template':template]"/>
 				</ol>
-                <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                <g:if test='${templateadmin}'>
                 <ol id="selectedTemplateFields" class="templateFields <g:if test="${template.inUse()}">inUse</g:if>">
-                </sec:ifAnyGranted>
-                <sec:ifNotGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                </g:if>
+                <g:else>
                 <ol id="disabledselectedTemplateFields" class="templateFields">
-                </sec:ifNotGranted>
+                </g:else>
 				    <g:render template="elements/selected" var="templateField" collection="${template.fields}" model="['template':template]"/>
 					<% /* NB: this empty field should always be the last in the list! */ %>
-					<li class="empty ui-state-default" <g:if test="${template.fields?.size() > 0 }">style='display: none;'</g:if>>This template does not yet contain any fields. Drag a field to this list or use the 'Add field button'.</li>
+					<li class="empty ui-state-default" <g:if test="${template.fields?.size() > 0 }">style='display: none;'</g:if>>
+                        <g:if test="${templateadmin}">
+                            This template does not yet contain any fields. Drag a field to this list or use the 'Add field button'.</li>
+                        </g:if>
+                        <g:else>
+                            This template does not yet contain any field.An addition/modification to the current fields can be requested.</li>
+                        </g:else>
 				</ol>
 			</div>
 			<div class="templateEditorStep" id="step3_availableFields">
 				<h3>Available fields</h3>
-                <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
-
-                </sec:ifAnyGranted>
-                <sec:ifNotGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
-
-                </sec:ifNotGranted>
-                <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                <g:if test='${templateadmin}'>
                     <p>These fields are available for adding to the template. Drag a field to the template to add it.</p>
                     <ol id="availableTemplateFields" class="templateFields">
-                </sec:ifAnyGranted>
-                <sec:ifNotGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                </g:if>
+                <g:else>
                     <p>These fields are available for adding to the template. Request the addition of the field to the template, request a modification to an existing field or request a whole new field.</p>
                     <ol id="disabledavailableTemplateFields" class="templateFields">
-                </sec:ifNotGranted>
+                </g:else>
 					<g:render template="elements/available" var="templateField" collection="${allFields - template.fields}" />
 					<li class="empty ui-state-default" <g:if test="${allFields.size() > template.fields.size()}">style='display: none;'</g:if>>There are no additional fields that can be added. Use the 'Create new field' button to create new fields.</li>
 				</ol>
 
-                <sec:ifAnyGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                <g:if test='${templateadmin}'>
 				<div id="addNew">
 					<a href="#" onClick="showTemplateFieldForm( 'new' ); this.blur(); return false;">
 						<b>Create new field</b>
@@ -131,9 +135,9 @@
 						<g:render template="elements/fieldForm" model="['templateField': null, 'fieldTypes': fieldTypes, 'encryptedEntity': encryptedEntity, 'is_new': true]"/>
 					</form>
 				</div>
-                </sec:ifAnyGranted>
+                </g:if>
 
-                <sec:ifNotGranted roles="ROLE_ADMIN, ROLE_TEMPLATEADMIN">
+                <g:else>
                 <div id="addNew">
                     <a class href="#" onClick="showTemplateFieldForm( 'requestTemplateField' ); this.blur(); return false;">
                         <b>Request new/modification to templatefield</b>
@@ -147,7 +151,7 @@
                         </div>
                     </form>
             	</div>
-                </sec:ifNotGranted>
+                </g:else>
 
 
 			</div>
