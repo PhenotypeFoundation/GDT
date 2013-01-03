@@ -147,7 +147,7 @@ abstract class TemplateEntity extends Identity {
 	 * @return the TemplateField description of the field
 	 * @throws NoSuchFieldException If the field is not found or the field type is not supported
 	 */
-	private static TemplateField getField(List<TemplateField> fieldsCollection, String fieldName) {
+	public static TemplateField getField(List<TemplateField> fieldsCollection, String fieldName) throws NoSuchFieldException {
 		// escape the fieldName for easy matching
 		// (such escaped names are commonly used
 		// in the HTTP forms of this application)
@@ -170,8 +170,7 @@ abstract class TemplateEntity extends Identity {
 	 * @return the value of the field (class depends on the field type)
 	 * @throws NoSuchFieldException If the field is not found or the field type is not supported
 	 */
-	def getFieldValue(String fieldName) {
-
+	public getFieldValue(String fieldName) throws NoSuchFieldException {
 		if (isDomainField(fieldName)) {
 			return this[fieldName]
 		}
@@ -212,7 +211,7 @@ abstract class TemplateEntity extends Identity {
 	def setFieldValue(String fieldName, value) {
 		setFieldValue(fieldName, value, false)
 	}
-	def setFieldValue(String fieldName, value, Boolean throwException) {
+	def setFieldValue(String fieldName, value, Boolean throwException) throws Exception {
 		// get the template field
 		def TemplateField field	= getField(this.giveFields(), fieldName)
 		def templateFieldClass	= gdtService.getTemplateFieldTypeByCasedName(field.type.casedName)
@@ -343,7 +342,7 @@ abstract class TemplateEntity extends Identity {
 	 * @throws NoSuchFieldException when 0 or multiple templates are used in the collection
 	 * @return The template used by all members of a collection
 	 */
-	static Template giveSingleTemplate(Collection<TemplateEntity> entityCollection) {
+	static Template giveSingleTemplate(Collection<TemplateEntity> entityCollection) throws NoSuchFieldException {
 		def templates = giveTemplates(entityCollection);
 		if (templates.size() == 0) {
 			throw new NoSuchFieldException("No templates found in collection!")
