@@ -25,8 +25,6 @@ grails.project.dependency.resolution = {
     }
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
-
-        // runtime 'mysql:mysql-connector-java:5.1.5'
         runtime "uk.ac.ebi:ontoCAT:0.9.8"
     }
 
@@ -40,9 +38,9 @@ grails.project.dependency.resolution = {
         }
 
         compile(":hibernate:$grailsVersion",
-		        ":jquery:1.7.2",
-                ":webflow:1.3.8",
-                ":ajaxflow:0.2.4"
+		":jquery:latest.integration",
+		":webflow:2.0.0",
+		":ajaxflow:latest.integration"
         ) {
             export = false
         }
