@@ -123,6 +123,8 @@ abstract class TemplateEntity extends Identity {
 	 */
 	static constraints = {
 		template(nullable: true, blank: true)
+		requiredFields(nullable: true)
+		requiredFieldsTemplate(nullable: true)	
 	}
 
 	/**

@@ -25,7 +25,9 @@ grails.project.dependency.resolution = {
     }
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
-        runtime "uk.ac.ebi:ontoCAT:0.9.8"
+        runtime("uk.ac.ebi:ontoCAT:0.9.8") {
+		transitive = false
+	}
     }
 
     plugins {
