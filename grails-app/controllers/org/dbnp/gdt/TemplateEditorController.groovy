@@ -387,31 +387,33 @@ class TemplateEditorController {
 			return;
 		}
 
+        // If this field isnot a ontologyterm, we should remove the ontologies
+        if (params.type.toString() != 'ONTOLOGYTERM') {
+            params.remove('ontologies');
+        }
+
+        // Create TemplateField
+        def templateField = new org.dbnp.gdt.TemplateField()
+
 		// If this field is type stringlist, we have to prepare the parameters
 		if (params.type.toString() == 'STRINGLIST' || params.type.toString() == 'EXTENDABLESTRINGLIST' ) {
 			def listEntries = [];
 			params.listEntries.eachLine {
 				// We don't search for a listitem that might already exist,
 				// because if we use that list item, it will be removed from the
-				// other string list. 
+				// other string list.
 				def name = it.trim();
 
-				def listitem = new org.dbnp.gdt.TemplateFieldListItem(name: name)
-				listEntries.add(listitem);
+                if (!listEntries.contains(name)) {
+				    def listitem = new org.dbnp.gdt.TemplateFieldListItem(name: name)
+				    templateField.addToListEntries(listitem)
+                    listEntries.add(name)
+                }
 			}
-
-			params.listEntries = listEntries;
-		} else {
-			params.remove('listEntries');
 		}
-
-		// If this field isnot a ontologyterm, we should remove the ontologies
-		if (params.type.toString() != 'ONTOLOGYTERM') {
-			params.remove('ontologies');
-		}
-
-		// Create the template field and add it to the template
-		def templateField = new org.dbnp.gdt.TemplateField(params);
+	    params.remove('listEntries');
+		//Set all properties except listEntries (which is added by addToListEntries)
+		templateField.properties = params;
 		if (templateField.save(flush: true)) {
 
 			def html = g.render(plugin: 'gdt', template: 'elements/available', model: [templateField: templateField, ontologies: Ontology.list(), fieldTypes: TemplateFieldType.list(), templateadmin: authenticationService.getLoggedInUser().hasTemplateAdminRights() ||  authenticationService.getLoggedInUser().hasAdminRights()]);
@@ -444,7 +446,7 @@ class TemplateEditorController {
 		def templateField = TemplateField.get(params.id);
 		if (!templateField) {
 			response.status = 404;
-			render 'TemplateField not found';
+			render 'TemplateField not found'
 			return;
 		}
 
@@ -452,8 +454,8 @@ class TemplateEditorController {
 		if (params.version) {
 			def version = params.version.toLong()
 			if (templateField.version > version) {
-				response.status = 500;
-				render 'TemplateField was updated while you were working on it. Please reload and try again.';
+				response.status = 500
+				render 'TemplateField was updated while you were working on it. Please reload and try again.'
 				return
 			}
 		}
@@ -464,43 +466,19 @@ class TemplateEditorController {
 		// In that case, only never-used items can be removed or changed and items can be added. If that is the case
 		// params.is_disabled is true and we should combine listEntries and extraListEntries with the items already in use.
 		if (params.type.toString() == 'STRINGLIST' || params.type.toString() == 'EXTENDABLESTRINGLIST' || ( (templateField.type == TemplateFieldType.STRINGLIST || templateField.type == TemplateFieldType.EXTENDABLESTRINGLIST ) && params.is_disabled)) {
-			def listEntryLines = "";
-			def listEntries = [];
 
-			if (params.is_disabled) {
-				listEntries = templateField.getUsedListEntries();
-			}
+            templateField.listEntries = templateField?.getUsedListEntries()
+            def entryNames = templateField.listEntries.name
 
-			if (params.listEntries) {
-				listEntryLines = params.listEntries;
-
-				listEntryLines.eachLine {
-					// We don't search for a listitem that might already exist,
-					// because if we use that list item, it will be removed from the
-					// other string list. We only search for an item that already
-					// belongs to this list.
-					def name = it.trim();
-
-					def c = TemplateFieldListItem.createCriteria()
-					def listitem = c.get {
-						eq("name", name)
-						eq("parent", templateField)
-					}
-					if (!listitem) {
-						listitem = new org.dbnp.gdt.TemplateFieldListItem(name: name)
-					}
-
-					// Prevent using the same list entry twice
-					if (!listEntries.contains(listitem))
-					listEntries.add(listitem);
-				}
-			}
-
-			// Add listEntries to the templateField
-			params.listEntries = listEntries;
-		} else {
-			params.remove('listEntries');
+            params.listEntries.eachLine {
+                def entryName = it.trim()
+                if (!entryNames.contains(entryName) && !templateField.listEntries.name.contains(entryName)) {
+                    def listitem = new org.dbnp.gdt.TemplateFieldListItem(name: entryName)
+                    templateField.addToListEntries(listitem)
+                }
+            }
 		}
+        params.remove('listEntries')
 
 		// If this field is a ontologyterm, we add ontology objects
 		// For stringlist and ontologyterm fields, the list items can be changed, even when the field is in use
@@ -533,7 +511,7 @@ class TemplateEditorController {
 			}
 		}
 
-		// Set all parameters
+		// Set all parameters except listEntries (which is added by addToListEntries)
 		templateField.properties = params
 
 		// validate the templateField
@@ -541,7 +519,7 @@ class TemplateEditorController {
 		if (!templateField.hasErrors() && templateField.save(flush: true)) {
 			// Remove all orphaned list items, because grails doesn't handle it for us
 			TemplateFieldListItem.findAllByParent(templateField).each {
-				if (!params.listEntries.contains(it)) {
+				if (!templateField.getListEntries().contains(it)) {
 					templateField.removeFromListEntries(it);
 					it.delete();
 				}
