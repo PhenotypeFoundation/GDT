@@ -29,7 +29,12 @@ class TemplateOntologyTermField extends TemplateFieldTypeNew {
 	static String example		= "A term that comes from one or more selected ontologies"
 
 	// GDT dynamic options
-	static gdtAddTemplateFieldHasMany = [ontologies: org.dbnp.gdt.Ontology] // to store the ontologies to choose from when the type is 'ontology term'
+    // as of 20130118 we have removed the AST transformations
+    // see ticket https://github.com/PhenotypeFoundation/GSCF/issues/64
+    // therefore the maps is now hardcoded and not injected anymore
+	// static gdtAddTemplateFieldHasMany = [ontologies: org.dbnp.gdt.Ontology] // to store the ontologies to choose from when the type is 'ontology term'
+    // see TemplateField's hasMany map...
+    // end change
 
 	/**
 	 * Static validator closure

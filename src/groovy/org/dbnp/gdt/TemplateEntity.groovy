@@ -47,6 +47,24 @@ abstract class TemplateEntity extends Identity {
 	// are dynamically injected at compile time, e.g.:
 	//			Map templateLongFields = [:]
 	// @see org.dbnp.gdt.ast.TemplateEntityASTTransformation
+    //
+    // as of 20130118 we have removed the AST transformations
+    // see ticket https://github.com/PhenotypeFoundation/GSCF/issues/64
+    // therefore the maps are now hardcoded and not injected anymore
+    Map templateStringFields		        = [:]
+    Map templateTextFields			        = [:]
+    Map templateExtendableStringListFields	= [:]
+    Map templateStringListFields	        = [:]
+    Map templateDoubleFields		        = [:]
+    Map templateDateFields			        = [:]
+    Map templateBooleanFields		        = [:]
+    Map templateTemplateFields		        = [:]
+    Map templateModuleFields		        = [:]
+    Map templateLongFields			        = [:]
+    Map templateRelTimeFields		        = [:] // Contains relative times in seconds
+    Map templateFileFields			        = [:] // Contains filenames
+    Map templateTermFields			        = [:]
+    // end addition
 
 	/**
 	 * define relationships, note that this is dynamically
@@ -54,9 +72,29 @@ abstract class TemplateEntity extends Identity {
 	 * 		templateLongFields: Long
 	 * @see org.dbnp.gdt.ast.TemplateEntityASTTransformation
 	 */
-	static hasMany = [:]
+	// static hasMany = [:]
+    // as of 20130118 we have removed the AST transformations
+    // see ticket https://github.com/PhenotypeFoundation/GSCF/issues/64
+    // therefore the the hasmany map is not being injected anymore
+    static hasMany = [
+            templateStringFields		        : String,
+            templateTextFields			        : String,
+            templateExtendableStringListFields  : TemplateFieldListItem,
+            templateStringListFields	        : TemplateFieldListItem,
+            templateDoubleFields		        : double,
+            templateDateFields			        : Date,
+            templateTermFields			        : Term,
+            templateRelTimeFields		        : long,
+            templateFileFields			        : String,
+            templateBooleanFields		        : boolean,
+            templateTemplateFields		        : Template,
+            templateModuleFields		        : AssayModule,
+            templateLongFields			        : long
+//            ,
+//            systemFields				        : TemplateField
+    ]
 
-	/**
+    /**
 	 * define what properties should be fuzzy searchable
 	 * see org.dbnp.gdt.FuzzyStringMatchController and Service
 	 */
@@ -121,10 +159,28 @@ abstract class TemplateEntity extends Identity {
 	 * templateField. E.g.: templateLongFields(validator: TemplateLongField.validator)
 	 * @see org.dbnp.gdt.ast.TemplateEntityASTTransformation
 	 */
-	static constraints = {
+    // as of 20130118 we have removed the AST transformations
+    // see ticket https://github.com/PhenotypeFoundation/GSCF/issues/64
+    // therefore constraints are not automatically being injected anymore
+    static constraints = {
 		template(nullable: true, blank: true)
 		requiredFields(nullable: true)
 		requiredFieldsTemplate(nullable: true)	
+        // addition as of 20130118
+        templateStringFields                (validator	: TemplateStringField.validator)
+        templateTextFields                  (validator	: TemplateTextField.validator)
+        templateExtendableStringListFields  (validator	: TemplateExtendableStringListField.validator)
+        templateStringListFields            (validator	: TemplateStringListField.validator)
+        templateDoubleFields                (validator	: TemplateDoubleField.validator)
+        templateDateFields                  (validator	: TemplateDateField.validator)
+        templateRelTimeFields               (validator	: TemplateRelTimeField.validator)
+        templateTermFields                  (validator	: TemplateOntologyTermField.validator)
+        templateFileFields                  (validator	: TemplateFileField.validator)
+        templateBooleanFields               (validator	: TemplateBooleanField.validator)
+        templateTemplateFields              (validator	: TemplateTemplateField.validator)
+        templateModuleFields                (validator	: TemplateModuleField.validator)
+        templateLongFields                  (validator	: TemplateLongField.validator)
+        // end addition
 	}
 
 	/**

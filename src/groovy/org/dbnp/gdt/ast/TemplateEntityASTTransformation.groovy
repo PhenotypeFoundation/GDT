@@ -243,7 +243,7 @@ class TemplateEntityASTTransformation implements ASTTransformation {
 	}
 
 	/**
-	 * dynamically extend the hasMany relationsship for TemplateField, based on
+	 * dynamically extend the hasMany relationship for TemplateField, based on
 	 * the presence of the gdtAddTemplateFieldHasMany variable in the TemplateXXXField
 	 * class, e.g.:
 	 *
