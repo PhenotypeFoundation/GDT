@@ -16,7 +16,7 @@ grails.project.dependency.resolution = {
         grailsRepo "http://grails.org/plugins"
 
         mavenCentral()
-        mavenRepo "http://nexus.nmcdsp.org/content/repositories/releases"
+        mavenRepo "http://nexus.dbnp.org/content/repositories/releases"
         mavenRepo "http://ontocat.sourceforge.net/maven/repo"
         mavenRepo "http://repository.springsource.com/maven/bundles/release"
         mavenRepo "http://repository.springsource.com/maven/bundles/external"
