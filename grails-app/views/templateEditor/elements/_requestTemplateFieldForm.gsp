@@ -1,5 +1,5 @@
     <g:hiddenField name="requestcat" value="templatefield" />
-    <g:select name="requestnm" from="${['New', 'Modification to']}" value="New" /><br />
+    <g:select name="requestnm" from="${['New', 'Modification to', 'Add existing field to this template']}" value="New" /><br />
     <br />
     <label for="rname">Name <img src="${resource( dir: 'images/icons', file: 'help.png', plugin: 'famfamfam' )}" alt="Name of the template that should be added/modified" title="Name of the templatefield that should be added/modified">:</label>
     <g:textField name="rname" value="" /><br />
