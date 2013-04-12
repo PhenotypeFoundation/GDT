@@ -11,10 +11,14 @@ class AssayModule extends Identity {
 	/** A descriptive string describing the 'platform' of the assay data in the module */
 	//String platform
 
-	/** The base URL at which the module instance is located. This is also used
+	/** The URL at which the module instance is located. This is also used
 	 * as a consumer parameter to identify the module in the authentication process.
 	 */
 	String url
+
+    /** Set the base URL of the module, in case the normal url is a specific landingspage
+     */
+    String baseUrl
 	
 	/** Determines whe ther this module will be notified of changes in studies. This can be used
 	 * to determine when synchronization should take place in a module. The URL called is
