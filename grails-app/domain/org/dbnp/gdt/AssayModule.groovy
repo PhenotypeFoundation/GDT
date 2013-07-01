@@ -16,7 +16,7 @@ class AssayModule extends Identity {
 	 */
 	String url
 
-    /** Set the base URL of the module, in case the normal url is a specific landingspage
+    /** Set the base URL of the module, in case the normal url is a specific landing page.
      */
     String baseUrl
 	
