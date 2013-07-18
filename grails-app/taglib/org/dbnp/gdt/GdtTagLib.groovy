@@ -616,6 +616,9 @@ class GdtTagLib extends AjaxflowTagLib {
 		def entity			= (attrs.get('entity'))
 		def ignore			= attrs.get( 'ignore' );
 
+        if(entity.template == null)
+            return;
+
 		if( ignore instanceof String )
 			ignore = [ignore]
 		
