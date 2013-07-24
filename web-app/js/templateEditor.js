@@ -412,6 +412,9 @@ function updateTemplateField( id ) {
 
 	showWaiting();
 
+    //ensure all ontologies present in the selectbox are selected
+    $("#ontologies_" + id).children().attr("selected", "selected");
+
     // Update the field
     $.ajax({
         url:        baseUrl + '/templateEditor/' + formEl.attr( 'action' ),
@@ -792,6 +795,14 @@ function addOntology() {
     });
 }
 
-function updateOntologyLists( newObject ) {
-	$( '.ontologySelect' ).append( '<option value="' + newObject.id + '">' + newObject.name + '</option>');
+function updateOntologyLists( newObject) {
+    if( $('#selectedTemplateFields :not(.ui-state-disabled) option[value='+newObject.id+']').length <= 0 ) {
+	    $( '.ontologySelect' ).append( '<option value="' + newObject.id + '">' + newObject.name + '</option>');
+    } else {
+        userMessage("This ontology is already added.");
+    }
+}
+
+function deleteOntology( id ) {
+    $("#ontologies_" + id).children().remove(":selected");
 }

@@ -34,8 +34,8 @@
 		<g:textArea name="listEntries" value="${templateField?.listEntries?.name?.join( '\n' )}" />
 	</div>
 	<div class="extra ontologyterm_options" <g:if test="${templateField?.type.toString() == 'ONTOLOGYTERM'}">style='display: block;'</g:if>>
-	  <label for="type">Ontology:<br /><br /><a href="#" style="text-decoration: underline;" onClick="openOntologyDialog();">Add new</a></label>
-		<g:select multiple="yes" size="5" from="${ontologies}" class="ontologySelect" optionValue="name" optionKey="id" name="ontologies" id="ontologies_${templateField?.id}" value="${templateField?.ontologies}" /><br />
+        <label for="type">Ontologies:<br /><a href="#" style="text-decoration: underline;" onClick="openOntologyDialog();">Add new</a><br /><br /> <a href="#" style="text-decoration: underline;" onClick="deleteOntology(${templateField?.id});">Remove</a></label>
+		<g:select multiple="yes" size="5" from="${templateField?.ontologies}" class="ontologySelect" optionValue="name" optionKey="id" name="ontologies" id="ontologies_${templateField?.id}" /><br />
 	</div>
 
 	<label for="unit">Unit:</label> <g:textField name="unit" value="${templateField?.unit}" /><br />
