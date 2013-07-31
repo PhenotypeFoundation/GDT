@@ -86,7 +86,7 @@ OntologyChooser.prototype = {
 	noSearch	: false,	// work variable to disable/enable autocomplete search
 	clipboard   : [],		// a clipboard to contain copied ontologies
 	options		: {
-		minLength	: 3,	// minimum input length before launching Ajax request
+		minLength	: 1,	// minimum input length before launching Ajax request
 		showHide	: null,	// show / hide this DOM element on select/deselect autocomplete results
 		spinner		: 'http://www.ajaxload.info/images/exemples/2.gif'
 	},
