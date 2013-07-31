@@ -571,8 +571,10 @@ TableEditor.prototype = {
 			column++;
 		});
 
-		// resize the header
-		header.css({ width: width + 'px' });
+        //Prevent setting the width of row smaller than its parent
+        if(header.parent().css('width').replace("px", "") < width) {
+            header.css({ width: width + 'px' });
+        }
 
 		// set table row width and assume column widths are
 		// identical to those in the header (css!)
@@ -589,7 +591,11 @@ TableEditor.prototype = {
 				}
 				column++;
 			});
-			row.css({ width: width + 'px' });
+
+            //Prevent setting the width of row smaller than its parent
+            if(row.parent().css('width').replace("px", "") < width) {
+			    row.css({ width: width + 'px' });
+            }
 		});
 
 		// add sliders?

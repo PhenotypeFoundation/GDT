@@ -496,7 +496,6 @@ class TemplateEditorController {
 
 				params.ontologies = usedOntologies + Ontology.getAll(ontologies.collect { Integer.parseInt(it) });
 			}
-
 		} else {
 			params.remove('ontologies');
 		}
@@ -796,12 +795,6 @@ class TemplateEditorController {
 			return;
 		}
 
-		if (Ontology.findByNcboId(id)) {
-			response.status = 500;
-			render 'This ontology was already added to the system';
-			return;
-		}
-
 		def ontology = null;
 
 		try {
@@ -818,15 +811,8 @@ class TemplateEditorController {
 			return;
 		}
 
-		// Validate ontology
-		if (!ontology.validate()) {
-			response.status = 500;
-			render ontology.errors.join('; ');
-			return;
-		}
-
 		// Save ontology and render the object as JSON
-		ontology.save(flush: true)
+		ontology = Ontology.getOrCreateOntologyByNcboId(id)
 		response.setContentType("application/json; charset=UTF-8")
 		render ontology as JSON
 	}

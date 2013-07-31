@@ -14,11 +14,11 @@
 		<g:textArea name="listEntries" value="${templateField?.getNonUsedListEntries().name?.join( '\n' )}" />
 	</div>
 	<div class="extra ontologyterm_options" <g:if test="${templateField?.type.toString() == 'ONTOLOGYTERM'}">style='display: block;'</g:if>>
-	  <label for="type">Used ontologies:</label> <g:textArea name="ontology" disabled="disabled" value="${templateField?.getUsedOntologies().name?.join( '\n' )}" /><br />
+	  <label for="type">Used ontologies:</label>
+        <g:select size="5" from="${templateField?.getUsedOntologies()}" disabled="true" class="ontologySelect" optionValue="name" optionKey="id" name="ontologies" id="used_ontologies_${templateField?.id}" /> <br />
 
-	  <label for="type">Extra ontologies:<br /><br /><a href="#" style="text-decoration: underline;" onClick="openOntologyDialog();">Add new</a></label>
-		<g:select multiple="yes" size="5" from="${ (ontologies ?: [])- templateField?.getUsedOntologies()}" class="ontologySelect" optionValue="name" optionKey="id" name="ontologies" id="ontologies_${templateField?.id}" value="${templateField?.getNonUsedOntologies()}" /><br />
-
+	  <label for="type">Extra ontologies:<br /><a href="#" style="text-decoration: underline;" onClick="openOntologyDialog();">Add new</a><br /><br /> <a href="#" style="text-decoration: underline;" onClick="deleteOntology(${templateField?.id});">Remove</a></label>
+		<g:select multiple="yes" size="5" from="${ (templateField?.ontologies ?: [])- templateField?.getUsedOntologies()}" class="ontologySelect" optionValue="name" optionKey="id" name="ontologies" id="ontologies_${templateField?.id}" /><br />
 	</div>
 	
 	<label for="unit">Unit:</label> <g:textField disabled="disabled" name="unit" value="${templateField?.unit}" /><br />

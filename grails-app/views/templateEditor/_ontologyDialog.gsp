@@ -20,7 +20,6 @@
     	new OntologyChooser().init({
             spinner: '${resource(plugin:'gdt', dir:'images', file:'spinner.gif')}'
         });
-
 	});
  </script>
 
