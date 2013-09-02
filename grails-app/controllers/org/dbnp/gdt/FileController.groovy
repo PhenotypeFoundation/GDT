@@ -1,5 +1,7 @@
 package org.dbnp.gdt
 
+import grails.converters.JSON
+
 /**
  * FileController
  *
@@ -80,7 +82,7 @@ class FileController {
 
         // Return data to the user
         if( newfilename ) {
-            render( text: newfilename );
+            return newfilename;
         } else {
             response.status = 500;
             render( "" );
