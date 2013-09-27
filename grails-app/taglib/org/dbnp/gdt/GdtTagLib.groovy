@@ -518,11 +518,11 @@ class GdtTagLib extends AjaxflowTagLib {
 
 			// Show a link if the field is a FILE field
 			if (fieldType == 'FILE' && value != "") {
-				out << '<a href="' + g.createLink(controller: "file", action: "get", id: value) + '">' + value + '</a>';
+				out << '<a href="' + g.createLink(controller: "file", action: "get", id: value) + '">' + value.encodeAsHTML() + '</a>';
 			} else if (fieldType == 'RELTIME') {
-				out << new RelTime(value).toString()
+				out << new RelTime(value).toString().encodeAsHTML()
 			} else {
-				out << value;
+				out << value.encodeAsHTML();
 			}
 
 			// Show the unit (if a unit is present and a value was shown)

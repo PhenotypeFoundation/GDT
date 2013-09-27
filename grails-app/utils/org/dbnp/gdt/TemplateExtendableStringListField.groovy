@@ -52,9 +52,9 @@ class TemplateExtendableStringListField extends TemplateFieldTypeNew {
 				return value
 			} else if (value.class == String) {
 				// cast it to TemplateFieldListItem
-				def escapedLowerCaseValue = value.toLowerCase().replaceAll("([^a-z0-9])", "_")
+				def escapedLowerCaseValue = value.toLowerCase().replaceAll("([[ \\t\\r\\n\\v\\f]])", "_")
 				def item = field.listEntries.find { listEntry ->
-					listEntry.name.toLowerCase().replaceAll("([^a-z0-9])", "_") == escapedLowerCaseValue
+					listEntry.name.toLowerCase().replaceAll("([[ \\t\\r\\n\\v\\f]])", "_") == escapedLowerCaseValue
 				}
 
 				// found a field list item by this name?
