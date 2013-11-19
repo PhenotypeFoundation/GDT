@@ -50,7 +50,7 @@
                     There are no templates for ${humanReadableEntity}. Use the 'Add template' button to add fields.</li>
                 </g:if>
                 <g:else>
-                    There are no templates for ${humanReadableEntity}. Use the 'Add template' button to add fields.</li>
+                    There are no templates for ${humanReadableEntity}. Use the 'Request new/modification to template' button to request fields.</li>
                 </g:else>
                 </li>
                 <g:each in="${templates}" var="currentTemplate">

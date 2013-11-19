@@ -95,10 +95,10 @@
 					<g:render template="elements/domainField" var="domainField" collection="${domainFields}" model="['template':template]"/>
 				</ol>
                 <g:if test='${templateadmin}'>
-                <ol id="selectedTemplateFields" class="templateFields <g:if test="${template.inUse()}">inUse</g:if>">
+                    <ol id="selectedTemplateFields" class="templateFields <g:if test="${template.inUse()}">inUse</g:if>">
                 </g:if>
                 <g:else>
-                <ol id="disabledselectedTemplateFields" class="templateFields">
+                    <ol id="disabledselectedTemplateFields" class="templateFields">
                 </g:else>
 				    <g:render template="elements/selected" var="templateField" collection="${template.fields}" model="['template':template]"/>
 					<% /* NB: this empty field should always be the last in the list! */ %>
