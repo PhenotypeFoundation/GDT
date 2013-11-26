@@ -19,6 +19,7 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class FuzzyStringMatchService {
 	def dataSource
+    def grailsApplication
 	static transactional	= false
 	static isPostgres		= false
 	static checkForSupport	= true
@@ -30,7 +31,7 @@ class FuzzyStringMatchService {
 			groovy.sql.Sql sql = new groovy.sql.Sql(dataSource)
 
 			// get configuration
-			def config = ConfigurationHolder.config
+			def config = grailsApplication.config
 			def db = config.dataSource.driverClassName
 
 			// check for string comparison features?

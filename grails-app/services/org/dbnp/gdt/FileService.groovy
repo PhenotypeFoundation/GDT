@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class FileService implements Serializable {
+    def grailsApplication
     // ApplicationContext applicationContext
 
     // Must be false, since the webflow can't use a transactional service. See
@@ -32,7 +33,7 @@ class FileService implements Serializable {
      */
     def File getUploadDir() {
 		// Find the file upload directory name from the configuration
-		String dir = ConfigurationHolder.config.uploads.uploadDir
+		String dir = grailsApplication.config.uploads.uploadDir
 
 		if( !dir )
 			dir = "fileuploads"

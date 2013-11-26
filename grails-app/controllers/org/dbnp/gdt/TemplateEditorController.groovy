@@ -15,7 +15,6 @@
 package org.dbnp.gdt
 
 import grails.converters.*
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 class TemplateEditorController {
 	def entityName
