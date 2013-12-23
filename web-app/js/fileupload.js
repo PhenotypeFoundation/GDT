@@ -34,7 +34,7 @@ function fileUploadField(field_id) {
 		onComplete : function(file, response) {
             //If there is HTML in the response, just retrieve the text value.
             if(response.indexOf("<") != -1) {
-                response = $(response).text();
+                response = $(response).text().split("//<![CDATA[")[0];
             }
 			if (response == "") {
 				$('#' + field_id).val('');

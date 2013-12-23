@@ -35,8 +35,8 @@
 	<body>
 
 		<div class="templateEditorStep" id="step1_template">
-			<h3>Select template</h3>
-			<p>Showing templates for <b>${humanReadableEntity}</b><g:if test="${templates.size() > 0 }"> (<g:link controller="templateEditor" action="compare" params="${[entity: encryptedEntity] + extraparams}"><b>compare</b></g:link>)</g:if>.</p>
+			<h3>Select Template</h3>
+			<p>Showing Templates for <b>${humanReadableEntity}</b><g:if test="${templates.size() > 0 }"> (<g:link controller="templateEditor" action="compare" params="${[entity: encryptedEntity] + extraparams}"><b>compare</b></g:link>)</g:if>.</p>
             <g:if test='${templateadmin}'>
                 <p>Please select a template to edit or create a new template.</p>
             </g:if>

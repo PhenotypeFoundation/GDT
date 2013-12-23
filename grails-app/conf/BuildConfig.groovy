@@ -33,6 +33,7 @@ grails.project.dependency.resolution = {
     plugins {
         build(  ":tomcat:$grailsVersion",
                 ":release:2.2.1",
+                //Temporary static version of Rest Client Builder due to compile error
                 ":rest-client-builder:1.0.3"
         ) {
             // plugin only plugin, should not be transitive to the application
