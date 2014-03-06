@@ -59,13 +59,13 @@ class GdtService implements Serializable {
 			if (myInstance.properties.superclass.toString() =~ 'TemplateEntity') {
 				def matches	= myInstance.toString() =~ /\.([^\.]+)$/
 
-				entities[entities.size()] = [
-					name		: matches[0][1],
-					description	: matches[0][1].replaceAll(/([A-Z])/, ' $1').replaceFirst(/^ /,''),
-					entity		: myInstance.toString().replaceFirst(/^class /,''),
-					instance	: myInstance,
-					encoded		: encodeEntity(myInstance.toString())
-				]
+                entities[entities.size()] = [
+                        name		: matches[0][1],
+                        description	: matches[0][1].replaceAll(/([A-Z])/, ' $1').replaceFirst(/^ /,''),
+                        entity		: prepareEntity(myInstance.toString()),
+                        instance	: myInstance,
+                        encoded		: encodeEntity(prepareEntity(myInstance.toString()))
+                ]
 			}
 		}
 
@@ -84,6 +84,10 @@ class GdtService implements Serializable {
 		// encode the class name, looks unprofessional to have Java class names in URL
         java.net.URLEncoder.encode(entityName.replaceAll(/^class /, '').bytes.encodeBase64().toString(),"UTF-8")
 	}
+
+    def String prepareEntity(String entityName) {
+        return entityName.replaceAll(/^class /, '');
+    }
 
 	/**
 	 * decrypt an entity
