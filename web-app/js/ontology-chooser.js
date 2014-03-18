@@ -109,6 +109,10 @@ OntologyChooser.prototype = {
 			this.options.showHide.hide();
 		}
 
+        $(".ontologySearcher").each(function() {
+            that.initOntologyAutocomplete(this);
+        });
+
 		// find all ontology elements
 		$("input[rel*='ontology']").each(function() {
 			that.initAutocomplete(this);
@@ -181,7 +185,8 @@ OntologyChooser.prototype = {
 			},
 			source: function(request, response) {
 				var q = $.trim(request.term);
-				var url = "http://bioportal.bioontology.org/search/json_search/" + ontology_id + "?q=" + request.term + "&response=json&callback=?";
+                var url = "http://data.bioontology.org/search?q="+ q +"&ontologies="+ ontology_id +
+                    "&apikey=c62bc477-a20d-4dc3-802f-92b6d9d78a16";
 				
 				// got cache?
 				if (that.cache[ q ]) {
@@ -193,29 +198,27 @@ OntologyChooser.prototype = {
 				} else {
 					// nope, fetch it from NCBO
 					$.getJSON(url, function(data) {
-						// parse result data
-						var result = that.parseData(data.data, ontology_id);
+						// parse result data, array of terms is stored in collection
+						var terms = that.parseTerms(data.collection);
 
 						// cache results
-						that.cache[ q ] = result;
+						that.cache[ q ] = terms;
 
 						// hide spinner
 						inputElement.css({ 'background': 'none' });
 
 						// no results?
-						if (!data.data) {
+						if (!data.collection) {
 							// hide showHide element?
 							if (that.options.showHide) that.options.showHide.hide();
 
-							// clear hidden fields
-							that.setInputValue(inputElement, 'concept_id', null);
+							// clear hidden field
 							that.setInputValue(inputElement, 'ontology_id', null);
-							that.setInputValue(inputElement, 'ncbo_id', null);
-							that.setInputValue(inputElement, 'full_id', null);							
+                            that.setInputValue(inputElement, 'concept_id', null);
 						}
 
 						// response callback
-						response(result);
+						response(terms);
 					});
 				}
 			},
@@ -223,14 +226,10 @@ OntologyChooser.prototype = {
 				// mark that the user selected a suggestion
 				selected = true;
 
-				// option selected, set hidden fields
+				// option selected, set hidden field
 				var element = inputElement;
-
-				// set hidden fields
-				that.setInputValue(element, 'concept_id', ui.item.concept_id);
-				that.setInputValue(element, 'ontology_id', ui.item.ontology_id);
-				that.setInputValue(element, 'ncbo_id', ui.item.ncbo_id);
-				that.setInputValue(element, 'full_id', ui.item.full_id);
+				that.setInputValue(element, 'ontology_id', ui.item.ontologyUrl);
+                that.setInputValue(inputElement, 'concept_id', ui.item.concept_id);
 
 				// remove error class (if present)
 				element.removeClass('error');
@@ -248,18 +247,145 @@ OntologyChooser.prototype = {
 
 					// set fields
 					inputElement.val('');
-					that.setInputValue(element, 'concept_id', '');
 					that.setInputValue(element, 'ontology_id', '');
-					that.setInputValue(element, 'ncbo_id', '');
-					that.setInputValue(element, 'full_id', '');
+                    that.setInputValue(inputElement, 'concept_id', '');
 
 					// add error class
 					element.addClass('error');
 				}
 			},
 			html: true
-		});
+		}).data( "ui-autocomplete" )._renderItem = function( ul, item ) {
+            return $( "<li></li>" )
+                .data( "item.autocomplete", item )
+                .append( '<a><span class="about">' + item.value + '</span><span class="from">' + item.ontologyUrl + '</span></a>' )
+                .appendTo( ul );
+        };
 	},
+
+    initOntologyAutocomplete: function(element) {
+        var that = this
+        var inputElement = $(element);
+        var selected = false;
+
+        // handle ctrl or apple keys (to find ctrl-copy / ctrl-paste)
+        inputElement.bind('keydown', function(e) {
+            // check if ctrl-key or apple cmd key is pressed
+            // to start capturing copy events
+            if (e.keyCode == 17 || e.keyCode == 224) that.ctrl = true;
+
+            // ignore ENTER key in inputElement so the form cannot
+            // be submitted by pressing the ENTER key
+            if (e.keyCode == 13) return false;
+
+            // when a user uses the backspace the showHide element
+            // (normally the button) gets hidden
+            if (e.keyCode == 8 && that.options.showHide) that.options.showHide.hide();
+
+            // check for 'copy' event
+            if (e.keyCode == 67 && that.ctrl) return that.copy(inputElement);
+
+            // check for 'paste' event
+            if (e.keyCode == 86 && that.ctrl) return that.paste(inputElement);
+        });
+
+        // check if ctrl-key is released
+        inputElement.bind('keyup', function(e) {
+            // check if ctrl-key or apple cmd key is released
+            // to start capturing paste events
+            if (e.keyCode == 17 || e.keyCode == 224) that.ctrl = false;
+        });
+
+        // initialize a jquery-ui autocomplete
+        inputElement.autocomplete({
+            minLength: 0,
+            delay: 300,
+            search: function(event, ui) {
+                // check if we need to skip searching, generally
+                // after a paste event
+                if (that.noSearch) {
+                    // yeah, skip search and reset value
+                    that.noSearch = false;
+                    return false;
+                }
+
+                // set the spinner
+                if (that.options.spinner) {
+                    inputElement.css({ 'background': 'url(' + that.options.spinner + ') no-repeat right center' });
+                }
+                selected = false;
+            },
+            source: function(request, response) {
+                var q = $.trim(request.term);
+                var url = "http://data.bioontology.org/ontologies?apikey=c62bc477-a20d-4dc3-802f-92b6d9d78a16";
+
+                if (that.cache[ q ]) {
+                    inputElement.css({ 'background': 'none' });
+                    response(that.cache[ q ]);
+                } else {
+                    // nope, fetch it from NCBO
+                    $.getJSON(url, function(data) {
+
+                        data = data.filter(function (ontology) {
+                            return ontology.acronym.toLowerCase().indexOf(q.toLowerCase()) != -1;
+                        });
+
+                        // parse result data, array of terms is stored in collection
+                        var terms = that.parseOntologies(data);
+
+                        // cache results
+                        that.cache[ q ] = terms;
+
+                        // hide spinner
+                        inputElement.css({ 'background': 'none' });
+
+                        // no results?
+                        if (!data.collection) {
+                            // hide showHide element?
+                            if (that.options.showHide) that.options.showHide.hide();
+
+                            // clear hidden field
+                            that.setInputValue(inputElement, 'ontology_id', null);
+                        }
+
+                        // response callback
+                        response(terms);
+                    });
+                }
+            },
+            select: function(event, ui) {
+                // mark that the user selected a suggestion
+                selected = true;
+
+                // option selected, set hidden field
+                var element = inputElement;
+                that.setInputValue(element, 'ontology_id', ui.item.ontologyUrl);
+
+                // remove error class (if present)
+                element.removeClass('error');
+
+                // show showHide element if set
+                if (that.options.showHide) {
+                    that.options.showHide.show();
+                }
+            },
+            close: function(event, ui) {
+                // check if the user picked something from the ontology suggestions
+                if (!selected) {
+                    // no he didn't, clear the field(s)
+                    var element = inputElement;
+
+                    // set fields
+                    inputElement.val('');
+                    that.setInputValue(element, 'ontology_id', '');
+
+                    // add error class
+                    element.addClass('error');
+                }
+            },
+            html: true
+        });
+    },
 
 	/**
 	 * Set the value of a particular DOM element
@@ -308,38 +434,34 @@ OntologyChooser.prototype = {
 	 * @param data
 	 * @return array
 	 */
-	parseData: function(data, ontology_ids) {
+	parseTerms: function(terms) {
 		var parsed = [];
-		var rows = data.split('~!~');
 
-		for (var i = 0; i < rows.length; i++) {
-			var row = $.trim(rows[i]);
-			if (row) {
-				var cols = row.split('|');
-
-				// If we search in a single ontology, the json doesn't return the
-				// NCBO id in the 8th column (probably because we already know the NCBO id)
-				var ncbo_id;
-				if (cols.length > 8) {
-					ncbo_id = cols[8];
-				} else {
-					ncbo_id = ontology_ids;
-				}
-
-				parsed[ parsed.length ] = {
-					value			: cols[0],
-					label			: cols[0] + ' <span class="about">(' + cols[2] + ')</span> <span class="from">from: ' + cols[ (cols.length - 2) ] + '</span>',
-					preferred_name	: cols[0],  // e.g. Mus musculus musculus
-					concept_id		: cols[1],  // e.g. birnlex_161
-					ontology_id		: cols[3],  // e.g. 29684
-					full_id			: cols[4],  // e.g. http://bioontology.org/projects/ontologies/birnlex#birnlex_161
-					ncbo_id			: ncbo_id   // e.g. 1494
-				}
-			}
-		}
+        $.each(terms, function(index, term) {
+            parsed[ index ] = {
+                value			: term.prefLabel,
+                preferred_name	: term.prefLabel,
+                ontologyUrl     : term.links.ontology,
+                concept_id      : term['@id']
+            }
+        });
 
 		return parsed;
 	},
+
+    parseOntologies: function(ontologies) {
+        var parsed = [];
+
+        $.each(ontologies, function(index, ontology) {
+            parsed[ index ] = {
+                value			: ontology.acronym,
+                label			: '<span class="about">(' + ontology.acronym + ')</span> <span class="from">full name: ' + ontology.name + '</span>',
+                preferred_name	: ontology.acronym,
+                ontologyUrl     : ontology['@id']
+            }
+        });
+        return parsed;
+    },
 
 	/**
 	 * an ontology field is being copied, store all copied data
@@ -349,10 +471,8 @@ OntologyChooser.prototype = {
 	copy: function(inputElement) {
 		this.clipboard = {
 			sourceValue		: $(inputElement).val(),
-			concept_id		: this.getInputValue(inputElement, 'concept_id'),
 			ontology_id		: this.getInputValue(inputElement, 'ontology_id'),
-			ncbo_id			: this.getInputValue(inputElement, 'ncbo_id'),
-			full_id			: this.getInputValue(inputElement, 'full_id')
+            concept_id		: this.getInputValue(inputElement, 'concept_id')
 		}
 		return false;
 	},
@@ -376,10 +496,8 @@ OntologyChooser.prototype = {
 
 				// paste values
 				$(inputElement).val(this.clipboard.sourceValue);
-				this.setInputValue(inputElement, 'concept_id', this.clipboard.concept_id);
 				this.setInputValue(inputElement, 'ontology_id', this.clipboard.ontology_id);
-				this.setInputValue(inputElement, 'ncbo_id', this.clipboard.ncbo_id);
-				this.setInputValue(inputElement, 'full_id', this.clipboard.full_id);
+                this.setInputValue(inputElement, 'concept_id', this.clipboard.concept_id);
 			}
 		}
 		return false;

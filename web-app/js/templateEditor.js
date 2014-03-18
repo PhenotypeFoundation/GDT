@@ -760,16 +760,12 @@ function addOntology() {
 	var url; var data;
 
     // Create a URL to call and call it
-	if( $( '#ncboIDText' ).val() ) {
-	    url = baseUrl + '/templateEditor/addOntologyById';
-		data = 'ncboID=' + $( '#ncboIDText' ).val();
+    url = baseUrl + '/templateEditor/addOntologyById';
+	if( $( '#ontologyAcronym' ).val() ) {
+		data = 'ontology_id=' + $( '#addOntology input[name=ontologyAcronym-ontology_id]' ).val();
 		$( '#ncbo_spinner' ).show();
 	} else {
-	    // url = baseUrl + '/templateEditor/addOntologyByTerm';
-		// data = 'termID=' + $( '#addOntology input[name=termID-ontology_id]' ).val();
-	    url = baseUrl + '/templateEditor/addOntologyById';
-		data = 'ncboID=' + $( '#addOntology input[name=termID-ncbo_id]' ).val();
-
+		data = 'ontology_id=' + $( '#addOntology input[name=termID-ontology_id]' ).val();
 		$( '#term_spinner' ).show();
 	}
 
@@ -797,7 +793,8 @@ function addOntology() {
 
 function updateOntologyLists( newObject) {
     if( $('#selectedTemplateFields :not(.ui-state-disabled) option[value='+newObject.id+']').length <= 0 ) {
-	    $( '.ontologySelect' ).append( '<option value="' + newObject.id + '">' + newObject.name + '</option>');
+	    $( '.ontologySelect' ).append( '<option title="' + newObject.name + '" value="' + newObject.id + '">' +
+            newObject.name + '</option>');
     } else {
         userMessage("This ontology is already added.");
     }

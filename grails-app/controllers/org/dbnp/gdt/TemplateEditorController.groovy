@@ -493,7 +493,11 @@ class TemplateEditorController {
 			if (params.ontologies) {
 				def ontologies = params.ontologies;
 
-				params.ontologies = usedOntologies + Ontology.getAll(ontologies.collect { Integer.parseInt(it) });
+                if(ontologies instanceof String) {
+                    params.ontologies = usedOntologies + Ontology.get( Integer.parseInt(ontologies) );
+                } else {
+                    params.ontologies = usedOntologies + Ontology.getAll(ontologies.collect { Integer.parseInt(it) });
+                }
 			}
 		} else {
 			params.remove('ontologies');
@@ -778,12 +782,13 @@ class TemplateEditorController {
 
 	/**
 	 * Adds a ontolgy based on the ID given
-	 *
-	 * @param ncboID
+	 * ID is actually ontology URL
+	 * @param unique ontologyURL/ID
 	 * @return JSON	Ontology object
 	 */
 	def addOntologyById = {
-		def id = (params.containsKey('ncboID')) ? (params.ncboID as int) : 0;
+        //ID is actually ontology URL
+        def id = (params.containsKey('ontology_id')) ? (params.ontology_id as String) : ""
 
 		// set content type
 		response.setContentType("text/plain; charset=UTF-8")
@@ -797,75 +802,15 @@ class TemplateEditorController {
 		def ontology = null;
 
 		try {
-            ontology = Ontology.getBioPortalOntology(id)
+            ontology = Ontology.getOrCreateOntology(id)
 		} catch (Exception e) {
 			response.status = 500;
 			render 'Ontology with ID ' + id + ' not found';
 			return;
 		}
 
-		if (!ontology) {
-			response.status = 404;
-			render 'Ontology with ID ' + id + ' not found';
-			return;
-		}
-
-		// Save ontology and render the object as JSON
-		ontology = Ontology.getOrCreateOntologyByNcboId(id)
 		response.setContentType("application/json; charset=UTF-8")
-		render ontology as JSON
-	}
-
-	/**
-	 * Adds a ontolgy based on the term ID given
-	 *
-	 * @param ncboID
-	 * @return JSON	Ontology object
-	 * @deprecated User addOntologyById instead, using the ncboId given by the JSON call
-	 */
-	def addOntologyByTerm = {
-		def id = (params.containsKey('termID')) ? (params.termID as int) : 0;
-
-		// set content type
-		response.setContentType("text/plain; charset=UTF-8")
-
-		if (!id) {
-			response.status = 500;
-			render 'No ID given'
-			return;
-		}
-
-		def ontology = null;
-
-		try {
-			ontology = dbnp.data.Ontology.getBioPortalOntologyByTerm(id);
-		} catch (Exception e) {
-			response.status = 500;
-
-			if (e.getMessage())
-			render e.getMessage()
-			else
-				render "Unknown error: " + e.getClass()
-			return;
-		}
-
-		if (!ontology) {
-			response.status = 404;
-			render 'Ontology form term ' + id + ' not found';
-			return;
-		}
-
-		// Validate ontology
-		if (!ontology.validate()) {
-			response.status = 500;
-			render ontology.errors.join('; ');
-			return;
-		}
-
-		// Save ontology and render the object as JSON
-		ontology.save(flush: true)
-		response.setContentType("application/json; charset=UTF-8")
-		render ontology as JSON
+ 		render ontology as JSON
 	}
 
 	/**

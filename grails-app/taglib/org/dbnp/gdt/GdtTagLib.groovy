@@ -1155,7 +1155,7 @@ class GdtTagLib extends AjaxflowTagLib {
                 // iterate through set
                 attrs.ontologies.each() { ontology ->
                     if (ontology) {
-                        ontologyList += ontology.ncboId + ","
+                        ontologyList += ontology.acronym + ","
 
                         Term.findAllByOntology(ontology).each() {
                             from[from.size()] = it.name

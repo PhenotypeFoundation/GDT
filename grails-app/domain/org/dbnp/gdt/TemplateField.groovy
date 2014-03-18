@@ -468,7 +468,7 @@ class TemplateField implements Serializable {
 		// Search for ontologies
 		xmlObject.ontologies?.ontology.each {
 			def ncboId = it.ncboId?.text();
-			t.addToOntologies(Ontology.getOrCreateOntologyByNcboId(ncboId));
+			t.addToOntologies(Ontology.getOrCreateOntologyByOntologyId(ncboId));
 		}
 
 		// Search for list entries

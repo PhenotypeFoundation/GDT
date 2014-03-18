@@ -73,6 +73,9 @@
 
 				});
 
+                $(".ontologySelect option").each(function(index, option){
+                    $(option).attr('title', $(option).text());
+                });
 			});
 		</script>
 		

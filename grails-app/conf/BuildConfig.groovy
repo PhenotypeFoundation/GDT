@@ -17,7 +17,6 @@ grails.project.dependency.resolution = {
 
         mavenCentral()
         mavenRepo "http://nexus.dbnp.org/content/repositories/releases"
-        mavenRepo "http://ontocat.sourceforge.net/maven/repo"
         mavenRepo "http://repository.springsource.com/maven/bundles/release"
         mavenRepo "http://repository.springsource.com/maven/bundles/external"
         mavenRepo "http://repository.springsource.com/maven/libraries/release"
@@ -25,9 +24,6 @@ grails.project.dependency.resolution = {
     }
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
-        runtime("uk.ac.ebi:ontoCAT:0.9.8") {
-		transitive = false
-	}
     }
 
     plugins {
@@ -42,8 +38,9 @@ grails.project.dependency.resolution = {
 
         compile(":hibernate:$grailsVersion",
 		":jquery:latest.integration",
-		":webflow:2.0.0",
-		":ajaxflow:latest.integration"
+		":webflow:2.0.8.1",
+		":ajaxflow:latest.integration",
+        ":rest:0.8"
         ) {
             export = false
         }
