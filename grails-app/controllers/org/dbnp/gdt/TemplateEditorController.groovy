@@ -141,6 +141,7 @@ class TemplateEditorController {
 			fieldTypes: TemplateFieldType.list(),
 			ontologies: Ontology.list(),
 			humanReadableEntity: humanReadableEntity,
+            apikey: Ontology.getBioOntologyApiKey(),
 
 			template: template,
 			allFields: allFields,

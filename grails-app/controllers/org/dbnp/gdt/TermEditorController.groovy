@@ -34,6 +34,7 @@ class TermEditorController {
 		onStart {
 			log.info ".start term / ontology editor flow"
 
+            flow.apikey = Ontology.getBioOntologyApiKey()
 			if (params.ontologies) {
 				flow.ontologies		= params.ontologies
 				flow.ontologiesList	= []

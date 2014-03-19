@@ -73,11 +73,12 @@
  	</g:else>
 
  	<div id="termForm">
- 	<g:form action="pages" name="wizardForm" id="wizardForm">
-		<div id="label">search term: </div>
-		<div id="term"><g:textField name="term" rel="ontology-${ontologies}" size="40" /></div>
- 		<div id="button"><g:submitButton name="add" value="Add term" /></div>
- 	</g:form>
+        <g:form action="pages" name="wizardForm" id="wizardForm">
+            <div id="label">search term: </div>
+            <div id="term"><g:textField name="term" rel="ontology-${ontologies}" size="40" /></div>
+            <div id="button"><g:submitButton name="add" value="Add term" /></div>
+        </g:form>
+        <g:hiddenField name="apikey" value="${apikey}" />
 	</div>
 
  	<script type="text/javascript">

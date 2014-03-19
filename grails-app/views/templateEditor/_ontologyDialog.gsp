@@ -13,6 +13,7 @@
 	<img id="term_spinner" src="${resource( dir: 'images', file: 'spinner.gif' )}" style="margin-left: 5px; display: none;">
   </li>
 </ul>
+<g:hiddenField name="apikey" value="${apikey}" />
 
  <script type="text/javascript">
 	$(document).ready(function() {

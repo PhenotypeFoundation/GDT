@@ -127,6 +127,7 @@ OntologyChooser.prototype = {
 		var that = this
 		var inputElement = $(element);
 		var selected = false;
+        var ontologyApiKey = $("input[name='apikey']").val();
 
 		// determine what ontology to use
 		var values = inputElement.attr('rel').split("-");
@@ -185,8 +186,7 @@ OntologyChooser.prototype = {
 			},
 			source: function(request, response) {
 				var q = $.trim(request.term);
-                var url = "http://data.bioontology.org/search?q="+ q +"&ontologies="+ ontology_id +
-                    "&apikey=c62bc477-a20d-4dc3-802f-92b6d9d78a16";
+                var url = "http://data.bioontology.org/search?q="+ q +"&ontologies="+ ontology_id + "&apikey=" + ontologyApiKey;
 				
 				// got cache?
 				if (that.cache[ q ]) {
@@ -267,6 +267,7 @@ OntologyChooser.prototype = {
         var that = this
         var inputElement = $(element);
         var selected = false;
+        var ontologyApiKey = $("input[name='apikey']").val();
 
         // handle ctrl or apple keys (to find ctrl-copy / ctrl-paste)
         inputElement.bind('keydown', function(e) {
@@ -317,7 +318,7 @@ OntologyChooser.prototype = {
             },
             source: function(request, response) {
                 var q = $.trim(request.term);
-                var url = "http://data.bioontology.org/ontologies?apikey=c62bc477-a20d-4dc3-802f-92b6d9d78a16";
+                var url = "http://data.bioontology.org/ontologies?apikey=" + ontologyApiKey;
 
                 if (that.cache[ q ]) {
                     inputElement.css({ 'background': 'none' });

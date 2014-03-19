@@ -21,7 +21,6 @@ class Ontology implements Serializable {
 	String acronym       // bioontology: acronym
 	Date dateCreated
 	Date lastUpdated
-    def grailsApplication
 
 	static constraints = {
         acronym(unique: true)     // For now, we just want one version of each NCBO ontology in the database
