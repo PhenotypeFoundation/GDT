@@ -1,4 +1,3 @@
-<g:set var="numUses" value="${template.numUses()}" />
 <span class="listButtons">
   <img onClick="editTemplate( ${template.id} );" src="${resource( dir: 'images/icons', file: 'application_edit.png', plugin: 'famfamfam' )}" alt="Edit template properties" title="Edit template properties">
   <img onClick="editFields( ${template.id} );"src="${resource( dir: 'images/icons', file: 'application_form.png', plugin: 'famfamfam' )}" alt="Add/remove template fields" title="Add/remove template fields">

@@ -1,23 +1,25 @@
-	<g:hiddenField name="id" value="${templateField?.id}" />
+    <g:hiddenField name="id" value="${templateField?.id}" />
 	<g:hiddenField name="version" value="${templateField?.version}" />
 	<g:hiddenField name="is_disabled" value="1" />
 	<g:if test="${is_selected}"><g:hiddenField name="renderTemplate" value="selected" /></g:if>
 	<g:if test="${template}"><g:hiddenField name="templateId" value="${template.id}" /></g:if>
+
+    <g:set var="usedFields" value="${templateField?.getUsedListEntries()}"/>
 
 	<label for="name">Name:</label> <g:textField disabled="disabled" name="name" value="${templateField?.name}" /><br />
 	<label for="type">Type:</label> <g:textField disabled="disabled" name="type" value="${templateField?.type}" /><br />
 
 	<div class="extra extendablestringlist_options stringlist_options" <g:if test="${templateField?.type.toString() == 'STRINGLIST' || templateField?.type.toString() == 'EXTENDABLESTRINGLIST'}">style='display: block;'</g:if>>
 	  <label for="type">Used items:</label>
-		<g:textArea name="usedListEntries" disabled="disabled" value="${templateField?.getUsedListEntries().name?.join( '\n' )}" />
+		<g:textArea name="usedListEntries" disabled="disabled" value="${usedFields.join( '\n' )}" />
 	  <label for="type">Extra Items (every item on a new line):</label>
-		<g:textArea name="listEntries" disabled="disabled" value="${templateField?.getNonUsedListEntries().name?.join( '\n' )}" />
+		<g:textArea name="listEntries" disabled="disabled" value="${templateField?.getNonUsedListEntries(usedFields).join( '\n' )}" />
 	</div>
 	<div class="extra ontologyterm_options" <g:if test="${templateField?.type.toString() == 'ONTOLOGYTERM'}">style='display: block;'</g:if>>
 	  <label for="type">Used ontologies:</label> <g:textArea name="ontology" disabled="disabled" value="${templateField?.getUsedOntologies().name?.join( '\n' )}" /><br />
 
 	  <label for="type">Extra ontologies:<br /><br /><a href="#" style="text-decoration: underline;" onClick="openOntologyDialog();">Add new</a></label>
-		<g:select multiple="yes" size="5" from="${ (ontologies ?: [])- templateField?.getUsedOntologies()}" class="ontologySelect" optionValue="name" optionKey="id" name="ontologies" id="ontologies_${templateField?.id}" value="${templateField?.getNonUsedOntologies()}" /><br />
+		<g:select multiple="yes" size="5" from="${ (ontologies ?: [])- templateField?.getNonUsedOntologies()}" class="ontologySelect" optionValue="name" optionKey="id" name="ontologies" id="ontologies_${templateField?.id}" value="${templateField?.getNonUsedOntologies()}" /><br />
 
 	</div>
 	
