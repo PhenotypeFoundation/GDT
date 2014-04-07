@@ -467,12 +467,11 @@ class TemplateEditorController {
 		// params.is_disabled is true and we should combine listEntries and extraListEntries with the items already in use.
 		if (params.type.toString() == 'STRINGLIST' || params.type.toString() == 'EXTENDABLESTRINGLIST' || ( (templateField.type == TemplateFieldType.STRINGLIST || templateField.type == TemplateFieldType.EXTENDABLESTRINGLIST ) && params.is_disabled)) {
 
-            templateField.listEntries = templateField?.getUsedListEntries()
-            def entryNames = templateField.listEntries.name
+            def entryNames = templateField?.getUsedListEntries()
 
             params.listEntries.eachLine {
                 def entryName = it.trim()
-                if (!entryNames.contains(entryName) && !templateField.listEntries.name.contains(entryName)) {
+                if (!entryNames.contains(entryName)) {
                     def listitem = new org.dbnp.gdt.TemplateFieldListItem(name: entryName)
                     templateField.addToListEntries(listitem)
                 }
