@@ -1,10 +1,11 @@
+<g:set var="numUses" value="${template.numUses()}" />
 <li id="template_${template.id}"class="ui-state-default">
   <g:if test='${templateadmin}'>
-      <g:if test="${!template.inUse()}">
-        <g:render template="elements/liTemplateEditable" model="['template': template, 'standalone': standalone]"/>
+      <g:if test="${numUses > 0}">
+          <g:render template="elements/liTemplateNonDeletable" model="['template': template, 'standalone': standalone, 'params': numUses]"/>
       </g:if>
       <g:else>
-        <g:render template="elements/liTemplateNonDeletable" model="['template': template, 'standalone': standalone]"/>
+          <g:render template="elements/liTemplateEditable" model="['template': template, 'standalone': standalone]"/>
       </g:else>
   </g:if>
 

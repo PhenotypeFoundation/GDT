@@ -1,5 +1,7 @@
 package org.dbnp.gdt
 
+import groovy.sql.Sql
+
 /**
  * The Template class describes a TemplateEntity template, which is basically an extension of the study capture entities
  * in terms of extra fields (which are described by classes that extend the TemplateField class).
@@ -18,6 +20,7 @@ package org.dbnp.gdt
  */
 class Template extends Identity {
 	def gdtService
+    def dataSource
 
 	/** The name of the template */
 	String name
@@ -261,19 +264,12 @@ class Template extends Identity {
 	 * @returns	integer the number of objects that use this template.
 	 */
 	def numUses() {
-		def elements = []
+        def sql = new Sql(dataSource)
+        def query = "SELECT COUNT(template_id) FROM ${this.entity.simpleName} WHERE template_id = ${this.id}"
 
-		// make sure gdtService is available
-		if (!gdtService) gdtService = new GdtService()
+        def count = sql.rows(query.toString())[0].count
 
-		// iterate through domain classes that use the domain templates
-		gdtService.getTemplateEntities().each {
-			if (it.instance.equals(this.entity)) {
-				elements = it.instance.findAllByTemplate( this )
-			}
-		}
-
-		return elements.size();
+        return count.toInteger()
 	}
 
 	/**
