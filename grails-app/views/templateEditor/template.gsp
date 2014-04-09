@@ -78,7 +78,9 @@
                 });
 			});
 		</script>
-		
+
+        <g:set var="templateService" bean="templateService"/>
+
 		<g:form action="template" name="templateChoice">
 			<g:hiddenField name="entity" value="${encryptedEntity}" />
 			<g:hiddenField name="ontologies" value="${ontologies}" />
@@ -94,11 +96,11 @@
                 <g:else>
                     <p>Currently, this template contains the following fields. An addition/modification to the current fields can be requested.</p>
                 </g:else>
-				<ol id="domainFields" class="templateFields <g:if test="${template.inUse()}">inUse</g:if>">
+				<ol id="domainFields" class="templateFields <g:if test="${templateService.inUse(template)}">inUse</g:if>">
 					<g:render template="elements/domainField" var="domainField" collection="${domainFields}" model="['template':template]"/>
 				</ol>
                 <g:if test='${templateadmin}'>
-                    <ol id="selectedTemplateFields" class="templateFields <g:if test="${template.inUse()}">inUse</g:if>">
+                    <ol id="selectedTemplateFields" class="templateFields <g:if test="${templateService.inUse(template)}">inUse</g:if>">
                 </g:if>
                 <g:else>
                     <ol id="disabledselectedTemplateFields" class="templateFields">

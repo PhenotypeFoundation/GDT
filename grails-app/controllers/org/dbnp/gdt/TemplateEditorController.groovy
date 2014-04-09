@@ -21,6 +21,8 @@ class TemplateEditorController {
 	def entity
 	def gdtService
     def mailService
+    def templateService
+    def templateFieldService
     def authenticationService
 
 	/**
@@ -443,7 +445,7 @@ class TemplateEditorController {
 		response.setContentType("text/plain; charset=UTF-8")
 
 		// Search for the template field
-		def templateField = TemplateField.get(params.id);
+		def templateField = TemplateField.findById(params.id);
 		if (!templateField) {
 			response.status = 404;
 			render 'TemplateField not found'
@@ -467,13 +469,27 @@ class TemplateEditorController {
 		// params.is_disabled is true and we should combine listEntries and extraListEntries with the items already in use.
 		if (params.type.toString() == 'STRINGLIST' || params.type.toString() == 'EXTENDABLESTRINGLIST' || ( (templateField.type == TemplateFieldType.STRINGLIST || templateField.type == TemplateFieldType.EXTENDABLESTRINGLIST ) && params.is_disabled)) {
 
-            def entryNames = templateField?.getUsedListEntries()
+            def entryNames = templateFieldService.getUsedListEntries( templateField )
+
+            def deletedEntries = templateField.listEntries.name
 
             params.listEntries.eachLine {
                 def entryName = it.trim()
-                if (!entryNames.contains(entryName)) {
+                if (!entryNames.contains(entryName) && !templateField.listEntries.name.contains(entryName)) {
                     def listitem = new org.dbnp.gdt.TemplateFieldListItem(name: entryName)
                     templateField.addToListEntries(listitem)
+                }
+                else {
+                    deletedEntries.remove(entryName)
+                }
+            }
+
+            deletedEntries.each() { deletedEntryName ->
+                //Only not used ListItems can be removed
+                if (!entryNames.contains(deletedEntryName)) {
+                    def removeListItem = TemplateFieldListItem.findByParentAndName(templateField, deletedEntryName)
+                    templateField.removeFromListEntries(removeListItem)
+                    removeListItem.delete()
                 }
             }
 		}
@@ -622,7 +638,7 @@ class TemplateEditorController {
 		}
 
 		// If the template is in use, only non-required fields can be added
-		if (template.inUse() && templateField.required) {
+		if (templateService.inUse(template) && templateField.required) {
 			response.status = 500;
 			render 'Only non-required fields can be added to templates that are in use.'
 			return;
@@ -777,7 +793,7 @@ class TemplateEditorController {
 			return;
 		}
 
-		render templateField.numUses();
+		render templateFieldService.numUses(templateField);
 	}
 
 	/**
