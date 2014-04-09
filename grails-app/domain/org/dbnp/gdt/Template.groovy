@@ -20,7 +20,6 @@ import groovy.sql.Sql
  */
 class Template extends Identity {
 	def gdtService
-    def dataSource
 
 	/** The name of the template */
 	String name
@@ -247,29 +246,6 @@ class Template extends Identity {
 		}
 
 		return results
-	}
-
-	/**
-	 * Checks whether this template is used by any object
-	 *
-	 * @returns	boolean true if this template is used by any object, false otherwise
-	 */
-	def inUse() {
-		return (numUses() > 0 )
-	}
-
-	/**
-	 * The number of objects that use this template
-	 *
-	 * @returns	integer the number of objects that use this template.
-	 */
-	def numUses() {
-        def sql = new Sql(dataSource)
-        def query = "SELECT COUNT(template_id) FROM ${this.entity.simpleName} WHERE template_id = ${this.id}"
-
-        def count = sql.rows(query.toString())[0].count
-
-        return count.toInteger()
 	}
 
 	/**

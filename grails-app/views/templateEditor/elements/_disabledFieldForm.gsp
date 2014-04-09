@@ -4,7 +4,8 @@
 	<g:if test="${is_selected}"><g:hiddenField name="renderTemplate" value="selected" /></g:if>
 	<g:if test="${template}"><g:hiddenField name="templateId" value="${template.id}" /></g:if>
 
-    <g:set var="usedFields" value="${templateField?.getUsedListEntries()}"/>
+    <g:set var="templateFieldService" bean="templateFieldService"/>
+    <g:set var="usedFields" value="${templateFieldService.getUsedListEntries( templateField )}"/>
 
 	<label for="name">Name:</label> <g:textField disabled="disabled" name="name" value="${templateField?.name}" /><br />
 	<label for="type">Type:</label> <g:textField disabled="disabled" name="type" value="${templateField?.type}" /><br />
@@ -13,7 +14,7 @@
 	  <label for="type">Used items:</label>
 		<g:textArea name="usedListEntries" disabled="disabled" value="${usedFields.join( '\n' )}" />
 	  <label for="type">Extra Items (every item on a new line):</label>
-		<g:textArea name="listEntries" value="${templateField?.getNonUsedListEntries(usedFields).join( '\n' )}" />
+		<g:textArea name="listEntries" value="${templateFieldService.getNonUsedListEntries( templateField, usedFields ).join( '\n' )}" />
 	</div>
 	<div class="extra ontologyterm_options" <g:if test="${templateField?.type.toString() == 'ONTOLOGYTERM'}">style='display: block;'</g:if>>
 	  <label for="type">Used ontologies:</label>

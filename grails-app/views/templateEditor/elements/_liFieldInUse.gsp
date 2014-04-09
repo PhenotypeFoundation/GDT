@@ -1,4 +1,5 @@
-<g:set var="numUses" value="${templateField.numUses()}" />
+<g:set var="templateFieldService" bean="templateFieldService"/>
+<g:set var="numUses" value="${templateFieldService.numUses(templateField)}" />
 <span class="listButtons">
   <img onClick="showTemplateFieldForm( ${templateField.id}); this.blur(); return false;" src="${resource( dir: 'images/icons', file: 'application_edit.png', plugin: 'famfamfam' )}" alt="Edit template field properties" title="Edit template field properties">
   <img class="disabled" src="${resource( dir: 'images/icons', file: 'delete.png', plugin: 'famfamfam' )}" alt="Deleting this field is not possible. Field is used in ${numUses} templates." title="Deleting this field is not possible. Field is used in ${numUses} templates.">

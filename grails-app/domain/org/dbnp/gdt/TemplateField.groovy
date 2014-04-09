@@ -20,8 +20,6 @@ import groovy.sql.Sql
  * $Date: 2010-12-15 13:53:28 +0100 (Wed, 15 Dec 2010) $
  */
 class TemplateField implements Serializable {
-    def dataSource
-
 	/** The name of the TemplateField, by which it is represented to the user.   */
 	String name
 
@@ -116,49 +114,22 @@ class TemplateField implements Serializable {
 		this
 	}
 
-
     /**
-     * Retrieves all list items of a stringlist template field that have been used in an object
+     * Retrieves the templates that use this template field
      *
-     * @return ArrayList containing all list items of this template field that have been used in an object.
+     * @returns a list of templates that use this template field.
      */
-    def List getUsedListEntries() {
+    def getUses() {
+        def templates = Template.findAll();
+        def elements;
 
-        if ((this.type != TemplateFieldType.STRINGLIST && this.type != TemplateFieldType.EXTENDABLESTRINGLIST) || this.listEntries.size() == 0)
-            return []
+        if (templates && templates.size() > 0) {
+            elements = templates.findAll { template -> template.fields.contains(this) };
+        } else {
+            return [];
+        }
 
-        def sql = new Sql(dataSource)
-        def query = "SELECT DISTINCT y.templatefieldlistitemname FROM ${this.entity.simpleName.toLowerCase()}_template_string_list_fields x, template_field_list_item y WHERE template_string_list_fields_idx = '${this.name}' AND x.template_field_list_item_id = y.id;"
-
-        return sql.rows(query.toString()).collectAll() { it.templatefieldlistitemname }
-    }
-
-    /**
-     * Retrieves all list items of a stringlist template field that have never been used in an object
-     *
-     * @return ArrayList containing all list items of this template field that have never been used in an object.
-     */
-    def List getNonUsedListEntries() {
-
-        if ((this.type != TemplateFieldType.STRINGLIST && this.type != TemplateFieldType.EXTENDABLESTRINGLIST) || this.listEntries.size() == 0)
-            return []
-
-        def usedFields = getUsedListEntries()
-
-        return TemplateFieldListItem.findAllByParent(this).name - usedFields
-    }
-
-    /**
-     * Retrieves all list items of a stringlist template field that have never been used in an object based on a previous executed getUsedTemplateFieldListEntries.
-     *
-     * @return ArrayList containing all list items of this template field that have never been used in an object.
-     */
-    def List getNonUsedListEntries( List usedFields ) {
-
-        if ((this.type != TemplateFieldType.STRINGLIST && this.type != TemplateFieldType.EXTENDABLESTRINGLIST) || this.listEntries.size() == 0)
-            return []
-
-        return TemplateFieldListItem.findAllByParent(this).name - usedFields
+        return elements;
     }
 
     /**
@@ -252,42 +223,6 @@ class TemplateField implements Serializable {
     }
 
 	/**
-	 * Checks whether this template field is used in a template
-	 *
-	 * @returns true iff this template field is used in a template (even if the template is never used), false otherwise
-	 */
-	def inUse() {
-		return numUses() > 0;
-	}
-
-	/**
-	 * The number of templates that use this template field
-	 *
-	 * @returns the number of templates that use this template field.
-	 */
-	def numUses() {
-		return getUses().size();
-	}
-
-	/**
-	 * Retrieves the templates that use this template field
-	 *
-	 * @returns a list of templates that use this template field.
-	 */
-	def getUses() {
-		def templates = Template.findAll();
-		def elements;
-
-		if (templates && templates.size() > 0) {
-			elements = templates.findAll { template -> template.fields.contains(this) };
-		} else {
-			return [];
-		}
-
-		return elements;
-	}
-
-	/**
 	 * Checks whether this template field is used in a template and also filled in any instance of that template
 	 *
 	 * @returns true iff this template field is used in a template, the template is instantiated
@@ -371,7 +306,7 @@ class TemplateField implements Serializable {
 	 * @returns true iff this template may still be edited or deleted.
 	 */
 	def isEditable() {
-		return !isFilled() && numUses() == 1;
+		return !isFilled() && getUses().size() == 1;
 	}
 
 	/**
