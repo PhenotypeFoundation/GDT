@@ -97,7 +97,7 @@ class TemplateField implements Serializable {
 	public static findAllByEntity(java.lang.Class entity) {
 		def results = []
 		// 'this' should not work in static context, so taking Template instead of this
-		TemplateField.findAll().each() {
+		TemplateField.all.each() {
 			if (entity.equals(it.entity)) {
 				results[results.size()] = it
 			}
@@ -120,7 +120,7 @@ class TemplateField implements Serializable {
      * @returns a list of templates that use this template field.
      */
     def getUses() {
-        def templates = Template.findAll();
+        def templates = Template.all;
         def elements;
 
         if (templates && templates.size() > 0) {
@@ -149,7 +149,7 @@ class TemplateField implements Serializable {
             return []
         }
 
-        return this.ontologies.findAll { entryUsed(it, entities) }
+        return this.ontologies.findAll { ontologyEntryUsed(it, entities) }
     }
 
     /**
@@ -170,7 +170,7 @@ class TemplateField implements Serializable {
             return []
         }
 
-        return this.ontologies.findAll { !entryUsed(it, entities) }
+        return this.ontologies.findAll { !ontologyEntryUsed(it, entities) }
     }
 
     /**
@@ -198,28 +198,25 @@ class TemplateField implements Serializable {
     }
 
     /**
-     * Checks whether the item is selected in an entity where this template field is used
+     * Checks whether the item is selected in an entity where this ontology template field is used
      * @param mixed item
      * @returns boolean
      */
-    def entryUsed(item, entities) {
-        if (item.type == TemplateFieldType.ONTOLOGYTERM) {
-            //Checks is the ontology is part of this template field and a term from the given
-            //ontology is selected in an entity where this template field is used. false otherwise
-            //Returns false if the type of this template field is other than ONTOLOGYTERM
-            def entitiesWithOntology = entities.findAll { entity ->
+    def ontologyEntryUsed(item, entities) {
+        //Checks is the ontology is part of this template field and a term from the given
+        //ontology is selected in an entity where this template field is used. false otherwise
+        //Returns false if the type of this template field is other than ONTOLOGYTERM
+        def entitiesWithOntology = entities.findAll { entity ->
 
-                //Quite inefficient to just check wether a entry is used or not.
-                def value = entity.getFieldValue(this.name);
-                if (value)
-                    return value.ontology.equals(item)
-                else
-                    return false;
-            }
-            return entitiesWithOntology.size() > 0;
-        } else {
-            return false
+            //Quite inefficient to just check wether a entry is used or not.
+            def value = entity.getFieldValue(this.name);
+
+            if (value)
+                return value.ontology.equals(item)
+            else
+                return false;
         }
+        return entitiesWithOntology.size() > 0;
     }
 
 	/**

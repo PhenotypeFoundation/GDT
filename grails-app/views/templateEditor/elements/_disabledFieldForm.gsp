@@ -21,7 +21,7 @@
         <g:select size="5" from="${templateField?.getUsedOntologies()}" disabled="true" class="ontologySelect" optionValue="name" optionKey="id" name="ontologies" id="used_ontologies_${templateField?.id}" /> <br />
 
 	  <label for="type">Extra ontologies:<br /><a href="#" style="text-decoration: underline;" onClick="openOntologyDialog();">Add new</a><br /><br /> <a href="#" style="text-decoration: underline;" onClick="deleteOntology(${templateField?.id});">Remove</a></label>
-		<g:select multiple="yes" size="5" from="${ (templateField?.ontologies ?: [])- templateField?.getNonUsedOntologies()}" class="ontologySelect" optionValue="name" optionKey="id" name="ontologies" id="ontologies_${templateField?.id}" /><br />
+		<g:select multiple="yes" size="5" from="${templateField?.getNonUsedOntologies()}" class="ontologySelect" optionValue="name" optionKey="id" name="ontologies" id="ontologies_${templateField?.id}" /><br />
 	</div>
 	
 	<label for="unit">Unit:</label> <g:textField disabled="disabled" name="unit" value="${templateField?.unit}" /><br />
