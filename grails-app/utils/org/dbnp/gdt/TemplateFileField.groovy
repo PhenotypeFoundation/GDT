@@ -53,9 +53,11 @@ class TemplateFileField extends TemplateFieldTypeNew {
 	 */
 	static def castValue(org.dbnp.gdt.TemplateField field, value, def currentValue) {
 		// Sometimes the fileService is not created yet
-		def fileService = new FileService();
+        // See http://burtbeckwith.com/blog/?p=993
+        def fileService = new FileService();
+        fileService.grailsApplication = new Template().domainClass.grailsApplication
 
-		// Magic setter for files: handle values for file fields
+        // Magic setter for files: handle values for file fields
 		//
 		// If NULL is given or "*deleted*", the field value is emptied and the old file is removed
 		// If an empty string is given, the field value is kept as was
