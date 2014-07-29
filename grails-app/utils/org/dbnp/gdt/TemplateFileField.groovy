@@ -94,7 +94,7 @@ class TemplateFileField extends TemplateFieldTypeNew {
 			// In that case, the original file should be kept
 			if (value == "existing*") {
 				value = "";
-			} else if (value[0..8] == "existing*") {
+			} else if (value.size() >= 9 && value[0..8] == "existing*") {
 				// Keep current file
 				value = currentFile;
 			} else {

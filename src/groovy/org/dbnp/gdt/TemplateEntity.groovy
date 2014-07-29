@@ -277,11 +277,8 @@ abstract class TemplateEntity extends Identity {
 
 		// cast the value to the proper type, if required
 		try {
-			//println ".casting ${fieldName} with value '${value}' of type ${value?.class} and current value ${currentValue} to type ${field.type.casedName}"
-			if(!templateFieldClass instanceof File) {
-				value = templateFieldClass.castValue(field, value, currentValue)
-			}
-			// println " -> ${value} (${value?.class})"
+            value = templateFieldClass.castValue(field, value, currentValue)
+        	// println " -> ${value} (${value?.class})"
 		} catch (Exception e) {
 			// the value could not be cast, keep the value as-is
 			def errorMessage = "Error casting ${field.name} of type ${field.type.casedName} with value ${value} (${value?.class}) :: " + e.getMessage()
