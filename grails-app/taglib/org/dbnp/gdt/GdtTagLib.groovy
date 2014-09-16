@@ -734,7 +734,7 @@ class GdtTagLib extends AjaxflowTagLib {
 						def jsEntries = "";
 		
 						if( !templateField.listEntries.isEmpty() ) {
-							jsEntries = templateField.listEntries.collect { '"' + templateField.name.encodeAsJavaScript() + '"' }.join( ', ' );
+							jsEntries = templateField.listEntries.collect { '"' + it.name.encodeAsJavaScript() + '"' }.join( ', ' );
 						}
 						out << '<script type="text/javascript">' +
 								'var existingTags = [ ' + jsEntries + ' ];' +

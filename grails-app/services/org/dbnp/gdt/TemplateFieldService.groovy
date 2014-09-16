@@ -28,7 +28,7 @@ class TemplateFieldService {
             query = "SELECT DISTINCT y.templatefieldlistitemname FROM ${templateField.entity.simpleName.replaceAll(/\B[A-Z]/) { '_' + it }.toLowerCase()}_template_string_list_fields x, template_field_list_item y WHERE x.template_string_list_fields_idx = '${templateField.name}' AND x.template_field_list_item_id = y.id;"
         }
         else if(templateField.type == TemplateFieldType.EXTENDABLESTRINGLIST) {
-            query = "SELECT DISTINCT y.templatefieldlistitemname FROM ${templateField.entity.simpleName.replaceAll(/\B[A-Z]/) { '_' + it }.toLowerCase()}_template_extendable_string_list_fields x, template_field_list_item y WHERE x._extendable_string_list_fields_idx = '${templateField.name}' AND x._extendable_string_list_fields_idx = y.id;"
+            query = "SELECT DISTINCT y.templatefieldlistitemname FROM ${templateField.entity.simpleName.replaceAll(/\B[A-Z]/) { '_' + it }.toLowerCase()}_template_extendable_string_list_fields x, template_field_list_item y WHERE x.template_extendable_string_list_fields_idx = '${templateField.name}' AND x.template_field_list_item_id = y.id;"
         }
         else {
             return []
