@@ -26,8 +26,10 @@ grails.project.dependency.resolution = {
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
         runtime("uk.ac.ebi:ontoCAT:0.9.8") {
-		transitive = false
-	}
+			transitive = false
+		}
+		
+		compile "org.grails:grails-webflow:$grailsVersion"
     }
 
     plugins {
@@ -42,10 +44,14 @@ grails.project.dependency.resolution = {
 
         compile(":hibernate:$grailsVersion",
 		":jquery:1.8.3",
-		":webflow:2.0.0",
 		":ajaxflow:latest.integration"
         ) {
             export = false
         }
+		
+		compile ':webflow:2.0.0', {
+			exclude 'grails-webflow'
+		}
+
     }
 }
