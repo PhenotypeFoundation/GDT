@@ -37,12 +37,17 @@ grails.project.dependency.resolution = {
         }
 
         compile(":hibernate:$grailsVersion",
-		":jquery:latest.integration",
+		":jquery:1.8.3",
 		":webflow:2.0.8.1",
 		":ajaxflow:latest.integration",
         ":rest:0.8"
         ) {
             export = false
         }
+		
+		compile ':webflow:2.0.0', {
+			exclude 'grails-webflow'
+		}
+
     }
 }
